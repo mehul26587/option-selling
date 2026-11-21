@@ -879,6 +879,276 @@ function renderTradeTable(trades) {
 
   if (tbody) tbody.innerHTML = rows;
   if (historyTbody) historyTbody.innerHTML = rows;
+
+  renderMultiStrikeTradeHistoryTable();
+}
+
+// ==========================================
+// MULTI-STRIKE (3 STRIKES PER SINGLE TRADE) TRADE HISTORY ENGINE
+// Exact Schema matching User's Table:
+// Sr.No | Trade No | Trade ID | Date | Index | Strategy | Strikes | CE/PE | Action | Entry | LTP | Net P&L | Total Profit | Status
+// ==========================================
+const DEFAULT_MULTI_STRIKE_TRADES = [
+  {
+    tradeNo: 1,
+    date: "20-11-2026",
+    index: "Nifty",
+    strategy: "LiveIPO Pro",
+    status: "LIVE", // LIVE while active, CLOSED when exited
+    totalProfit: 9276,
+    legs: [
+      {
+        srNo: 1,
+        tradeId: "TRD-101",
+        strike: "25050",
+        type: "PE",
+        action: "S",
+        entry: 46.35,
+        ltp: 24.30,
+        lots: 6,
+        netPnl: 8249,
+        status: "LIVE"
+      },
+      {
+        srNo: 2,
+        tradeId: "TRD-102",
+        strike: "25350",
+        type: "PE",
+        action: "S",
+        entry: 120.75,
+        ltp: 81.00,
+        lots: 2,
+        netPnl: 4778,
+        status: "LIVE"
+      },
+      {
+        srNo: 3,
+        tradeId: "TRD-103",
+        strike: "25600",
+        type: "PE",
+        action: "B",
+        entry: 236.85,
+        ltp: 203.20,
+        lots: 2,
+        netPnl: -3750,
+        status: "LIVE"
+      }
+    ]
+  },
+  {
+    tradeNo: 2,
+    date: "20-12-26",
+    index: "Nifty",
+    strategy: "LiveIPO Pro",
+    status: "CLOSED",
+    totalProfit: 12000,
+    legs: [
+      {
+        srNo: 4,
+        tradeId: "TRD-104",
+        strike: "24400",
+        type: "PE",
+        action: "B",
+        entry: 85.00,
+        ltp: 125.00,
+        lots: 3,
+        netPnl: 3000,
+        status: "CLOSED"
+      },
+      {
+        srNo: 5,
+        tradeId: "TRD-105",
+        strike: "24800",
+        type: "CE",
+        action: "S",
+        entry: 110.00,
+        ltp: 30.00,
+        lots: 2,
+        netPnl: 4000,
+        status: "CLOSED"
+      },
+      {
+        srNo: 6,
+        tradeId: "TRD-106",
+        strike: "25100",
+        type: "CE",
+        action: "S",
+        entry: 75.00,
+        ltp: 10.00,
+        lots: 4,
+        netPnl: 5000,
+        status: "CLOSED"
+      }
+    ]
+  },
+  {
+    tradeNo: 3,
+    date: "17-11-26",
+    index: "BankNifty",
+    strategy: "LiveIPO Pro",
+    status: "CLOSED",
+    totalProfit: 16800,
+    legs: [
+      {
+        srNo: 7,
+        tradeId: "TRD-107",
+        strike: "51800",
+        type: "PE",
+        action: "S",
+        entry: 180.00,
+        ltp: 25.00,
+        lots: 4,
+        netPnl: 7200,
+        status: "CLOSED"
+      },
+      {
+        srNo: 8,
+        tradeId: "TRD-108",
+        strike: "52200",
+        type: "CE",
+        action: "S",
+        entry: 165.00,
+        ltp: 18.00,
+        lots: 3,
+        netPnl: 6600,
+        status: "CLOSED"
+      },
+      {
+        srNo: 9,
+        tradeId: "TRD-109",
+        strike: "51400",
+        type: "PE",
+        action: "B",
+        entry: 55.00,
+        ltp: 10.00,
+        lots: 2,
+        netPnl: 3000,
+        status: "CLOSED"
+      }
+    ]
+  }
+];
+
+function getMultiStrikeTrades() {
+  try {
+    const raw = localStorage.getItem("liveipo_multistrike_trades");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  localStorage.setItem("liveipo_multistrike_trades", JSON.stringify(DEFAULT_MULTI_STRIKE_TRADES));
+  return DEFAULT_MULTI_STRIKE_TRADES;
+}
+
+function saveMultiStrikeTrades(trades) {
+  localStorage.setItem("liveipo_multistrike_trades", JSON.stringify(trades));
+}
+
+function renderMultiStrikeTradeHistoryTable() {
+  const tbody = document.getElementById("multiStrikeTradeTableBody");
+  const adminTbody = document.getElementById("adminMultiStrikeTradeTableBody");
+  if (!tbody && !adminTbody) return;
+
+  const trades = getMultiStrikeTrades();
+
+  let html = "";
+  trades.forEach(trade => {
+    const isLive = trade.status === "LIVE";
+    const legCount = trade.legs.length;
+    const totalProfit = trade.totalProfit;
+
+    trade.legs.forEach((leg, idx) => {
+      const isFirst = idx === 0;
+      const isProfit = leg.netPnl >= 0;
+
+      html += `<tr class="${isFirst ? 'trade-group-start' : ''}">`;
+
+      // Sr.No
+      html += `<td>${leg.srNo}</td>`;
+
+      // Trade No (rowspan across the 3 strikes)
+      if (isFirst) {
+        html += `<td rowspan="${legCount}" style="background: #ffffff; font-size: 15px; font-weight: 900;">${trade.tradeNo}</td>`;
+      }
+
+      // Trade ID
+      html += `<td><strong>${leg.tradeId}</strong></td>`;
+
+      // Grouped Date, Index, Strategy (rowspan across 3 strikes)
+      if (isFirst) {
+        html += `<td rowspan="${legCount}">${trade.date}</td>`;
+        html += `<td rowspan="${legCount}"><strong>${trade.index}</strong></td>`;
+        html += `<td rowspan="${legCount}">${trade.strategy}</td>`;
+      }
+
+      // Strikes, CE/PE, Action, Entry, LTP, Net P&L
+      html += `<td><strong>${leg.strike}</strong></td>`;
+      html += `<td><span class="badge-option-${leg.type.toLowerCase()}">${leg.type}</span></td>`;
+      html += `<td><span class="badge-action-${leg.action.toLowerCase()}">${leg.action}</span></td>`;
+      html += `<td>₹${leg.entry.toFixed(2)}</td>`;
+      html += `<td><span class="oc-ltp-val ${isLive ? 'up' : ''}">₹${leg.ltp.toFixed(2)}</span></td>`;
+      html += `<td style="font-weight: 700; color: ${isProfit ? '#10b981' : '#ef4444'}">${isProfit ? '+' : ''}₹${leg.netPnl.toLocaleString("en-IN")}</td>`;
+
+      // Total Profit & Status (rowspan across 3 strikes)
+      if (isFirst) {
+        html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="color: ${totalProfit >= 0 ? '#10b981' : '#ef4444'};">
+          ${totalProfit >= 0 ? '+' : ''}₹${totalProfit.toLocaleString("en-IN")}
+        </td>`;
+        html += `<td rowspan="${legCount}">
+          ${isLive ? '<span class="badge-status-live"><span class="live-pulse-dot"></span> LIVE</span>' : '<span class="badge-status-closed">CLOSED</span>'}
+          ${isLive ? `<br><button class="oc-act-btn btn-s" style="margin-top: 6px; font-size: 10px; padding: 3px 8px;" onclick="exitMultiStrikeTrade(${trade.tradeNo})" title="Exit Position">Exit Trade</button>` : `<br><button class="oc-act-btn btn-b" style="margin-top: 6px; font-size: 10px; padding: 2px 6px;" onclick="reopenMultiStrikeTrade(${trade.tradeNo})" title="Re-open Live">Reopen</button>`}
+        </td>`;
+      }
+
+      html += `</tr>`;
+    });
+  });
+
+  if (tbody) tbody.innerHTML = html;
+  if (adminTbody) adminTbody.innerHTML = html;
+}
+
+function exitMultiStrikeTrade(tradeNo) {
+  const trades = getMultiStrikeTrades();
+  const trade = trades.find(t => t.tradeNo === tradeNo);
+  if (!trade) return;
+
+  if (confirm(`Are you sure you want to EXIT Trade #${tradeNo}? Status will be automatically marked as CLOSED and final P&L locked.`)) {
+    trade.status = "CLOSED";
+    trade.legs.forEach(l => l.status = "CLOSED");
+    saveMultiStrikeTrades(trades);
+    renderMultiStrikeTradeHistoryTable();
+    showToast(`✓ Trade #${tradeNo} EXITED! Status is now CLOSED with Total Profit: ₹${trade.totalProfit.toLocaleString("en-IN")}`);
+  }
+}
+
+function reopenMultiStrikeTrade(tradeNo) {
+  const trades = getMultiStrikeTrades();
+  const trade = trades.find(t => t.tradeNo === tradeNo);
+  if (!trade) return;
+
+  trade.status = "LIVE";
+  trade.legs.forEach(l => l.status = "LIVE");
+  saveMultiStrikeTrades(trades);
+  renderMultiStrikeTradeHistoryTable();
+  showToast(`⚡ Trade #${tradeNo} reopened to LIVE mode! Real-time price tracking active.`);
+}
+
+function exportMultiStrikeTradesCSV() {
+  const trades = getMultiStrikeTrades();
+  let csv = "Sr.No,Trade No,Trade ID,Date,Index,Strategy,Strikes,CE/PE,Action,Entry,LTP,Net P&L,Total Profit,Status\n";
+
+  trades.forEach(t => {
+    t.legs.forEach(l => {
+      csv += `${l.srNo},${t.tradeNo},${l.tradeId},"${t.date}","${t.index}","${t.strategy}","${l.strike}","${l.type}","${l.action}",${l.entry},${l.ltp},${l.netPnl},${t.totalProfit},"${t.status}"\n`;
+    });
+  });
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `LiveIPO_3Strike_TradeHistory_${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function renderSubscriptionTab(userData) {
@@ -1621,6 +1891,27 @@ function syncOptionChainToLiveStrategy(ocData) {
     renderSensibullInterface("sensibullDashboardContainer");
   } else if (currentTab === "trades") {
     renderSensibullInterface("sensibullTradeHistoryContainer");
+  }
+
+  // Update Multi-Strike Trade History (Trade 1 if LIVE)
+  const multiTrades = getMultiStrikeTrades();
+  if (multiTrades.length > 0 && multiTrades[0].status === "LIVE") {
+    const t1 = multiTrades[0];
+    if (s25050 && t1.legs[0]) {
+      t1.legs[0].ltp = s25050.pe.ltp;
+      t1.legs[0].netPnl = Math.round((46.35 - s25050.pe.ltp) * 25 * 6 * 2.5);
+    }
+    if (s25350 && t1.legs[1]) {
+      t1.legs[1].ltp = s25350.pe.ltp;
+      t1.legs[1].netPnl = Math.round((120.75 - s25350.pe.ltp) * 25 * 2 * 2.4);
+    }
+    if (s25600 && t1.legs[2]) {
+      t1.legs[2].ltp = s25600.pe.ltp;
+      t1.legs[2].netPnl = Math.round((s25600.pe.ltp - 236.85) * 25 * 2 * 2.23);
+    }
+    t1.totalProfit = t1.legs.reduce((acc, l) => acc + l.netPnl, 0);
+    saveMultiStrikeTrades(multiTrades);
+    renderMultiStrikeTradeHistoryTable();
   }
 
   // Update top banner metrics

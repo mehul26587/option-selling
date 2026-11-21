@@ -654,5 +654,8 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchNSEOptionChain();
     startRealtimeOptionChainTicks();
   }
+  if (typeof renderMultiStrikeTradeHistoryTable === "function") {
+    renderMultiStrikeTradeHistoryTable();
+  }
 });
 
