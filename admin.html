@@ -42,6 +42,11 @@
         </a>
       </li>
       <li class="admin-nav-item">
+        <a class="admin-nav-link" data-tab="strategy" onclick="switchAdminTab('strategy')">
+          <span>🎯</span> 3-Strike Basket Desk
+        </a>
+      </li>
+      <li class="admin-nav-item">
         <a class="admin-nav-link" data-tab="trades" onclick="switchAdminTab('trades')">
           <span>📈</span> Option Trades Desk
         </a>
@@ -185,7 +190,110 @@
       </div>
     </section>
 
-    <!-- ==================== SECTION 3: TRADES MANAGEMENT ==================== -->
+    <!-- ==================== SECTION 3: 3-STRIKE BASKET STRATEGY DESK ==================== -->
+    <section class="admin-tab-section" id="adminTab-strategy" style="display: none;">
+      
+      <!-- Live Strategy Quotes Control -->
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <h2>🎯 Live 3-Strike Basket Strategy Manager (Sensibull Style)</h2>
+          <button class="admin-btn-primary" onclick="saveMultiLegStrategyLive()">⚡ Update Live Quotes & Recalculate P&L</button>
+        </div>
+        <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+          <div class="admin-form-group">
+            <label>NIFTY Spot Price (₹)</label>
+            <input type="number" step="0.05" id="adminStrategySpot" value="25436.55" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Leg 1: 25050 PE (SELL 6x) LTP</label>
+            <input type="number" step="0.05" id="adminLeg1Ltp" value="24.30" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Leg 2: 25350 PE (SELL 2x) LTP</label>
+            <input type="number" step="0.05" id="adminLeg2Ltp" value="81.00" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Leg 3: 25600 PE (BUY 2x) LTP</label>
+            <input type="number" step="0.05" id="adminLeg3Ltp" value="203.20" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day-by-Day Historical Analysis Table -->
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <h2>📅 Day-by-Day Progression & Historical Theta Decay</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Date / Stage</th>
+                <th>NIFTY Spot</th>
+                <th>25050 PE LTP</th>
+                <th>25350 PE LTP</th>
+                <th>25600 PE LTP</th>
+                <th>Theta Gain</th>
+                <th>Cumulative P&L</th>
+                <th>Remark</th>
+              </tr>
+            </thead>
+            <tbody id="adminDayByDayTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add New Day Analysis Form -->
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <h2>+ Append New Day-by-Day Market Analysis Record</h2>
+        </div>
+        <form id="addDayRecordForm" onsubmit="handleAddDayRecordSubmit(event)">
+          <div class="admin-form-grid">
+            <div class="admin-form-group">
+              <label>Date / Stage</label>
+              <input type="text" id="newDayDate" placeholder="e.g. 22 Nov (Pre-Expiry)" required>
+            </div>
+            <div class="admin-form-group">
+              <label>NIFTY Spot (₹)</label>
+              <input type="number" step="0.05" id="newDaySpot" placeholder="25450.00" required>
+            </div>
+            <div class="admin-form-group">
+              <label>25050 PE LTP</label>
+              <input type="number" step="0.05" id="newDayLeg1" placeholder="12.00" required>
+            </div>
+            <div class="admin-form-group">
+              <label>25350 PE LTP</label>
+              <input type="number" step="0.05" id="newDayLeg2" placeholder="45.00" required>
+            </div>
+            <div class="admin-form-group">
+              <label>25600 PE LTP</label>
+              <input type="number" step="0.05" id="newDayLeg3" placeholder="160.00" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Theta Gain (₹)</label>
+              <input type="text" id="newDayTheta" placeholder="+9,224" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Cumulative P&L (₹)</label>
+              <input type="number" id="newDayPnl" placeholder="18500" required>
+            </div>
+            <div class="admin-form-group">
+              <label>Analysis Remark</label>
+              <input type="text" id="newDayRemark" placeholder="e.g. Weekend theta decay" required>
+            </div>
+          </div>
+          <div class="admin-modal-footer" style="padding: 16px 24px;">
+            <button type="submit" class="admin-btn-primary">+ Add Day Record to Live Terminal</button>
+          </div>
+        </form>
+      </div>
+
+    </section>
+
+    <!-- ==================== SECTION 4: TRADES MANAGEMENT ==================== -->
     <section class="admin-tab-section" id="adminTab-trades" style="display: none;">
       <div class="admin-card">
         <div class="admin-card-head">

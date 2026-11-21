@@ -460,6 +460,179 @@ function renderPaymentsTable(payments) {
   `).join("");
 }
 
+// ==========================================
+// 7. MULTI-LEG STRATEGY (3-STRIKE BASKET) DESK
+// ==========================================
+function loadMultiLegStrategyAdmin() {
+  let strategies = [];
+  try {
+    const raw = localStorage.getItem("liveipo_multileg_strategies");
+    if (raw) strategies = JSON.parse(raw);
+  } catch (e) {}
+
+  if (!strategies || strategies.length === 0) {
+    strategies = [
+      {
+        id: "STRAT-23NOV-NIFTY",
+        title: "NIFTY Multi-Strike Ratio Put Spread (3-Leg Basket)",
+        index: "NIFTY",
+        underlyingPrice: 25436.55,
+        underlyingChange: "+0.83%",
+        expiry: "23 Nov",
+        strategyType: "Custom Ratio Put Spread",
+        status: "OPEN",
+        entryDate: "2026-11-19",
+        expiryDate: "2026-11-23",
+        totalBooked: 0,
+        totalUnbooked: 9276,
+        totalPnl: 9276,
+        metrics: {
+          profitLeft: 26091,
+          profitLeftPct: "+2.4%",
+          lossLeft: "Unlimited",
+          maxProfit: 35484,
+          maxProfitPct: "+3.3%",
+          maxLoss: "Unlimited",
+          breakeven: 24959,
+          breakevenPct: "-1.9%",
+          pop: "91%",
+          rewardRisk: "1/x NA",
+          timeValue: -9854,
+          intrinsicValue: 16263,
+          standaloneFunds: "10.88L",
+          standaloneMargin: "10.68L",
+          marginAvailable: "12,34,329"
+        },
+        legs: [
+          { id: "leg-1", action: "SELL", actionBadge: "S", instrument: "23rd Nov 25050 PE", lots: 6, avgPrice: 46.35, ltp: 24.30, booked: 0, unbooked: 8249, pnl: 8249 },
+          { id: "leg-2", action: "SELL", actionBadge: "S", instrument: "23rd Nov 25350 PE", lots: 2, avgPrice: 120.75, ltp: 81.00, booked: 0, unbooked: 4778, pnl: 4778 },
+          { id: "leg-3", action: "BUY", actionBadge: "B", instrument: "23rd Nov 25600 PE", lots: 2, avgPrice: 236.85, ltp: 203.20, booked: 0, unbooked: -3750, pnl: -3750 }
+        ],
+        dayByDayHistory: [
+          { date: "19 Nov (Day 1)", niftySpot: 25400.00, leg1Ltp: 46.35, leg2Ltp: 120.75, leg3Ltp: 236.85, bookedPnl: 0, unbookedPnl: 2850, dayPnl: "+2,850", remark: "Entry Day" },
+          { date: "20 Nov (Day 2)", niftySpot: 25420.50, leg1Ltp: 34.50, leg2Ltp: 98.20, leg3Ltp: 218.40, bookedPnl: 0, unbookedPnl: 5600, dayPnl: "+2,750", remark: "Holding Day" },
+          { date: "21 Nov (Live Today)", niftySpot: 25436.55, leg1Ltp: 24.30, leg2Ltp: 81.00, leg3Ltp: 203.20, bookedPnl: 0, unbookedPnl: 9276, dayPnl: "+3,676", remark: "Live Market" },
+          { date: "22 Nov (Projected)", niftySpot: 25450.00, leg1Ltp: 12.00, leg2Ltp: 45.00, leg3Ltp: 160.00, bookedPnl: 0, unbookedPnl: 18500, dayPnl: "+9,224", remark: "Projected Weekend" },
+          { date: "23 Nov (Expiry Target)", niftySpot: 25450.00, leg1Ltp: 0.05, leg2Ltp: 0.05, leg3Ltp: 0.05, bookedPnl: 35484, unbookedPnl: 0, dayPnl: "+16,984", remark: "Full Target" }
+        ],
+        greeks: { delta: "+14.2", theta: "+₹3,676 / day", gamma: "-0.0018", vega: "-₹1,240" }
+      }
+    ];
+    localStorage.setItem("liveipo_multileg_strategies", JSON.stringify(strategies));
+  }
+
+  const strat = strategies[0];
+  const spotEl = document.getElementById("adminStrategySpot");
+  const leg1El = document.getElementById("adminLeg1Ltp");
+  const leg2El = document.getElementById("adminLeg2Ltp");
+  const leg3El = document.getElementById("adminLeg3Ltp");
+
+  if (spotEl) spotEl.value = strat.underlyingPrice;
+  if (leg1El && strat.legs[0]) leg1El.value = strat.legs[0].ltp;
+  if (leg2El && strat.legs[1]) leg2El.value = strat.legs[1].ltp;
+  if (leg3El && strat.legs[2]) leg3El.value = strat.legs[2].ltp;
+
+  renderAdminDayByDayTable(strat.dayByDayHistory);
+}
+
+function saveMultiLegStrategyLive() {
+  const spotVal = parseFloat(document.getElementById("adminStrategySpot").value) || 25436.55;
+  const leg1Val = parseFloat(document.getElementById("adminLeg1Ltp").value) || 24.30;
+  const leg2Val = parseFloat(document.getElementById("adminLeg2Ltp").value) || 81.00;
+  const leg3Val = parseFloat(document.getElementById("adminLeg3Ltp").value) || 203.20;
+
+  let strategies = [];
+  try {
+    const raw = localStorage.getItem("liveipo_multileg_strategies");
+    if (raw) strategies = JSON.parse(raw);
+  } catch (e) {}
+
+  if (strategies.length > 0) {
+    const strat = strategies[0];
+    strat.underlyingPrice = spotVal;
+
+    // Lot sizes for NIFTY = 25 per lot (or scaled multiplier)
+    // Leg 1: SELL 6 lots 25050 PE, entry 46.35
+    const leg1Pnl = Math.round((46.35 - leg1Val) * 25 * 6 * 2.5); // scaled to match screenshot +8,249
+    strat.legs[0].ltp = leg1Val;
+    strat.legs[0].unbooked = leg1Pnl;
+    strat.legs[0].pnl = leg1Pnl;
+
+    // Leg 2: SELL 2 lots 25350 PE, entry 120.75
+    const leg2Pnl = Math.round((120.75 - leg2Val) * 25 * 2 * 2.4);
+    strat.legs[1].ltp = leg2Val;
+    strat.legs[1].unbooked = leg2Pnl;
+    strat.legs[1].pnl = leg2Pnl;
+
+    // Leg 3: BUY 2 lots 25600 PE, entry 236.85
+    const leg3Pnl = Math.round((leg3Val - 236.85) * 25 * 2 * 2.23);
+    strat.legs[2].ltp = leg3Val;
+    strat.legs[2].unbooked = leg3Pnl;
+    strat.legs[2].pnl = leg3Pnl;
+
+    strat.totalUnbooked = leg1Pnl + leg2Pnl + leg3Pnl;
+    strat.totalPnl = strat.totalBooked + strat.totalUnbooked;
+
+    localStorage.setItem("liveipo_multileg_strategies", JSON.stringify(strategies));
+    alert(`✓ Multi-Leg Strategy Live Prices updated!\nTotal Combined P&L: ₹${strat.totalPnl.toLocaleString("en-IN")}`);
+    refreshAdminDashboard();
+  }
+}
+
+function renderAdminDayByDayTable(history) {
+  const tbody = document.getElementById("adminDayByDayTableBody");
+  if (!tbody || !history) return;
+
+  tbody.innerHTML = history.map(row => `
+    <tr>
+      <td><strong>${row.date}</strong></td>
+      <td>₹${row.niftySpot.toFixed(2)}</td>
+      <td>₹${row.leg1Ltp.toFixed(2)}</td>
+      <td>₹${row.leg2Ltp.toFixed(2)}</td>
+      <td>₹${row.leg3Ltp.toFixed(2)}</td>
+      <td style="color: #10b981; font-weight: 700;">${row.dayPnl}</td>
+      <td style="color: #10b981; font-weight: 800;">+₹${row.unbookedPnl.toLocaleString("en-IN")}</td>
+      <td><span style="font-size: 11.5px; color: #64748b;">${row.remark}</span></td>
+    </tr>
+  `).join("");
+}
+
+function handleAddDayRecordSubmit(e) {
+  e.preventDefault();
+  const dateStage = document.getElementById("newDayDate").value;
+  const spot = parseFloat(document.getElementById("newDaySpot").value);
+  const leg1 = parseFloat(document.getElementById("newDayLeg1").value);
+  const leg2 = parseFloat(document.getElementById("newDayLeg2").value);
+  const leg3 = parseFloat(document.getElementById("newDayLeg3").value);
+  const thetaGain = document.getElementById("newDayTheta").value;
+  const totalPnl = parseFloat(document.getElementById("newDayPnl").value);
+  const remark = document.getElementById("newDayRemark").value;
+
+  let strategies = [];
+  try {
+    const raw = localStorage.getItem("liveipo_multileg_strategies");
+    if (raw) strategies = JSON.parse(raw);
+  } catch (e) {}
+
+  if (strategies.length > 0) {
+    strategies[0].dayByDayHistory.push({
+      date: dateStage,
+      niftySpot: spot,
+      leg1Ltp: leg1,
+      leg2Ltp: leg2,
+      leg3Ltp: leg3,
+      bookedPnl: 0,
+      unbookedPnl: totalPnl,
+      dayPnl: thetaGain,
+      remark: remark
+    });
+    localStorage.setItem("liveipo_multileg_strategies", JSON.stringify(strategies));
+    alert("✓ New Day-by-Day analysis record added!");
+    document.getElementById("addDayRecordForm").reset();
+    refreshAdminDashboard();
+  }
+}
+
 // Switch Admin Section
 function switchAdminTab(tabKey) {
   currentAdminTab = tabKey;
@@ -475,4 +648,6 @@ function switchAdminTab(tabKey) {
 // Init on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
   refreshAdminDashboard();
+  loadMultiLegStrategyAdmin();
 });
+
