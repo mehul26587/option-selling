@@ -649,5 +649,10 @@ function switchAdminTab(tabKey) {
 document.addEventListener("DOMContentLoaded", () => {
   refreshAdminDashboard();
   loadMultiLegStrategyAdmin();
+  if (typeof populateExpiryDropdown === "function") {
+    populateExpiryDropdown(currentOcSymbol);
+    fetchNSEOptionChain();
+    startRealtimeOptionChainTicks();
+  }
 });
 

@@ -1648,3 +1648,128 @@ body {
   0% { background-color: #fee2e2; }
   100% { background-color: inherit; }
 }
+
+
+/* ==========================================================
+   NSE OFFICIAL STYLE TABS & DROPDOWNS
+   ========================================================== */
+
+.nse-top-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 8px 16px 0 16px;
+  gap: 8px;
+}
+
+.nse-tab-pill {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: all 0.2s;
+}
+
+.nse-tab-pill.active {
+  background: #2b0a57; /* Deep NSE Purple */
+  color: #ffffff;
+  border-color: #2b0a57;
+}
+
+.nse-controls-form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.nse-field-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nse-field-lbl {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.nse-select-styled {
+  padding: 7px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  outline: none;
+  background: #ffffff;
+  min-width: 140px;
+}
+
+.nse-select-styled:focus {
+  border-color: #2b0a57;
+  box-shadow: 0 0 0 2px rgba(43, 10, 87, 0.15);
+}
+
+.nse-info-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 12.5px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.nse-underlying-txt {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.nse-streaming-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.nse-util-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.nse-util-links a {
+  color: #2563eb;
+  text-decoration: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nse-util-links a:hover {
+  text-decoration: underline;
+}
+
+.chart-icon-cell {
+  color: #10b981;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center !important;
+}
