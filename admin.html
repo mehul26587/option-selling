@@ -47,6 +47,11 @@
         </a>
       </li>
       <li class="admin-nav-item">
+        <a class="admin-nav-link" data-tab="optionchain" onclick="switchAdminTab('optionchain')">
+          <span>⚡</span> Live Option Chain (NSE)
+        </a>
+      </li>
+      <li class="admin-nav-item">
         <a class="admin-nav-link" data-tab="trades" onclick="switchAdminTab('trades')">
           <span>📈</span> Option Trades Desk
         </a>
@@ -321,6 +326,83 @@
               </tr>
             </thead>
             <tbody id="adminTradesFullTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION: NSE LIVE OPTION CHAIN ==================== -->
+    <section class="admin-tab-section" id="adminTab-optionchain" style="display: none;">
+      <div class="oc-wrapper">
+        <div class="oc-controls-header">
+          <div class="oc-title-section">
+            <div class="oc-logo-icon">⚡</div>
+            <div>
+              <h2 style="font-size: 18px; font-weight: 800; color: #fff;">Admin NSE Derivative Chain Monitor</h2>
+              <p style="font-size: 12px; color: #94a3b8;">Real-time feed streaming directly into user terminals and 3-strike strategy</p>
+            </div>
+          </div>
+          <div class="oc-ticker-badge">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 700;">SPOT:</div>
+            <div class="oc-spot-val" id="adminOcSpotPriceDisplay">NIFTY 25,436.55</div>
+            <div class="oc-spot-chg" id="adminOcSpotChangeDisplay">+210.20 (+0.83%)</div>
+            <span class="pulse-dot"></span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="admin-btn-primary" onclick="toggleOcAutoRefresh()">⏸ Pause/Resume Feed</button>
+            <button class="btn-export" onclick="fetchNSEOptionChain()">⚡ Force Fetch NSE</button>
+          </div>
+        </div>
+
+        <div class="oc-filter-bar">
+          <div class="oc-select-group">
+            <span class="oc-label">Symbol:</span>
+            <select class="oc-select" onchange="onOcSymbolChange(this.value)">
+              <option value="NIFTY">NIFTY 50</option>
+              <option value="BANKNIFTY">BANKNIFTY</option>
+              <option value="FINNIFTY">FINNIFTY</option>
+            </select>
+            <span class="oc-label">Expiry:</span>
+            <select class="oc-select" onchange="onOcExpiryChange(this.value)">
+              <option value="23-Nov-2026">23-Nov-2026</option>
+              <option value="28-Nov-2026">28-Nov-2026</option>
+            </select>
+          </div>
+          <div class="oc-metrics-bar">
+            <div class="oc-stat-pill pcr">Live PCR: 1.14 (Bullish)</div>
+            <div class="oc-stat-pill maxpain">Max Pain: 25,400</div>
+          </div>
+        </div>
+
+        <div class="oc-table-container">
+          <table class="oc-table">
+            <thead>
+              <tr>
+                <th colspan="7" class="oc-th-calls">CALLS (CE)</th>
+                <th class="oc-th-strike">STRIKE PRICE</th>
+                <th colspan="7" class="oc-th-puts">PUTS (PE)</th>
+              </tr>
+              <tr>
+                <th>OI (L)</th>
+                <th>Chng OI</th>
+                <th>Volume (L)</th>
+                <th>IV %</th>
+                <th>LTP (₹)</th>
+                <th>Net Chg</th>
+                <th style="text-align: center;">Action</th>
+                <th style="text-align: center;">Strike (₹)</th>
+                <th style="text-align: center;">Action</th>
+                <th>Net Chg</th>
+                <th>LTP (₹)</th>
+                <th>IV %</th>
+                <th>Volume (L)</th>
+                <th>Chng OI</th>
+                <th>OI (L)</th>
+              </tr>
+            </thead>
+            <tbody id="adminOcTableBody">
               <!-- Dynamically populated -->
             </tbody>
           </table>

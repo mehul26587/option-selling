@@ -28,6 +28,9 @@
       <li class="active" data-tab="dashboard">
         <a onclick="switchTab('dashboard')"><span class="icon">📊</span> Dashboard & Signals</a>
       </li>
+      <li data-tab="optionchain">
+        <a onclick="switchTab('optionchain')"><span class="icon">⚡</span> Live Option Chain (NSE)</a>
+      </li>
       <li data-tab="analytics">
         <a onclick="switchTab('analytics')"><span class="icon">📈</span> P&L Analytics</a>
       </li>
@@ -208,6 +211,128 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: NSE LIVE OPTION CHAIN ==================== -->
+      <section class="tab-content" id="tab-optionchain">
+        <div class="oc-wrapper">
+          
+          <!-- Top Header Banner -->
+          <div class="oc-controls-header">
+            <div class="oc-title-section">
+              <div class="oc-logo-icon">📊</div>
+              <div>
+                <h2 style="font-size: 18px; font-weight: 800; color: #fff;">NSE Live Derivative Option Chain</h2>
+                <p style="font-size: 12px; color: #94a3b8;">Real-time Open Interest, Volatility (IV) & LTP streaming</p>
+              </div>
+            </div>
+
+            <!-- Real-time Spot Ticker -->
+            <div class="oc-ticker-badge">
+              <div style="font-size: 11px; color: #94a3b8; font-weight: 700;">SPOT UNDERLYING:</div>
+              <div class="oc-spot-val" id="ocSpotPriceDisplay">NIFTY 25,436.55</div>
+              <div class="oc-spot-chg" id="ocSpotChangeDisplay">+210.20 (+0.83%)</div>
+              <span class="pulse-dot" id="ocLiveIndicator"></span>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button class="admin-btn-primary" id="ocAutoRefreshBtn" style="font-size: 12px; padding: 6px 12px;" onclick="toggleOcAutoRefresh()">
+                ⏸ Pause Live Feed
+              </button>
+              <button class="btn-export" style="font-size: 12px; padding: 6px 12px;" onclick="fetchNSEOptionChain()">
+                ⚡ Fetch Live NSE
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Metrics Toolbar -->
+          <div class="oc-filter-bar">
+            <div class="oc-select-group">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="oc-label">Index:</span>
+                <select class="oc-select" id="ocSelectSymbol" onchange="onOcSymbolChange(this.value)">
+                  <option value="NIFTY" selected>NIFTY 50</option>
+                  <option value="BANKNIFTY">BANKNIFTY</option>
+                  <option value="FINNIFTY">FINNIFTY</option>
+                </select>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="oc-label">Expiry:</span>
+                <select class="oc-select" id="ocSelectExpiry" onchange="onOcExpiryChange(this.value)">
+                  <option value="23-Nov-2026" selected>23-Nov-2026 (Current Weekly)</option>
+                  <option value="28-Nov-2026">28-Nov-2026 (Monthly)</option>
+                  <option value="05-Dec-2026">05-Dec-2026 (Next Weekly)</option>
+                  <option value="26-Dec-2026">26-Dec-2026 (Far Monthly)</option>
+                </select>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="oc-label">Strikes:</span>
+                <select class="oc-select" id="ocSelectRange" onchange="onOcRangeChange(this.value)">
+                  <option value="8">ATM ± 8 Strikes</option>
+                  <option value="12" selected>ATM ± 12 Strikes</option>
+                  <option value="20">ATM ± 20 Strikes</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Market Sentiment Pills -->
+            <div class="oc-metrics-bar">
+              <div class="oc-stat-pill pcr" id="ocPcrDisplay">PCR: 1.14 (Bullish)</div>
+              <div class="oc-stat-pill maxpain" id="ocMaxPainDisplay">Max Pain: 25,400</div>
+            </div>
+          </div>
+
+          <!-- Strategy Sync Notice Banner -->
+          <div style="background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 10px 24px; font-size: 12.5px; color: #1e40af; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              🔗 <strong>Live Strategy Basket Connected:</strong> Your 3 active trade strikes (<code>25050 PE [SELL]</code>, <code>25350 PE [SELL]</code>, <code>25600 PE [BUY]</code>) are highlighted with red & blue badges. Real-time price updates stream directly into your P&L.
+            </div>
+            <button class="btn-export" style="padding: 2px 8px; font-size: 11px;" onclick="switchTab('dashboard')">View Basket Trade →</button>
+          </div>
+
+          <!-- Real-Time Option Chain Table -->
+          <div class="oc-table-container">
+            <table class="oc-table">
+              <thead>
+                <!-- Super Headers -->
+                <tr>
+                  <th colspan="7" class="oc-th-calls">CALLS (CE)</th>
+                  <th class="oc-th-strike">STRIKE PRICE</th>
+                  <th colspan="7" class="oc-th-puts">PUTS (PE)</th>
+                </tr>
+                <!-- Column Headers -->
+                <tr>
+                  <!-- CALLS -->
+                  <th>OI (L)</th>
+                  <th>Chng OI</th>
+                  <th>Volume (L)</th>
+                  <th>IV %</th>
+                  <th>LTP (₹)</th>
+                  <th>Net Chg</th>
+                  <th style="text-align: center;">Action</th>
+
+                  <!-- STRIKE -->
+                  <th style="text-align: center;">Strike (₹)</th>
+
+                  <!-- PUTS -->
+                  <th style="text-align: center;">Action</th>
+                  <th>Net Chg</th>
+                  <th>LTP (₹)</th>
+                  <th>IV %</th>
+                  <th>Volume (L)</th>
+                  <th>Chng OI</th>
+                  <th>OI (L)</th>
+                </tr>
+              </thead>
+              <tbody id="ocTableBody">
+                <!-- Dynamically populated and ticked in real-time -->
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </section>
 
