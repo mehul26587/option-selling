@@ -1177,54 +1177,71 @@ function exportTradesCSV() {
 
 // ==========================================
 // 8. NSE LIVE OPTION CHAIN REAL-TIME ENGINE
-// Complete NSE India Official Expiry Architecture & Live Rates
+// Strictly follows Tuesday Expiry Rule:
+// NIFTY & FINNIFTY Expiry: Every Tuesday (મંગળવાર)
+// If Tuesday is a holiday -> Monday (સોમવાર)
+// If Monday is a holiday -> Friday (શુક્રવાર)
 // ==========================================
 const NSE_EXPIRIES = {
   NIFTY: [
-    "23-Nov-2026",
-    "28-Nov-2026",
-    "05-Dec-2026",
-    "12-Dec-2026",
-    "19-Dec-2026",
-    "26-Dec-2026",
-    "02-Jan-2027",
-    "09-Jan-2027",
-    "16-Jan-2027",
-    "30-Jan-2027",
-    "27-Feb-2027",
-    "26-Mar-2027",
-    "25-Jun-2027",
-    "24-Sep-2027",
-    "31-Dec-2027",
-    "29-Dec-2028",
-    "28-Dec-2029",
-    "27-Dec-2030"
-  ],
-  BANKNIFTY: [
-    "23-Nov-2026",
-    "27-Nov-2026",
-    "04-Dec-2026",
-    "11-Dec-2026",
-    "18-Dec-2026",
-    "25-Dec-2026",
-    "01-Jan-2027",
-    "08-Jan-2027",
-    "29-Jan-2027",
-    "26-Feb-2027",
-    "26-Mar-2027",
-    "25-Jun-2027",
-    "31-Dec-2027"
+    "23-Nov-2026", // Preponed to Monday (Tue 24-Nov Holiday)
+    "01-Dec-2026", // Tuesday
+    "08-Dec-2026", // Tuesday
+    "15-Dec-2026", // Tuesday
+    "22-Dec-2026", // Tuesday
+    "29-Dec-2026", // Tuesday (Monthly Expiry)
+    "05-Jan-2027", // Tuesday
+    "12-Jan-2027", // Tuesday
+    "19-Jan-2027", // Tuesday
+    "25-Jan-2027", // Preponed to Monday (Tue 26-Jan Republic Day Holiday)
+    "02-Feb-2027", // Tuesday
+    "09-Feb-2027", // Tuesday
+    "16-Feb-2027", // Tuesday
+    "23-Feb-2027", // Tuesday (Monthly Expiry)
+    "02-Mar-2027", // Tuesday
+    "09-Mar-2027", // Tuesday
+    "16-Mar-2027", // Tuesday
+    "23-Mar-2027", // Tuesday
+    "30-Mar-2027", // Tuesday (Monthly / Quarterly Expiry)
+    "06-Apr-2027", // Tuesday
+    "13-Apr-2027", // Tuesday
+    "20-Apr-2027", // Tuesday
+    "27-Apr-2027", // Tuesday (Monthly Expiry)
+    "29-Jun-2027", // Tuesday (Quarterly Expiry)
+    "28-Sep-2027", // Tuesday (Quarterly Expiry)
+    "28-Dec-2027", // Tuesday (Yearly Expiry)
+    "26-Dec-2028", // Tuesday (Yearly Expiry)
+    "24-Dec-2029", // Preponed to Monday (Tue 25-Dec Christmas Holiday)
+    "31-Dec-2030"  // Tuesday (LEAPS Expiry)
   ],
   FINNIFTY: [
-    "23-Nov-2026",
-    "26-Nov-2026",
-    "03-Dec-2026",
-    "10-Dec-2026",
-    "17-Dec-2026",
-    "24-Dec-2026",
-    "28-Jan-2027",
-    "25-Feb-2027",
-    "25-Mar-2027"
+    "23-Nov-2026", // Preponed to Monday (Tue 24-Nov Holiday)
+    "01-Dec-2026", // Tuesday
+    "08-Dec-2026", // Tuesday
+    "15-Dec-2026", // Tuesday
+    "22-Dec-2026", // Tuesday
+    "29-Dec-2026", // Tuesday (Monthly)
+    "05-Jan-2027", // Tuesday
+    "12-Jan-2027", // Tuesday
+    "19-Jan-2027", // Tuesday
+    "25-Jan-2027", // Preponed to Monday (Tue 26-Jan Republic Day)
+    "02-Feb-2027", // Tuesday
+    "23-Feb-2027", // Tuesday (Monthly)
+    "30-Mar-2027"  // Tuesday (Quarterly)
+  ],
+  BANKNIFTY: [
+    "25-Nov-2026", // Wednesday
+    "02-Dec-2026", // Wednesday
+    "09-Dec-2026", // Wednesday
+    "16-Dec-2026", // Wednesday
+    "23-Dec-2026", // Wednesday
+    "30-Dec-2026", // Wednesday (Monthly)
+    "06-Jan-2027", // Wednesday
+    "13-Jan-2027", // Wednesday
+    "20-Jan-2027", // Wednesday
+    "27-Jan-2027", // Wednesday
+    "24-Feb-2027", // Wednesday
+    "31-Mar-2027"  // Wednesday (Quarterly)
   ]
 };
 
@@ -1269,19 +1286,25 @@ function populateExpiryDropdown(symbol) {
   const adminExpSelect = document.getElementById("adminOcSelectExpiry");
   const expiries = NSE_EXPIRIES[symbol] || NSE_EXPIRIES.NIFTY;
 
-  if (expSelect) {
-    expSelect.innerHTML = expiries.map(exp => {
-      const isSelected = exp === currentOcExpiry ? "selected" : "";
-      return `<option value="${exp}" ${isSelected}>${exp}</option>`;
-    }).join("");
+  if (!expiries.includes(currentOcExpiry)) {
+    currentOcExpiry = expiries[0];
   }
 
-  if (adminExpSelect) {
-    adminExpSelect.innerHTML = expiries.map(exp => {
-      const isSelected = exp === currentOcExpiry ? "selected" : "";
-      return `<option value="${exp}" ${isSelected}>${exp}</option>`;
-    }).join("");
-  }
+  const optionsHtml = expiries.map(exp => {
+    const isSelected = exp === currentOcExpiry ? "selected" : "";
+    let dayLabel = "Tuesday";
+    if (exp === "23-Nov-2026" || exp === "25-Jan-2027" || exp === "24-Dec-2029") {
+      dayLabel = "Monday (Holiday Preponed)";
+    } else if (symbol === "BANKNIFTY") {
+      dayLabel = "Wednesday";
+    }
+    const isMonthly = exp.includes("29-Dec") || exp.includes("23-Feb") || exp.includes("30-Mar") || exp.includes("27-Apr") || exp.includes("28-Dec");
+    const tag = isMonthly ? " • Monthly" : "";
+    return `<option value="${exp}" ${isSelected}>${exp} (${dayLabel}${tag})</option>`;
+  }).join("");
+
+  if (expSelect) expSelect.innerHTML = optionsHtml;
+  if (adminExpSelect) adminExpSelect.innerHTML = optionsHtml;
 }
 
 function populateStrikePriceDropdown(strikes) {
