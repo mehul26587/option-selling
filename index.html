@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LiveIPO - Options Selling Management Portal</title>
+
+  <!-- External Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Identity Services (GSI) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+  <aside class="sidebar" id="mainSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">📈</div>
+      <div class="sidebar-title">
+        <h2>LiveIPO Options</h2>
+        <p>SELLING DESK & PORTAL</p>
+      </div>
+    </div>
+
+    <ul class="sidebar-menu">
+      <li class="menu-category">TRADING DESK</li>
+      <li class="active" data-tab="dashboard">
+        <a onclick="switchTab('dashboard')"><span class="icon">📊</span> Dashboard & Signals</a>
+      </li>
+      <li data-tab="analytics">
+        <a onclick="switchTab('analytics')"><span class="icon">📈</span> P&L Analytics</a>
+      </li>
+      <li data-tab="trades">
+        <a onclick="switchTab('trades')"><span class="icon">📑</span> Trade History</a>
+      </li>
+
+      <li class="menu-category">MEMBERSHIP & BILLING</li>
+      <li data-tab="subscription">
+        <a onclick="switchTab('subscription')"><span class="icon">👑</span> My Subscription</a>
+      </li>
+      <li data-tab="pricing">
+        <a onclick="switchTab('pricing')"><span class="icon">💳</span> Plans & Pricing</a>
+      </li>
+
+      <li class="menu-category">ASSISTANCE</li>
+      <li data-tab="support">
+        <a onclick="switchTab('support')"><span class="icon">🎧</span> Support & Desk</a>
+      </li>
+    </ul>
+
+    <!-- Sidebar User Widget -->
+    <div class="sidebar-footer" id="sidebarUserWidget" style="display: none;">
+      <div class="user-profile-widget">
+        <div class="user-avatar-circle">
+          <img id="sidebarAvatarImg" src="" alt="Avatar">
+        </div>
+        <div class="user-widget-info">
+          <div class="user-widget-name" id="sidebarUserName">User</div>
+          <span class="user-widget-plan" id="sidebarUserPlan">Free Trial</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CONTENT WRAPPER ==================== -->
+  <div class="main-wrapper">
+    
+    <!-- Top Header -->
+    <header class="top-navbar">
+      <div class="nav-left">
+        <button class="mobile-toggle" onclick="toggleMobileSidebar()">☰</button>
+        <div class="page-headline">
+          <h1 id="mainPageTitle">Dashboard & Live Signals</h1>
+          <p id="mainPageSubtitle">Live options selling positions, hedging & intraday spreads</p>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <div class="live-badge">
+          <span class="pulse-dot"></span>
+          <span>MARKET LIVE</span>
+        </div>
+
+        <!-- Google Login Button Container -->
+        <div id="headerLoginBtn">
+          <div id="headerGsiContainer"></div>
+          <button class="btn-gsi" style="display: flex;" onclick="openAuthModal()">
+            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google">
+            <span>Sign in with Google</span>
+          </button>
+        </div>
+
+        <!-- Authenticated User Profile Pill -->
+        <div id="headerUserProfile" style="display: none; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="user-avatar-circle" style="width: 36px; height: 36px;">
+              <img id="userAvatarImg" src="" alt="Avatar">
+            </div>
+            <span id="userNameText" style="font-size: 13.5px; font-weight: 600; color: #1e293b;"></span>
+          </div>
+          <button class="btn-logout" onclick="logoutUser()">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="content-container">
+
+      <!-- Welcome Banner -->
+      <div class="welcome-banner">
+        <div class="banner-text">
+          <h2>Option Selling Premium Terminal ⚡</h2>
+          <p>Systematic non-directional theta decay strategies with verified stop loss & hedging rules.</p>
+        </div>
+        <div class="banner-badge">
+          <div class="title" id="bannerPlanName">Loading Plan...</div>
+          <div class="expiry" id="bannerDaysLeft">-- Days Left</div>
+          <div style="font-size: 11px; color: #cbd5e1; margin-top: 3px;" id="bannerExpiryDate">Valid until --</div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Total Realized P&L</span>
+            <div class="stat-icon icon-green">₹</div>
+          </div>
+          <div class="stat-value profit" id="statTotalPnl">₹0</div>
+          <span class="stat-subtext">Cumulative Theta Gain</span>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Accuracy / Win Rate</span>
+            <div class="stat-icon icon-blue">🎯</div>
+          </div>
+          <div class="stat-value" id="statWinRate">0%</div>
+          <span class="stat-subtext">Verified Target vs SL</span>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Total Calls</span>
+            <div class="stat-icon icon-purple">📊</div>
+          </div>
+          <div class="stat-value" id="statTotalTrades">0</div>
+          <span class="stat-subtext">Option Spreads & Straddles</span>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Open Market Positions</span>
+            <div class="stat-icon icon-amber">⚡</div>
+          </div>
+          <div class="stat-value" id="statOpenTrades">0</div>
+          <span class="stat-subtext">Live Execution Active</span>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 1: DASHBOARD ==================== -->
+      <section class="tab-content active" id="tab-dashboard">
+        <div class="section-head">
+          <h2>Active Option Selling Signals</h2>
+          <button class="btn-export" onclick="switchTab('pricing')">⚡ Upgrade Plan</button>
+        </div>
+
+        <div class="signals-grid" id="signalsContainer">
+          <!-- Dynamic signal cards rendered by script.js -->
+        </div>
+
+        <div class="section-head" style="margin-top: 10px;">
+          <h2>Recent Closed Calls</h2>
+          <button class="btn-export" onclick="switchTab('trades')">View Full History</button>
+        </div>
+
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Trade ID</th>
+                  <th>Date</th>
+                  <th>Index</th>
+                  <th>Strategy</th>
+                  <th>Strikes</th>
+                  <th>Action</th>
+                  <th>Entry</th>
+                  <th>Exit / LTP</th>
+                  <th>Net P&L</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tradeTableBody">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: ANALYTICS ==================== -->
+      <section class="tab-content" id="tab-analytics">
+        <div class="section-head">
+          <h2>Options P&L Performance & Analytics</h2>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 28px;">
+          <div style="background: #fff; padding: 24px; border-radius: 14px; border: 1px solid #e2e8f0;">
+            <h3 style="font-size: 16px; margin-bottom: 16px; color: #0f172a;">Strategy Performance Distribution</h3>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                  <span>Bull Put & Bear Call Spreads</span>
+                  <span style="color: #10b981;">88% Win Rate</span>
+                </div>
+                <div style="background: #f1f5f9; height: 10px; border-radius: 6px; overflow: hidden;">
+                  <div style="width: 88%; background: #10b981; height: 100%;"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                  <span>Iron Condors & Strangles</span>
+                  <span style="color: #2563eb;">82% Win Rate</span>
+                </div>
+                <div style="background: #f1f5f9; height: 10px; border-radius: 6px; overflow: hidden;">
+                  <div style="width: 82%; background: #2563eb; height: 100%;"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                  <span>Intraday Short Straddles</span>
+                  <span style="color: #9333ea;">75% Win Rate</span>
+                </div>
+                <div style="background: #f1f5f9; height: 10px; border-radius: 6px; overflow: hidden;">
+                  <div style="width: 75%; background: #9333ea; height: 100%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #fff; padding: 24px; border-radius: 14px; border: 1px solid #e2e8f0;">
+            <h3 style="font-size: 16px; margin-bottom: 16px; color: #0f172a;">Risk Management & Execution Rule</h3>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 13.5px; color: #334155;">
+              <li style="display: flex; gap: 8px;"><span>🛡️</span> <strong>Fixed Stop Loss:</strong> Never risk more than 1.5% capital on any single spread.</li>
+              <li style="display: flex; gap: 8px;"><span>⏳</span> <strong>Theta Decay Capture:</strong> Positions held strictly for optimal time decay.</li>
+              <li style="display: flex; gap: 8px;"><span>📊</span> <strong>Margin Efficiency:</strong> Basket hedging reduces margin requirement up to 70%.</li>
+              <li style="display: flex; gap: 8px;"><span>🎯</span> <strong>Profit Booking:</strong> Take profit automatically when 70-80% of max premium is captured.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: TRADES ==================== -->
+      <section class="tab-content" id="tab-trades">
+        <div class="table-card">
+          <div class="table-toolbar">
+            <h2 style="font-size: 17px; font-weight: 700;">Complete Options Trade Archive</h2>
+            <button class="btn-export" onclick="exportTradesCSV()">
+              📥 Export to CSV / Excel
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Trade ID</th>
+                  <th>Date</th>
+                  <th>Index</th>
+                  <th>Strategy</th>
+                  <th>Strikes</th>
+                  <th>Action</th>
+                  <th>Entry</th>
+                  <th>Exit</th>
+                  <th>Net P&L</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tradeHistoryBody">
+                <!-- Dynamically populated from script.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: MY SUBSCRIPTION ==================== -->
+      <section class="tab-content" id="tab-subscription">
+        <div class="section-head">
+          <h2>My Active Subscription & Expiry</h2>
+        </div>
+        <div id="subTabContainer">
+          <!-- Dynamically populated based on isolated Google user -->
+        </div>
+
+        <div class="section-head" style="margin-top: 24px;">
+          <h2>Invoices & Payment Receipts</h2>
+        </div>
+        <div class="table-card" id="paymentsTableContainer">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- ==================== TAB 5: PRICING ==================== -->
+      <section class="tab-content" id="tab-pricing">
+        <div class="section-head" style="text-align: center; display: block; margin-bottom: 30px;">
+          <h2 style="font-size: 24px; font-weight: 800;">Transparent Options Selling Plans</h2>
+          <p style="color: #64748b; font-size: 14px; margin-top: 6px;">Select the best plan for high-probability monthly income with defined risk.</p>
+        </div>
+
+        <div class="plans-grid">
+          <!-- Plan 1 -->
+          <div class="plan-card">
+            <div class="plan-name">Basic Starter</div>
+            <div class="plan-desc">Perfect for small accounts learning safe option selling.</div>
+            <div class="plan-price-box">
+              <span class="plan-amount">₹999</span>
+              <span class="plan-duration">/ 30 Days</span>
+            </div>
+            <ul class="plan-features">
+              <li><span class="check-icon">✓</span> 1-2 Weekly Nifty Spreads</li>
+              <li><span class="check-icon">✓</span> Fixed Target & Stop Loss</li>
+              <li><span class="check-icon">✓</span> Free Hedging Guidance</li>
+              <li><span class="check-icon">✓</span> Web Dashboard Access</li>
+            </ul>
+            <button class="btn-select-plan" onclick="startPlanSubscription('basic')">Choose Basic</button>
+          </div>
+
+          <!-- Plan 2 (Popular) -->
+          <div class="plan-card popular">
+            <div class="popular-badge">MOST POPULAR</div>
+            <div class="plan-name">Silver Trader</div>
+            <div class="plan-desc">Ideal for consistent monthly returns on NIFTY & BANKNIFTY.</div>
+            <div class="plan-price-box">
+              <span class="plan-amount">₹2,499</span>
+              <span class="plan-duration">/ 90 Days (Quarterly)</span>
+            </div>
+            <ul class="plan-features">
+              <li><span class="check-icon">✓</span> 2-3 High Probability Trades/Week</li>
+              <li><span class="check-icon">✓</span> Iron Condors & Strangle Alerts</li>
+              <li><span class="check-icon">✓</span> Expiry Day Zero-Hero Special Calls</li>
+              <li><span class="check-icon">✓</span> Priority Support on WhatsApp</li>
+            </ul>
+            <button class="btn-select-plan" onclick="startPlanSubscription('silver')">Choose Silver</button>
+          </div>
+
+          <!-- Plan 3 -->
+          <div class="plan-card">
+            <div class="plan-name">Gold Pro</div>
+            <div class="plan-desc">For serious derivative traders seeking professional hedging.</div>
+            <div class="plan-price-box">
+              <span class="plan-amount">₹4,499</span>
+              <span class="plan-duration">/ 180 Days (Half-Yearly)</span>
+            </div>
+            <ul class="plan-features">
+              <li><span class="check-icon">✓</span> 4-5 Spreads across all Indices</li>
+              <li><span class="check-icon">✓</span> Dynamic Adjustment & Roll-over Alerts</li>
+              <li><span class="check-icon">✓</span> Intraday Delta Neutral Strategies</li>
+              <li><span class="check-icon">✓</span> 1-on-1 Portfolio Risk Review</li>
+            </ul>
+            <button class="btn-select-plan" onclick="startPlanSubscription('gold')">Choose Gold</button>
+          </div>
+
+          <!-- Plan 4 -->
+          <div class="plan-card">
+            <div class="plan-name">Premium Elite</div>
+            <div class="plan-desc">Full year institutional level option selling signals.</div>
+            <div class="plan-price-box">
+              <span class="plan-amount">₹7,999</span>
+              <span class="plan-duration">/ 365 Days (Annual)</span>
+            </div>
+            <ul class="plan-features">
+              <li><span class="check-icon">✓</span> Unlimited Access to All Signals</li>
+              <li><span class="check-icon">✓</span> Complete Algorithmic Logic Alerts</li>
+              <li><span class="check-icon">✓</span> VIP Dedicated Desk Manager</li>
+              <li><span class="check-icon">✓</span> Highest Margin Benefit Strategies</li>
+            </ul>
+            <button class="btn-select-plan" onclick="startPlanSubscription('premium')">Choose Premium</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 6: SUPPORT ==================== -->
+      <section class="tab-content" id="tab-support">
+        <div style="background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 28px; max-width: 680px; margin: 0 auto;">
+          <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Options Desk Support & Assistance</h2>
+          <p style="color: #64748b; font-size: 13.5px; margin-bottom: 24px;">Need help with strike selection, margin calculation, or subscription? Reach out directly.</p>
+
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0;">
+              <strong>📧 Email Support:</strong> support@liveipo.in
+            </div>
+            <div style="background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0;">
+              <strong>💬 Telegram Official Desk:</strong> @LiveIPO_Options_Desk
+            </div>
+            <div style="background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0;">
+              <strong>⏰ Desk Hours:</strong> Monday – Friday, 09:00 AM – 06:00 PM IST
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== GOOGLE SIGN-IN MODAL ==================== -->
+  <div class="modal-overlay" id="authModalOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Login to LiveIPO Options Desk</h3>
+        <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+      </div>
+      <div class="modal-body" style="text-align: center; padding: 32px 24px;">
+        <div style="width: 56px; height: 56px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 28px;">
+          📈
+        </div>
+        <h4 style="font-size: 19px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">1-Click Google Sign In</h4>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 24px;">
+          Sign in instantly with your Google account. Your subscription and trade data are strictly isolated and secured to your account.
+        </p>
+
+        <!-- Google Official GSI Button -->
+        <div id="modalGsiContainer" style="display: flex; justify-content: center; margin-bottom: 16px;"></div>
+
+        <p style="font-size: 11.5px; color: #94a3b8;">
+          🔒 Secured via Google Identity Services. No password required.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== RAZORPAY CHECKOUT MODAL ==================== -->
+  <div class="modal-overlay" id="razorpayModalOverlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚡ Razorpay Secure Checkout</h3>
+        <button class="modal-close-btn" onclick="closeRazorpayModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px;">
+            <span style="color: #64748b;">Selected Plan:</span>
+            <strong id="modalPlanName">Silver Trader</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px;">
+            <span style="color: #64748b;">Validity:</span>
+            <span id="modalPlanDuration" style="font-weight: 600;">90 Days</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px;">
+            <span style="color: #64748b;">Account:</span>
+            <span id="modalUserEmail" style="font-weight: 600; color: #2563eb;">user@gmail.com</span>
+          </div>
+          <div style="border-top: 1px dashed #cbd5e1; margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 800;">
+            <span>Total Payable:</span>
+            <span id="modalPlanAmount" style="color: #10b981;">₹2,499</span>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 12px;">Instant UPI & Gateway Simulation</div>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=liveipo@icici&pn=LiveIPO%20Options" alt="UPI QR" style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 6px;">
+          <div style="font-size: 12px; color: #64748b; margin-top: 8px;">Scan with Google Pay, PhonePe or Paytm</div>
+        </div>
+
+        <button class="btn-select-plan" onclick="completeSimulatedPayment()">
+          ✓ Simulate Payment Success (Activate Instant)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-msg" id="toastNotification"></div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>

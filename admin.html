@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LiveIPO - Admin Central Control Center</title>
+
+  <!-- External Stylesheets -->
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Immediate Admin Authentication Guard -->
+  <script>
+    if (localStorage.getItem('live_ipo_admin_logged') !== 'true') {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body class="admin-body">
+
+  <!-- ==================== ADMIN SIDEBAR ==================== -->
+  <aside class="admin-sidebar">
+    <div class="admin-brand">
+      <div style="width: 36px; height: 36px; background: #2563eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+        ⚙️
+      </div>
+      <div>
+        <div style="font-size: 15px; font-weight: 800;">ADMIN CENTRAL</div>
+        <div style="font-size: 11px; color: #94a3b8; font-weight: 500;">Option Selling Master</div>
+      </div>
+    </div>
+
+    <ul class="admin-nav">
+      <li class="admin-nav-item">
+        <a class="admin-nav-link active" data-tab="overview" onclick="switchAdminTab('overview')">
+          <span>📊</span> Overview & Stats
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a class="admin-nav-link" data-tab="users" onclick="switchAdminTab('users')">
+          <span>👥</span> User Expiry Management
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a class="admin-nav-link" data-tab="trades" onclick="switchAdminTab('trades')">
+          <span>📈</span> Option Trades Desk
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a class="admin-nav-link" data-tab="payments" onclick="switchAdminTab('payments')">
+          <span>💳</span> Payments & Revenue
+        </a>
+      </li>
+      <li class="admin-nav-item" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+        <a href="index.html" class="admin-nav-link" target="_blank" style="color: #60a5fa;">
+          <span>🌐</span> Open Live Frontend ↗
+        </a>
+      </li>
+    </ul>
+
+    <div class="admin-footer">
+      <button class="btn-admin-logout" onclick="handleAdminLogout()">
+        🚪 Logout Admin
+      </button>
+    </div>
+  </aside>
+
+  <!-- ==================== ADMIN MAIN WORKSPACE ==================== -->
+  <main class="admin-main">
+    
+    <div class="admin-header">
+      <div class="admin-title">
+        <h1>Central Management Terminal</h1>
+        <p>Control user subscriptions, expiry extension, live trading signals & platform billing</p>
+      </div>
+      <div>
+        <a href="index.html" class="admin-btn-primary" target="_blank">
+          👁️ Live Website View
+        </a>
+      </div>
+    </div>
+
+    <!-- Admin Metric Stats -->
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">Total Users</div>
+        <div class="admin-stat-value" id="adminStatUsers">0</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">Active Subscriptions</div>
+        <div class="admin-stat-value" style="color: #10b981;" id="adminStatActiveSubs">0</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">Total Platform Revenue</div>
+        <div class="admin-stat-value" style="color: #2563eb;" id="adminStatRevenue">₹0</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-label">Published Calls</div>
+        <div class="admin-stat-value" id="adminStatTrades">0</div>
+      </div>
+    </div>
+
+    <!-- ==================== SECTION 1: OVERVIEW ==================== -->
+    <section class="admin-tab-section" id="adminTab-overview">
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <h2>Active Users & Expiry Overview</h2>
+          <button class="admin-btn-primary" onclick="switchAdminTab('users')">Manage All Users</button>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>User Name</th>
+                <th>Google Account Email</th>
+                <th>Current Plan</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+                <th>Quick Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <h2>Option Selling Calls Monitor</h2>
+          <div style="display: flex; gap: 8px;">
+            <button class="admin-btn-primary" onclick="openAddTradeModal()">+ Publish New Trade</button>
+            <button class="btn-export" onclick="openBulkCsvModal()">📥 Import CSV</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Index</th>
+                <th>Strategy</th>
+                <th>Strikes</th>
+                <th>Action</th>
+                <th>Entry</th>
+                <th>LTP / Exit</th>
+                <th>P&L (₹)</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminTradesTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 2: USERS & EXPIRY ==================== -->
+    <section class="admin-tab-section" id="adminTab-users" style="display: none;">
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <h2>Registered Google Users & Subscription Validity</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>User Name</th>
+                <th>Google Account Email</th>
+                <th>Current Plan</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+                <th>Extend Subscription</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersDetailedTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 3: TRADES MANAGEMENT ==================== -->
+    <section class="admin-tab-section" id="adminTab-trades" style="display: none;">
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <h2>Published Option Selling Spreads & Straddles</h2>
+          <div style="display: flex; gap: 8px;">
+            <button class="admin-btn-primary" onclick="openAddTradeModal()">+ New Option Signal</button>
+            <button class="btn-export" onclick="openBulkCsvModal()">📥 Import CSV</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Index</th>
+                <th>Strategy</th>
+                <th>Strikes</th>
+                <th>Action</th>
+                <th>Entry</th>
+                <th>LTP / Exit</th>
+                <th>P&L (₹)</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminTradesFullTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 4: PAYMENTS ==================== -->
+    <section class="admin-tab-section" id="adminTab-payments" style="display: none;">
+      <div class="admin-card">
+        <div class="admin-card-head">
+          <h2>Razorpay Invoices & Subscriptions Revenue</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Invoice ID</th>
+                <th>Date</th>
+                <th>User & Email</th>
+                <th>Plan Name</th>
+                <th>Amount</th>
+                <th>Payment Mode</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="adminPaymentsTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL: EXTEND SUBSCRIPTION EXPIRY ==================== -->
+  <div class="admin-modal-overlay" id="extendExpiryModalOverlay">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h3 style="font-size: 16px; font-weight: 700;">Extend User Subscription Expiry</h3>
+        <button class="modal-close-btn" onclick="closeExtendModal()">✕</button>
+      </div>
+      <div class="admin-modal-body">
+        <div style="background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px;">
+          <div>User: <strong id="modalExtendUserEmail">user@gmail.com</strong></div>
+          <div style="margin-top: 4px;">Current Expiry: <strong id="modalExtendCurrentExpiry" style="color: #2563eb;">2026-11-28</strong></div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Quick Extension:</label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button class="btn-select-plan" style="padding: 9px; font-size: 13px;" onclick="applyDaysExtension(7)">+7 Days</button>
+            <button class="btn-select-plan" style="padding: 9px; font-size: 13px;" onclick="applyDaysExtension(15)">+15 Days</button>
+            <button class="btn-select-plan" style="padding: 9px; font-size: 13px; background: #2563eb;" onclick="applyDaysExtension(30)">+30 Days</button>
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Or Set Custom Expiry Date:</label>
+          <input type="date" id="customExpiryInput" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="btn-export" onclick="closeExtendModal()">Cancel</button>
+        <button class="admin-btn-primary" onclick="applyCustomDateExtension()">Save Custom Expiry</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD OPTION TRADE ==================== -->
+  <div class="admin-modal-overlay" id="addTradeModalOverlay">
+    <div class="admin-modal" style="max-width: 580px;">
+      <div class="admin-modal-header">
+        <h3 style="font-size: 16px; font-weight: 700;">Publish New Option Selling Trade</h3>
+        <button class="modal-close-btn" onclick="closeAddTradeModal()">✕</button>
+      </div>
+      <form id="addTradeForm" onsubmit="handleAddTradeSubmit(event)">
+        <div class="admin-form-grid">
+          <div class="admin-form-group">
+            <label>Underlying Index</label>
+            <select id="tradeIndex" required>
+              <option value="NIFTY">NIFTY</option>
+              <option value="BANKNIFTY">BANKNIFTY</option>
+              <option value="FINNIFTY">FINNIFTY</option>
+              <option value="SENSEX">SENSEX</option>
+            </select>
+          </div>
+          <div class="admin-form-group">
+            <label>Strategy Type</label>
+            <select id="tradeStrategy" required>
+              <option value="Iron Condor">Iron Condor</option>
+              <option value="Bull Put Spread">Bull Put Spread</option>
+              <option value="Bear Call Spread">Bear Call Spread</option>
+              <option value="Short Straddle">Short Straddle</option>
+              <option value="Short Strangle">Short Strangle</option>
+            </select>
+          </div>
+          <div class="admin-form-group" style="grid-column: 1 / -1;">
+            <label>Strikes & Expiry</label>
+            <input type="text" id="tradeStrike" placeholder="e.g. 24500 PE Sell / 24200 PE Buy" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Action</label>
+            <select id="tradeAction">
+              <option value="SELL">SELL</option>
+              <option value="BUY">BUY</option>
+            </select>
+          </div>
+          <div class="admin-form-group">
+            <label>Entry Price (₹)</label>
+            <input type="number" step="0.05" id="tradeEntry" placeholder="e.g. 95.50" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Target Price (₹)</label>
+            <input type="number" step="0.05" id="tradeTarget" placeholder="e.g. 15.00" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Stop Loss (₹)</label>
+            <input type="number" step="0.05" id="tradeSL" placeholder="e.g. 140.00" required>
+          </div>
+          <div class="admin-form-group">
+            <label>Lots (Quantity)</label>
+            <input type="number" id="tradeLots" value="3" required>
+          </div>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-export" onclick="closeAddTradeModal()">Cancel</button>
+          <button type="submit" class="admin-btn-primary">✓ Publish to Users</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CLOSE TRADE & CALCULATE P&L ==================== -->
+  <div class="admin-modal-overlay" id="closeTradeModalOverlay">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h3 style="font-size: 16px; font-weight: 700;">Close Option Position</h3>
+        <button class="modal-close-btn" onclick="closeCloseTradeModal()">✕</button>
+      </div>
+      <div class="admin-modal-body">
+        <div style="background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px;">
+          <div>Position: <strong id="closeTradeStrikes">NIFTY 24500 PE</strong></div>
+          <div style="margin-top: 4px;">Entry Average: <strong id="closeTradeEntry">₹85.00</strong></div>
+          <div style="margin-top: 4px;">Trade ID: <span id="closeTradeId">TRD-101</span></div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Final Exit Price (₹):</label>
+          <input type="number" step="0.05" id="closeExitPrice" placeholder="Enter exit price" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button class="btn-export" onclick="closeCloseTradeModal()">Cancel</button>
+        <button class="admin-btn-success" onclick="submitCloseTrade()">Confirm Exit & Settle P&L</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: BULK CSV IMPORT ==================== -->
+  <div class="admin-modal-overlay" id="bulkCsvModalOverlay">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h3 style="font-size: 16px; font-weight: 700;">Bulk Import Trades via CSV</h3>
+        <button class="modal-close-btn" onclick="closeBulkCsvModal()">✕</button>
+      </div>
+      <div class="admin-modal-body">
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
+          Upload a CSV file containing past or current trades. Format: <code>ID,Date,Index,Strategy,Strike,Action,Entry,Exit,PnL,Status</code>
+        </p>
+        <input type="file" accept=".csv" onchange="handleCsvFileSelect(event)" style="width: 100%; padding: 12px; border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc;">
+      </div>
+      <div class="admin-modal-footer">
+        <button class="btn-export" onclick="closeBulkCsvModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin JavaScript Logic -->
+  <script src="script.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
