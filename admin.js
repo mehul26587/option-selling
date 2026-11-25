@@ -1,3 +1,19 @@
+
+// Auto-initialize Dhan Credentials
+(function() {
+  const current = localStorage.getItem("liveipo_dhan_config");
+  if (!current) {
+    const defaultCfg = {
+      apiKey: "6f503e08",
+      apiSecret: "c2d7f9fd-f1dc-49d7-a937-6eb6edcd105e",
+      clientId: "1102733692",
+      accessToken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJwX2lwIjoiIiwic19pcCI6IiIsInVzZXJSZWdpb24iOiJSMSIsImlzcyI6ImRoYW4iLCJwYXJ0bmVySWQiOiIiLCJleHAiOjE3OTU2ODY1NTgsImlhdCI6MTc5NTYwMDE1OCwidG9rZW5Db25zdW1lclR5cGUiOiJTRUxGIiwid2ViaG9va1VybCI6Imh0dHBzOi8vbWVodWwyNjU4Ny5naXRodWIuaW8vb3B0aW9uLXNlbGxpbmcvYWRtaW4uaHRtbCIsImRoYW5DbGllbnRJZCI6IjExMDI3MzM2OTIifQ.PVYdhOyf6DaFd0rI-qck50OKPqxTCzqHwKpKtOVnhJ4KvVZVIGgicO0ePuACNmwT7X4o9q7bPdugBp3urkW9UA",
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem("liveipo_dhan_config", JSON.stringify(defaultCfg));
+  }
+})();
+
 /**
  * LiveIPO Option Selling Admin Panel Script (admin.js)
  * Standalone client-side admin controller with persistent localStorage backing.
