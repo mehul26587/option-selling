@@ -236,208 +236,91 @@
 
       <!-- ==================== TAB: NSE LIVE OPTION CHAIN ==================== -->
       <section class="tab-content" id="tab-optionchain">
-        <div class="oc-wrapper">
-          
-          <!-- Official NSE Top Category Pills -->
-          <div class="nse-top-tabs">
-            <button class="nse-tab-pill active">Equity Stock</button>
-            <button class="nse-tab-pill">Currency</button>
-            <button class="nse-tab-pill">Interest Rates</button>
-            <button class="nse-tab-pill">Commodities</button>
-          </div>
-
-          <!-- NSE Header Title & Futures Link -->
-          <div style="padding: 16px 20px 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0;">
-            <h2 style="font-size: 19px; font-weight: 800; color: #2b0a57;">Option Chain (Equity Derivatives)</h2>
-            <a href="#" style="color: #c2410c; font-size: 13px; font-weight: 700; text-decoration: none;">Futures contracts</a>
-          </div>
-
-          <!-- NSE Official Controls Form (Symbol, Expiry, Strike) -->
-          <div class="nse-controls-form">
-            <div class="nse-field-box">
-              <span class="nse-field-lbl">View Options Contracts for:</span>
-              <select class="nse-select-styled" id="ocSelectSymbol" onchange="onOcSymbolChange(this.value)">
-                <option value="NIFTY" selected>NIFTY</option>
-                <option value="BANKNIFTY">BANKNIFTY</option>
-                <option value="FINNIFTY">FINNIFTY</option>
-              </select>
-            </div>
-
-            <div style="font-size: 12px; font-weight: 700; color: #64748b; padding-top: 18px;">OR</div>
-
-            <div class="nse-field-box">
-              <span class="nse-field-lbl">Select Symbol:</span>
-              <select class="nse-select-styled" onchange="onOcSymbolChange(this.value)">
-                <option value="NIFTY">Select</option>
-                <option value="NIFTY">NIFTY</option>
-                <option value="BANKNIFTY">BANKNIFTY</option>
-                <option value="FINNIFTY">FINNIFTY</option>
-              </select>
-            </div>
-
-            <!-- Expiry Date Dropdown with all Weekly, Monthly & Yearly Expiries -->
-            <div class="nse-field-box">
-              <span class="nse-field-lbl">Expiry Date:</span>
-              <select class="nse-select-styled" id="ocSelectExpiry" style="min-width: 170px;" onchange="onOcExpiryChange(this.value)">
-                <!-- Dynamically populated from NSE_EXPIRIES list -->
-              </select>
-            </div>
-
-            <div style="font-size: 12px; font-weight: 700; color: #64748b; padding-top: 18px;">OR</div>
-
-            <!-- Strike Price Selector -->
-            <div class="nse-field-box">
-              <span class="nse-field-lbl">Strike Price:</span>
-              <select class="nse-select-styled" id="ocSelectStrikePrice" onchange="onOcStrikeSelect(this.value)">
-                <option value="">Select</option>
-                <!-- Dynamically populated -->
-              </select>
-            </div>
-
-            <!-- Strike Range Selector -->
-            <div class="nse-field-box">
-              <span class="nse-field-lbl">Range:</span>
-              <select class="nse-select-styled" id="ocSelectRange" onchange="onOcRangeChange(this.value)">
-                <option value="10">ATM ± 10 Strikes</option>
-                <option value="15" selected>ATM ± 15 Strikes</option>
-                <option value="25">ATM ± 25 Strikes</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- NSE Underlying Strip & Streaming Toggle -->
-          <div class="nse-info-strip">
-            <div class="nse-underlying-txt" id="ocUnderlyingIndexLine">
-              Underlying Index : NIFTY 25,800.60 As on 21-Nov-2026 15:40:00 IST <span style="cursor: pointer; margin-left: 6px;" onclick="fetchNSEOptionChain()" title="Refresh">🔄</span>
-            </div>
-
-            <div class="nse-streaming-toggle">
-              <span>Streaming</span>
-              <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                <input type="radio" name="ocStreaming" value="off" onchange="toggleStreaming(false)"> Off
-              </label>
-              <label style="cursor: pointer; display: flex; align-items: center; gap: 4px; color: #10b981; font-weight: bold;">
-                <input type="radio" name="ocStreaming" value="on" checked onchange="toggleStreaming(true)"> On
-              </label>
-            </div>
-
-            <div class="nse-util-links">
-              <span class="oc-stat-pill pcr" id="ocPcrDisplay">PCR: 1.14 (Bullish)</span>
-              <span class="oc-stat-pill maxpain" id="ocMaxPainDisplay">Max Pain: 25,400</span>
-              <a href="javascript:void(0)" onclick="downloadOptionChainCsv()">📥 Download (.csv)</a>
-            </div>
-          </div>
-
-          <!-- Live Strategy Basket Sync Strip -->
-          <div style="background: #eff6ff; border-bottom: 1px solid #bfdbfe; padding: 10px 20px; font-size: 12.5px; color: #1e40af; display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              🔗 <strong>Strategy Connected:</strong> Active trade strikes (<code>25050 PE [SELL]</code>, <code>25350 PE [SELL]</code>, <code>25600 PE [BUY]</code>) update dynamically based on the selected expiry rates.
-            </div>
-            <button class="btn-export" style="padding: 2px 8px; font-size: 11px;" onclick="switchTab('dashboard')">View Basket Trade →</button>
-          </div>
-
-          <!-- Real-Time Option Chain Table matching Screenshot -->
-          <div class="oc-table-container">
-            <table class="oc-table">
-              <thead>
-                <!-- Super Headers -->
-                <tr>
-                  <th colspan="11" class="oc-th-calls" style="background: #2b0a57 !important;">CALLS</th>
-                  <th class="oc-th-strike" style="background: #1e1b4b !important;">STRIKE</th>
-                  <th colspan="11" class="oc-th-puts" style="background: #2b0a57 !important;">PUTS</th>
-                </tr>
-                <!-- Sub Column Headers matching NSE screenshot -->
-                <tr>
-                  <!-- CALLS -->
-                  <th style="text-align: center;">Chart</th>
-                  <th>OI</th>
-                  <th>CHNG IN OI</th>
-                  <th>VOLUME</th>
-                  <th>IV</th>
-                  <th>LTP</th>
-                  <th>CHNG</th>
-                  <th>BID QTY</th>
-                  <th>BID</th>
-                  <th>ASK</th>
-                  <th>ASK QTY</th>
-
-                  <!-- STRIKE -->
-                  <th style="text-align: center;">STRIKE</th>
-
-                  <!-- PUTS -->
-                  <th>BID QTY</th>
-                  <th>BID</th>
-                  <th>ASK</th>
-                  <th>ASK QTY</th>
-                  <th>CHNG</th>
-                  <th>LTP</th>
-                  <th>IV</th>
-                  <th>VOLUME</th>
-                  <th>CHNG IN OI</th>
-                  <th>OI</th>
-                  <th style="text-align: center;">Chart</th>
-                </tr>
-              </thead>
-              <tbody id="ocTableBody">
-                <!-- Dynamically populated and ticked in real-time -->
-              </tbody>
-            </table>
-          </div>
-
+      <div style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">⚡ Live Option Chain (Equity Derivatives)</h2>
+          <p style="font-size: 13px; color: #64748b; margin: 0;">Sensibull Pure White High-Contrast Interface with Real-Time NSE Quotes</p>
         </div>
-      </section>
-
-      <!-- ==================== TAB 2: ANALYTICS ==================== -->
-      <section class="tab-content" id="tab-analytics">
-        <div class="section-head">
-          <h2>Options P&L Performance & Analytics</h2>
+        <span style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 800;">
+          ● NSE REAL-TIME STREAMING
+        </span>
+      </div>
+      
+    <div class="sensibull-pure-white-card">
+      
+      <!-- Sensibull Header Bar -->
+      <div class="sensibull-header-bar">
+        <div class="sensibull-spot-search">
+          <span>🔍</span>
+          <span>NIFTY</span>
+          <span id="frontPageOcBody_spotDisplay">25,819.25</span>
+          <span class="sensibull-spot-green" id="frontPageOcBody_spotChgDisplay">+469.60 (+1.85%)</span>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 28px;">
-          <div style="background: #fff; padding: 24px; border-radius: 14px; border: 1px solid #e2e8f0;">
-            <h3 style="font-size: 16px; margin-bottom: 16px; color: #0f172a;">Strategy Performance Distribution</h3>
-            <div style="display: flex; flex-direction: column; gap: 14px;">
-              <div>
-                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
-                  <span>Bull Put & Bear Call Spreads</span>
-                  <span style="color: #10b981;">88% Win Rate</span>
-                </div>
-                <div style="background: #f1f5f9; height: 10px; border-radius: 6px; overflow: hidden;">
-                  <div style="width: 88%; background: #10b981; height: 100%;"></div>
-                </div>
-              </div>
-              <div>
-                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
-                  <span>Iron Condors & Strangles</span>
-                  <span style="color: #2563eb;">82% Win Rate</span>
-                </div>
-                <div style="background: #f1f5f9; height: 10px; border-radius: 6px; overflow: hidden;">
-                  <div style="width: 82%; background: #2563eb; height: 100%;"></div>
-                </div>
-              </div>
-              <div>
-                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
-                  <span>Intraday Short Straddles</span>
-                  <span style="color: #9333ea;">75% Win Rate</span>
-                </div>
-                <div style="background: #f1f5f9; height: 10px; border-radius: 6px; overflow: hidden;">
-                  <div style="width: 75%; background: #9333ea; height: 100%;"></div>
-                </div>
-              </div>
-            </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div class="sensibull-expiry-pills">
+            <button type="button" class="sensibull-expiry-pill active" onclick="switchPureSensibullExpiry('01-Dec-2026')">1 Dec (6 days)</button>
+            <button type="button" class="sensibull-expiry-pill" onclick="switchPureSensibullExpiry('08-Dec-2026')">8 Dec (13 days)</button>
+            <button type="button" class="sensibull-expiry-pill" onclick="switchPureSensibullExpiry('15-Dec-2026')">15 Dec (3 weeks)</button>
+            <button type="button" class="sensibull-expiry-pill" onclick="switchPureSensibullExpiry('22-Dec-2026')">22 Dec (4 weeks)</button>
           </div>
 
-          <div style="background: #fff; padding: 24px; border-radius: 14px; border: 1px solid #e2e8f0;">
-            <h3 style="font-size: 16px; margin-bottom: 16px; color: #0f172a;">Risk Management & Execution Rule</h3>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 13.5px; color: #334155;">
-              <li style="display: flex; gap: 8px;"><span>🛡️</span> <strong>Fixed Stop Loss:</strong> Never risk more than 1.5% capital on any single spread.</li>
-              <li style="display: flex; gap: 8px;"><span>⏳</span> <strong>Theta Decay Capture:</strong> Positions held strictly for optimal time decay.</li>
-              <li style="display: flex; gap: 8px;"><span>📊</span> <strong>Margin Efficiency:</strong> Basket hedging reduces margin requirement up to 70%.</li>
-              <li style="display: flex; gap: 8px;"><span>🎯</span> <strong>Profit Booking:</strong> Take profit automatically when 70-80% of max premium is captured.</li>
-            </ul>
+          <div class="sensibull-view-toggle">
+            <button type="button" class="sensibull-view-btn active">LTP</button>
+            <button type="button" class="sensibull-view-btn">OI</button>
+            <button type="button" class="sensibull-view-btn">Greeks</button>
           </div>
+
+          <span style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+            <span class="live-pulse-dot"></span> 1-SEC LIVE
+          </span>
         </div>
-      </section>
+      </div>
+
+      <!-- Sensibull Sub-Tabs -->
+      <div class="sensibull-nav-tabs">
+        <div class="sensibull-nav-tab">Straddles</div>
+        <div class="sensibull-nav-tab">Strangles</div>
+        <div class="sensibull-nav-tab active">Strikes (Option Chain)</div>
+        <div class="sensibull-nav-tab">Futures</div>
+      </div>
+
+      <!-- Table Wrapper -->
+      <div class="sensibull-table-wrapper">
+        <table class="sensibull-pure-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">Delta</th>
+              <th style="width: 140px;">Call LTP</th>
+              <th style="width: 160px; text-align: left; padding-left: 12px;">Call OI <span class="oi-red-line" style="width: 20px;"></span></th>
+              <th style="width: 75px;">Action</th>
+              <th style="width: 100px; background: #f1f5f9; color: #0f172a; font-size: 12px;">Strike</th>
+              <th style="width: 60px;">IV</th>
+              <th style="width: 75px;">Action</th>
+              <th style="width: 160px; text-align: right; padding-right: 12px;"><span class="oi-green-line" style="width: 20px;"></span> Put OI</th>
+              <th style="width: 140px;">Put LTP</th>
+              <th style="width: 70px;">Delta</th>
+            </tr>
+          </thead>
+          <tbody id="frontPageOcBody">
+            <!-- Populated dynamically via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Bar -->
+      <div class="sensibull-footer-bar">
+        <div>PCR: <span class="sensibull-metric-badge" id="frontPageOcBody_pcr">1.04 (Bullish)</span></div>
+        <div>Max Pain: <span class="sensibull-metric-badge" id="frontPageOcBody_maxPain">25,800</span></div>
+        <div>ATM IV: <span class="sensibull-metric-badge">17.2%</span></div>
+        <div style="color: #059669; font-weight: 700; font-size: 12px;">
+          ✓ Click [S] or [B] on any strike to auto-fill into 3-Strike Basket Legs
+        </div>
+      </div>
+
+    </div>
+  
+    </section>
 
       <!-- ==================== TAB 3: TRADES ==================== -->
       <section class="tab-content" id="tab-trades">

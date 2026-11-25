@@ -364,3 +364,286 @@ body.admin-body {
   background: #dc2626 !important;
   color: #ffffff !important;
 }
+
+
+/* ========================================================
+   PURE WHITE SENSIBULL / ZERODHA OPTION CHAIN THEME
+   ======================================================== */
+.sensibull-pure-white-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  color: #0f172a;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.sensibull-header-bar {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sensibull-spot-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sensibull-spot-green {
+  color: #10b981;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.sensibull-nav-tabs {
+  display: flex;
+  gap: 18px;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 20px;
+  background: #ffffff;
+}
+
+.sensibull-nav-tab {
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.sensibull-nav-tab.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.sensibull-filter-bar {
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sensibull-expiry-pills {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sensibull-expiry-pill {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sensibull-expiry-pill:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.sensibull-expiry-pill.active {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #2563eb;
+  font-weight: 800;
+}
+
+.sensibull-view-toggle {
+  display: flex;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.sensibull-view-btn {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.sensibull-view-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.sensibull-table-wrapper {
+  overflow-x: auto;
+  max-height: 520px;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.sensibull-pure-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: center;
+  background: #ffffff;
+}
+
+.sensibull-pure-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #f8fafc;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.sensibull-pure-table th {
+  padding: 10px 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #64748b;
+  background: #f8fafc;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sensibull-pure-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
+  vertical-align: middle;
+}
+
+/* Elegant In-The-Money (ITM) Warm Yellow Shading */
+.sensibull-pure-table tr.itm-call td.call-cell {
+  background: #fffdf0 !important;
+}
+
+.sensibull-pure-table tr.itm-put td.put-cell {
+  background: #fffdf0 !important;
+}
+
+/* Center Strike Cell */
+.sensibull-pure-table td.strike-cell {
+  background: #f8fafc;
+  font-weight: 800;
+  border-left: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+}
+
+.strike-pill-badge {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 900;
+  font-size: 13px;
+  color: #0f172a;
+  display: inline-block;
+}
+
+.strike-pill-badge.atm {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+}
+
+/* Buy / Sell Buttons */
+.btn-oc-action-b {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 2px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-oc-action-b:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+
+.btn-oc-action-s {
+  background: #ea580c;
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 2px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-oc-action-s:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.4);
+}
+
+/* Horizontal Red/Green OI Lines matching user screenshot */
+.oi-red-line {
+  display: inline-block;
+  height: 3px;
+  background: #ef4444;
+  vertical-align: middle;
+  border-radius: 2px;
+  margin-left: 6px;
+}
+
+.oi-green-line {
+  display: inline-block;
+  height: 3px;
+  background: #10b981;
+  vertical-align: middle;
+  border-radius: 2px;
+  margin-right: 6px;
+}
+
+/* Footer Summary Metrics */
+.sensibull-footer-bar {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.sensibull-metric-badge {
+  color: #0f172a;
+  font-weight: 800;
+}

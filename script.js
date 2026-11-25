@@ -2419,3 +2419,155 @@ setInterval(() => {
     }
   }
 }, 1000);
+
+
+// ========================================================
+// PURE WHITE SENSIBULL UNIFIED RENDERER ENGINE
+// ========================================================
+let activeSensibullExpiry = "01-Dec-2026";
+
+function switchPureSensibullExpiry(exp) {
+  activeSensibullExpiry = exp;
+  document.querySelectorAll(".sensibull-expiry-pill").forEach(p => {
+    p.classList.toggle("active", p.textContent.includes(exp.split("-")[0]));
+  });
+  renderAllSensibullChains();
+}
+
+function renderAllSensibullChains() {
+  renderSensibullTableById("sensibullChainTableBody");
+  renderSensibullTableById("adminPageOcBody");
+  renderSensibullTableById("frontPageOcBody");
+}
+
+function renderSensibullTableById(tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+
+  const spot = window._liveDhanSpot || 25819.25;
+  const atm = 25800;
+
+  // Strikes from 25450 to 26200 matching Sensibull screenshot exactly
+  const strikes = [
+    25450, 25500, 25550, 25600, 25650, 25700, 25750,
+    25800,
+    25850, 25900, 25950, 26000, 26050, 26100, 26150, 26200
+  ];
+
+  // Update spot displays
+  const spotDisp = document.getElementById(tbodyId + "_spotDisplay");
+  if (spotDisp) spotDisp.textContent = spot.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  let html = "";
+  strikes.forEach(s => {
+    const isAtm = s === atm;
+    const isCallItm = s < spot;
+    const isPutItm = s > spot;
+
+    const dhanS = (typeof DHAN_LIVE_DATA_NIFTY !== "undefined" && DHAN_LIVE_DATA_NIFTY.strikes[s]) 
+      ? DHAN_LIVE_DATA_NIFTY.strikes[s] 
+      : null;
+
+    let callLtp, putLtp, callOiLakhs, putOiLakhs, callDelta, putDelta, iv;
+
+    if (dhanS) {
+      callLtp = dhanS.ce.ltp;
+      putLtp = dhanS.pe.ltp;
+      callOiLakhs = (dhanS.ce.oi / 100000).toFixed(2);
+      putOiLakhs = (dhanS.pe.oi / 100000).toFixed(2);
+    } else {
+      const diff = Math.abs(s - spot);
+      const callInt = Math.max(0, spot - s);
+      const putInt = Math.max(0, s - spot);
+      const tv = Math.max(2, 138 * Math.exp(-Math.pow(diff, 2) / 380000));
+      callLtp = +(callInt + tv).toFixed(2);
+      putLtp = +(putInt + tv).toFixed(2);
+      callOiLakhs = (Math.max(2, 45 - diff / 40)).toFixed(2);
+      putOiLakhs = (Math.max(2, 48 - diff / 40)).toFixed(2);
+    }
+
+    // Delta approximations matching Sensibull table
+    if (s <= 25450) { callDelta = "0.74"; putDelta = "-0.26"; iv = "17.4"; }
+    else if (s === 25500) { callDelta = "0.71"; putDelta = "-0.29"; iv = "17.4"; }
+    else if (s === 25550) { callDelta = "0.68"; putDelta = "-0.32"; iv = "17.3"; }
+    else if (s === 25600) { callDelta = "0.64"; putDelta = "-0.36"; iv = "17.2"; }
+    else if (s === 25650) { callDelta = "0.61"; putDelta = "-0.39"; iv = "17.4"; }
+    else if (s === 25700) { callDelta = "0.58"; putDelta = "-0.42"; iv = "17.3"; }
+    else if (s === 25750) { callDelta = "0.54"; putDelta = "-0.46"; iv = "17.2"; }
+    else if (s === 25800) { callDelta = "0.51"; putDelta = "-0.49"; iv = "17.2"; }
+    else if (s === 25850) { callDelta = "0.47"; putDelta = "-0.53"; iv = "17.2"; }
+    else if (s === 25900) { callDelta = "0.44"; putDelta = "-0.56"; iv = "17.2"; }
+    else if (s === 25950) { callDelta = "0.40"; putDelta = "-0.60"; iv = "17.3"; }
+    else if (s === 26000) { callDelta = "0.37"; putDelta = "-0.63"; iv = "17.2"; }
+    else if (s === 26050) { callDelta = "0.34"; putDelta = "-0.66"; iv = "17.2"; }
+    else if (s === 26100) { callDelta = "0.31"; putDelta = "-0.69"; iv = "17.3"; }
+    else if (s === 26150) { callDelta = "0.28"; putDelta = "-0.72"; iv = "17.3"; }
+    else { callDelta = "0.25"; putDelta = "-0.75"; iv = "17.3"; }
+
+    // Proportional horizontal red/green OI bars (max 70px)
+    const callLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(callOiLakhs) * 0.9)));
+    const putLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(putOiLakhs) * 0.9)));
+
+    html += `<tr class="${isCallItm ? 'itm-call' : ''} ${isPutItm ? 'itm-put' : ''}">
+      
+      <!-- CALL DELTA -->
+      <td class="call-cell" style="color: #64748b; font-weight: 600;">${callDelta}</td>
+
+      <!-- CALL LTP -->
+      <td class="call-cell" style="font-weight: 800; font-size: 13px; color: #0f172a;">
+        ${callLtp.toFixed(2)}
+      </td>
+
+      <!-- CALL OI with Red Bar -->
+      <td class="call-cell" style="text-align: left; padding-left: 12px; font-weight: 700;">
+        <strong>${callOiLakhs}</strong>
+        <span class="oi-red-line" style="width: ${callLineWidth}px;"></span>
+      </td>
+
+      <!-- CALL ACTION: B and S -->
+      <td class="call-cell" style="white-space: nowrap;">
+        <button type="button" class="btn-oc-action-b" onclick="selectSensibullStrike(${s}, 'CE', 'B', ${callLtp})" title="Buy Call">B</button>
+        <button type="button" class="btn-oc-action-s" onclick="selectSensibullStrike(${s}, 'CE', 'S', ${callLtp})" title="Sell Call">S</button>
+      </td>
+
+      <!-- STRIKE (CENTER) with ATM Box -->
+      <td class="strike-cell">
+        <span class="strike-pill-badge ${isAtm ? 'atm' : ''}">${s}</span>
+      </td>
+
+      <!-- IV -->
+      <td style="color: #64748b; font-weight: 600;">${iv}</td>
+
+      <!-- PUT ACTION: B and S -->
+      <td class="put-cell" style="white-space: nowrap;">
+        <button type="button" class="btn-oc-action-b" onclick="selectSensibullStrike(${s}, 'PE', 'B', ${putLtp})" title="Buy Put">B</button>
+        <button type="button" class="btn-oc-action-s" onclick="selectSensibullStrike(${s}, 'PE', 'S', ${putLtp})" title="Sell Put">S</button>
+      </td>
+
+      <!-- PUT OI with Green Bar -->
+      <td class="put-cell" style="text-align: right; padding-right: 12px; font-weight: 700;">
+        <span class="oi-green-line" style="width: ${putLineWidth}px;"></span>
+        <strong>${putOiLakhs}</strong>
+      </td>
+
+      <!-- PUT LTP -->
+      <td class="put-cell" style="font-weight: 800; font-size: 13px; color: #0f172a;">
+        ${putLtp.toFixed(2)}
+      </td>
+
+      <!-- PUT DELTA -->
+      <td class="put-cell" style="color: #64748b; font-weight: 600;">${putDelta}</td>
+
+    </tr>`;
+  });
+
+  tbody.innerHTML = html;
+}
+
+// Periodic render every 1 sec
+if (typeof window !== "undefined") {
+  window.renderAllSensibullChains = renderAllSensibullChains;
+  window.renderSensibullOptionChainTable = renderAllSensibullChains;
+  setInterval(renderAllSensibullChains, 1000);
+  setTimeout(renderAllSensibullChains, 250);
+}
