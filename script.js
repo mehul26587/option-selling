@@ -1237,7 +1237,7 @@ function renderMultiStrikeTradeHistoryTable() {
       if (isFirst) {
         html += `<td rowspan="${legCount}">${trade.date}</td>`;
         html += `<td rowspan="${legCount}"><strong>${trade.index}</strong></td>`;
-        html += `<td rowspan="${legCount}">${trade.strategy}</td>`;
+        html += `<td rowspan="${legCount}"><strong>${trade.strategy}</strong>${trade.tradeName ? `<br><span style="font-size: 11px; color: #64748b; font-weight: 600;">${trade.tradeName}</span>` : ""}</td>`;
       }
 
       // Strikes, CE/PE, Action, Entry, LTP, Net P&L

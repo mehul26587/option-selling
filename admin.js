@@ -705,6 +705,7 @@ function handlePublishBasketTradeSubmit(e) {
   e.preventDefault();
 
   const strategyName = document.getElementById("basketStrategyName").value || "LiveIPO Pro";
+  const tradeName = document.getElementById("basketTradeName") ? (document.getElementById("basketTradeName").value || "NIFTY Weekly Ratio Put Spread") : "LiveIPO 3-Strike Basket";
   const index = document.getElementById("basketIndex").value || "NIFTY";
   const expiry = document.getElementById("basketExpiry").value || "23-Nov-2026";
   const tradeDate = document.getElementById("basketTradeDate").value || new Date().toISOString().split("T")[0];
@@ -776,6 +777,7 @@ function handlePublishBasketTradeSubmit(e) {
     date: tradeDate,
     index: index,
     strategy: strategyName,
+    tradeName: tradeName,
     status: "LIVE",
     totalProfit: totalPnl,
     legs: [
