@@ -1,3 +1,68 @@
+
+
+// ========================================================
+// ROLE & VIEW SIMULATOR FOR DUAL DASHBOARD ARCHITECTURE
+// ========================================================
+function getSimulatedRole() {
+  return localStorage.getItem("liveipo_simulated_role") || "subscriber";
+}
+
+function setSimulatedRole(role) {
+  localStorage.setItem("liveipo_simulated_role", role);
+  updateSimulatorButtons();
+  renderSensibullInterface("sensibullDashboardContainer");
+  renderSensibullInterface("sensibullTradeHistoryContainer");
+  renderMultiStrikeTradeHistoryTable();
+  renderAuthUI();
+  
+  const label = role === "guest" ? "Public Guest (Locked Live Trades)" : role === "unsubscribed" ? "Logged In (No Subscription)" : "Active Premium Subscriber (Full Live Access)";
+  showToast(`Switched View to: ${label}`);
+}
+
+function updateSimulatorButtons() {
+  const currentRole = getSimulatedRole();
+  const bGuest = document.getElementById("btnRoleGuest");
+  const bUnsub = document.getElementById("btnRoleUnsubscribed");
+  const bSub = document.getElementById("btnRoleSubscriber");
+  
+  if (bGuest) bGuest.classList.toggle("active", currentRole === "guest");
+  if (bUnsub) bUnsub.classList.toggle("active", currentRole === "unsubscribed");
+  if (bSub) bSub.classList.toggle("active", currentRole === "subscriber");
+}
+
+function activateInstantTestPass() {
+  let user = getCurrentUser();
+  if (!user) {
+    user = {
+      id: "demo_trader_sub",
+      name: "Demo Premium Subscriber",
+      email: "subscriber@liveipo.in",
+      picture: "https://api.dicebear.com/7.x/bottts/svg?seed=VIPTrader"
+    };
+    localStorage.setItem("live_ipo_current_user", JSON.stringify(user));
+  }
+  
+  const userData = {
+    email: user.email,
+    plan: "VIP Gold Access",
+    planId: "gold",
+    startDate: new Date().toISOString().split("T")[0],
+    expiryDate: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
+    status: "ACTIVE",
+    payments: [],
+    customNotes: []
+  };
+  saveUserIsolatedData(user.email, userData);
+  localStorage.setItem("liveipo_simulated_role", "subscriber");
+  
+  renderAuthUI();
+  updateSimulatorButtons();
+  renderSensibullInterface("sensibullDashboardContainer");
+  renderSensibullInterface("sensibullTradeHistoryContainer");
+  renderMultiStrikeTradeHistoryTable();
+  showToast("✓ 30-Day VIP Premium Pass Activated! Full Live Terminal Unlocked.");
+}
+
 /**
  * LiveIPO Option Selling Portal - Frontend Script (script.js)
  * Standalone client-side application with Sensibull-style Multi-Leg Option Strategies,
@@ -424,7 +489,100 @@ function renderSensibullInterface(containerId) {
   if (!strategies || strategies.length === 0) return;
 
   const strat = strategies[0]; // Active 3-Leg Ratio Put Spread
+  const role = getSimulatedRole();
+  const isSubscriber = role === "subscriber";
 
+  // IF NOT A SUBSCRIBER (GUEST OR UNSUBSCRIBED): RENDER SHOWCASE & LOCKED TEASER
+  if (!isSubscriber) {
+    container.innerHTML = `
+      <!-- Master Trader Verified Showcase -->
+      <div class="master-showcase-panel">
+        <div class="showcase-header">
+          <div class="showcase-title-area">
+            <h2>🏆 Master Option Seller Verified Track Record</h2>
+            <p>Non-directional multi-strike option selling strategies with automated theta decay management & Greeks hedging.</p>
+          </div>
+          <span class="verified-master-badge">✓ SEBI COMPLIANT RULES & 100% TRANSPARENT</span>
+        </div>
+
+        <div class="showcase-kpi-grid">
+          <div class="showcase-kpi-card">
+            <span class="showcase-kpi-lbl">Total Executed Trades</span>
+            <div class="showcase-kpi-val">142+ Baskets</div>
+            <span class="showcase-kpi-sub">Multi-Strike Strategies</span>
+          </div>
+          <div class="showcase-kpi-card">
+            <span class="showcase-kpi-lbl">Verified Win Rate</span>
+            <div class="showcase-kpi-val green">89.4%</div>
+            <span class="showcase-kpi-sub">Target vs Stop Loss</span>
+          </div>
+          <div class="showcase-kpi-card">
+            <span class="showcase-kpi-lbl">Total Verified Net Profit</span>
+            <div class="showcase-kpi-val green">+₹8,45,200</div>
+            <span class="showcase-kpi-sub">Audited Track Record</span>
+          </div>
+          <div class="showcase-kpi-card">
+            <span class="showcase-kpi-lbl">Average Profit / Trade</span>
+            <div class="showcase-kpi-val green">+₹9,850</div>
+            <span class="showcase-kpi-sub">Per Single Basket</span>
+          </div>
+          <div class="showcase-kpi-card">
+            <span class="showcase-kpi-lbl">Max Drawdown</span>
+            <div class="showcase-kpi-val" style="color: #6366f1;">&lt; 3.8%</div>
+            <span class="showcase-kpi-sub">Strict Risk Defined</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Locked Active 3-Strike Live Trade Teaser -->
+      <div class="locked-live-trade-wrapper">
+        <!-- Blurred Sensibull Preview in Background -->
+        <div class="locked-background-preview">
+          <div class="sensibull-wrapper">
+            <div class="sensibull-header-banner">
+              <div class="sensibull-underlying">
+                <span class="underlying-badge">${strat.index} 25,436.55</span>
+                <span class="underlying-change">+0.83%</span>
+              </div>
+              <span style="font-weight: 800; color: #10b981;">● LIVE IN MARKET (3 LEGS)</span>
+            </div>
+            <div class="sensibull-grid">
+              <div class="sensibull-left">
+                <div class="legs-list">
+                  <div class="leg-card"><div class="leg-ident"><span class="leg-action-badge sell">SELL</span> 25,xxx PE (6 Lots)</div></div>
+                  <div class="leg-card"><div class="leg-ident"><span class="leg-action-badge sell">SELL</span> 25,xxx PE (2 Lots)</div></div>
+                  <div class="leg-card"><div class="leg-ident"><span class="leg-action-badge buy">BUY</span> 25,xxx PE (2 Lots)</div></div>
+                </div>
+              </div>
+              <div class="sensibull-right">
+                <div style="height: 180px; background: #e2e8f0; border-radius: 8px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Frosted Overlay with Subscription CTA -->
+        <div class="locked-overlay-content">
+          <div class="locked-icon-badge">🔒</div>
+          <div class="locked-overlay-title">માસ્ટર ટ્રેડરનો લાઇવ 3-સ્ટ્રાઇક ટ્રેડ અત્યારે માર્કેટમાં એક્ટિવ છે!</div>
+          <div class="locked-overlay-desc">
+            લાઇવ સ્ટ્રાઇક પ્રાઇસ (25050 PE / 25350 PE / 25600 PE), એન્ટ્રી ભાવ, સ્ટોપ લોસ, રિયલ-ટાઇમ થીટા P&L અને ઇન્ટરેક્ટિવ Payoff Graph જોવા માટે પ્રીમિયમ સબ્સ્ક્રિપ્શન મેળવો અથવા ડેમો ટેસ્ટ પાસ એક્ટિવેટ કરો.
+          </div>
+          <div class="locked-cta-btns">
+            <button class="btn-unlock-gold" onclick="switchTab('pricing')">
+              👑 પ્રીમિયમ પ્લાન જુઓ અને અનલોક કરો
+            </button>
+            <button class="btn-test-pass" onclick="activateInstantTestPass()">
+              ⚡ 1-Click Instant VIP Access Pass
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // IF SUBSCRIBER: RENDER FULL UNLOCKED SENSIBULL DASHBOARD + SUBSCRIBER PERSONAL LOT CALCULATOR
   container.innerHTML = `
     <div class="sensibull-wrapper">
       <!-- Top Banner -->
@@ -434,8 +592,10 @@ function renderSensibullInterface(containerId) {
           <span class="underlying-badge">${strat.index} ${strat.underlyingPrice.toFixed(2)}</span>
           <span class="underlying-change">${strat.underlyingChange}</span>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <span style="font-size: 12px; color: #64748b; font-weight: 600;">MULTI-STRIKE SINGLE BASKET TRADE</span>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <span style="font-size: 12px; color: #10b981; font-weight: 800; background: #ecfdf5; padding: 4px 10px; border-radius: 20px; border: 1px solid #a7f3d0;">
+            ● LIVE MASTER BROADCAST UNLOCKED
+          </span>
           <button class="btn-export" style="font-size: 11px; padding: 4px 10px;" onclick="refreshLivePrices()">⚡ Refresh Live LTP</button>
         </div>
       </div>
@@ -519,180 +679,179 @@ function renderSensibullInterface(containerId) {
               <span class="m-val green">+₹${strat.metrics.profitLeft.toLocaleString("en-IN")} (${strat.metrics.profitLeftPct})</span>
             </div>
             <div class="metric-item">
-              <span class="m-lbl">Loss Left</span>
-              <span class="m-val red">${strat.metrics.lossLeft}</span>
-            </div>
-            <div class="metric-item">
               <span class="m-lbl">Max Profit</span>
               <span class="m-val green">+₹${strat.metrics.maxProfit.toLocaleString("en-IN")} (${strat.metrics.maxProfitPct})</span>
             </div>
             <div class="metric-item">
+              <span class="m-lbl">POP (Prob. of Profit)</span>
+              <span class="m-val green" style="font-weight: 900;">${strat.metrics.pop}</span>
+            </div>
+            <div class="metric-item">
               <span class="m-lbl">Breakeven</span>
-              <span class="m-val">${strat.metrics.breakeven} (${strat.metrics.breakevenPct})</span>
-            </div>
-            <div class="metric-item">
-              <span class="m-lbl">POP</span>
-              <span class="m-val blue">${strat.metrics.pop}</span>
-            </div>
-            <div class="metric-item">
-              <span class="m-lbl">Time Value</span>
-              <span class="m-val red">${strat.metrics.timeValue}</span>
-            </div>
-            <div class="metric-item">
-              <span class="m-lbl">Standalone Margin</span>
-              <span class="m-val">${strat.metrics.standaloneMargin}</span>
+              <span class="m-val">${strat.metrics.breakeven}</span>
             </div>
           </div>
 
-          <!-- Tab Bar -->
+          <!-- Sensibull Sub-Tabs -->
           <div class="sensibull-tabs-bar">
-            <div class="sensibull-tab-nav">
-              <div class="s-tab-link ${activeSensibullTab === 'payoff' ? 'active' : ''}" onclick="setSensibullTab('payoff')">Payoff Graph</div>
-              <div class="s-tab-link ${activeSensibullTab === 'daybyday' ? 'active' : ''}" onclick="setSensibullTab('daybyday')">Day-by-Day Analysis & P&L</div>
-              <div class="s-tab-link ${activeSensibullTab === 'greeks' ? 'active' : ''}" onclick="setSensibullTab('greeks')">Strategy Greeks</div>
+            <button class="s-tab-btn ${activeSensibullTab === 'payoff' ? 'active' : ''}" onclick="switchSensibullTab('payoff')">Payoff Graph</button>
+            <button class="s-tab-btn ${activeSensibullTab === 'pnltable' ? 'active' : ''}" onclick="switchSensibullTab('pnltable')">P&L Table (Day-by-Day Theta)</button>
+            <button class="s-tab-btn ${activeSensibullTab === 'greeks' ? 'active' : ''}" onclick="switchSensibullTab('greeks')">Greeks</button>
+          </div>
+
+          <!-- Sub-Tab 1: Payoff Graph Canvas -->
+          <div id="sensibullSubTab_payoff" style="display: ${activeSensibullTab === 'payoff' ? 'block' : 'none'};">
+            <div class="payoff-canvas-container">
+              <canvas id="sensibullPayoffCanvas"></canvas>
+            </div>
+
+            <!-- Target & Date Sliders -->
+            <div class="slider-control-row">
+              <div class="slider-group">
+                <span class="lbl">NIFTY Target: <strong id="valNiftyTarget">${currentSimulatedTargetNifty.toFixed(2)}</strong></span>
+                <input type="range" min="24200" max="26200" step="25" value="${currentSimulatedTargetNifty}" oninput="onNiftyTargetSliderChange(this.value)">
+              </div>
+              <div class="slider-group">
+                <span class="lbl">Days to Expiry: <strong id="valDaysToExpiry">${currentSimulatedDaysToExpiry} Days</strong></span>
+                <input type="range" min="0" max="7" step="1" value="${currentSimulatedDaysToExpiry}" oninput="onDaysToExpirySliderChange(this.value)">
+              </div>
             </div>
           </div>
 
-          <!-- Display Body -->
-          <div class="payoff-display-area">
-            
-            <!-- VIEW 1: PAYOFF GRAPH -->
-            <div id="sensibullView-payoff" style="display: ${activeSensibullTab === 'payoff' ? 'block' : 'none'};">
-              <div class="chart-legend-row">
-                <div class="legend-items">
-                  <span><span class="legend-indicator legend-green"></span> <strong>On Expiry</strong></span>
-                  <span><span class="legend-indicator legend-blue"></span> <strong>On Target Date</strong></span>
-                  <span style="color: #64748b;">● OI Call: 35.25L | Put: 25.38L</span>
-                </div>
-                <div style="font-size: 12px; font-weight: 700; color: #10b981; background: #ecfdf5; padding: 4px 10px; border-radius: 6px;" id="projectedProfitBadge">
-                  Projected profit: ₹9,300 (+0.93%)
-                </div>
-              </div>
-
-              <!-- Interactive SVG Payoff Curve -->
-              <div class="payoff-chart-box">
-                <svg id="payoffSvg" viewBox="0 0 600 220" style="width: 100%; height: 220px; overflow: visible;">
-                  <!-- Zero line -->
-                  <line x1="20" y1="120" x2="580" y2="120" stroke="#cbd5e1" stroke-dasharray="4" stroke-width="1.5" />
-                  <text x="25" y="115" font-size="10" fill="#94a3b8">₹0 P&L</text>
-                  
-                  <!-- Profit Shaded Area -->
-                  <polygon points="200,120 200,50 560,50 560,120" fill="rgba(16,185,129,0.08)" />
-                  <!-- Loss Shaded Area -->
-                  <polygon points="40,200 200,120 40,120" fill="rgba(239,68,68,0.08)" />
-
-                  <!-- Green Line (On Expiry) -->
-                  <!-- Downward slope below breakeven 24959, flat peak above 25350 -->
-                  <polyline points="40,205 180,135 220,50 560,50" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-
-                  <!-- Blue Line (On Target Date / Dynamic Theta Curve) -->
-                  <path id="targetDateCurve" d="M 40,205 Q 160,160 220,100 T 400,65 T 560,55" fill="none" stroke="#2563eb" stroke-width="2.5" />
-
-                  <!-- Current Spot Vertical Line (NIFTY 25436.55) -->
-                  <line id="spotVerticalLine" x1="420" y1="20" x2="420" y2="200" stroke="#10b981" stroke-width="1.5" stroke-dasharray="2" />
-                  <circle id="spotCircle" cx="420" cy="65" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
-
-                  <!-- Strike Markers -->
-                  <text x="180" y="215" font-size="9" fill="#64748b" text-anchor="middle">24,959 (BE)</text>
-                  <text x="250" y="215" font-size="9" fill="#64748b" text-anchor="middle">25,050 PE</text>
-                  <text x="370" y="215" font-size="9" fill="#64748b" text-anchor="middle">25,350 PE</text>
-                  <text x="420" y="215" font-size="9" fill="#2563eb" font-weight="bold" text-anchor="middle">Current: 25,445</text>
-                  <text x="500" y="215" font-size="9" fill="#64748b" text-anchor="middle">25,600 PE</text>
-                </svg>
-              </div>
-
-              <!-- Interactive Controls (NIFTY Target Slider & Date Slider) -->
-              <div class="interactive-controls-bar">
-                <div class="control-group">
-                  <div class="control-label-row">
-                    <span>NIFTY Target Price: <strong id="sliderNiftyVal" style="color: #2563eb;">25,445.05</strong></span>
-                    <button style="border: none; background: none; color: #2563eb; cursor: pointer; font-size: 11px;" onclick="resetNiftySlider()">Reset</button>
-                  </div>
-                  <input type="range" class="custom-range-slider" id="niftyRangeSlider" min="24500" max="26200" step="25" value="25445" oninput="onNiftySliderChange(this.value)">
-                </div>
-
-                <div class="control-group">
-                  <div class="control-label-row">
-                    <span>Target Date: <strong id="sliderDateVal" style="color: #10b981;">21 Nov (Live Market)</strong></span>
-                    <button style="border: none; background: none; color: #2563eb; cursor: pointer; font-size: 11px;" onclick="resetDateSlider()">Reset</button>
-                  </div>
-                  <input type="range" class="custom-range-slider" id="dateRangeSlider" min="1" max="5" step="1" value="3" oninput="onDateSliderChange(this.value)">
-                </div>
-              </div>
+          <!-- Sub-Tab 2: Day-by-Day Analysis Table -->
+          <div id="sensibullSubTab_pnltable" style="display: ${activeSensibullTab === 'pnltable' ? 'block' : 'none'};">
+            <div style="padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 12px; font-size: 12px; color: #475569;">
+              📅 <strong>Day-by-Day Theta Decay Table:</strong> Live daily tracking of strike prices, decay and cumulative net profit.
             </div>
-
-            <!-- VIEW 2: DAY-BY-DAY ANALYSIS & PROGRESSION -->
-            <div id="sensibullView-daybyday" style="display: ${activeSensibullTab === 'daybyday' ? 'block' : 'none'};">
-              <p style="font-size: 12.5px; color: #64748b; margin-bottom: 12px;">
-                📅 <strong>Day-by-Day Historical & Live Market Analysis:</strong> Track how the 3 strike prices decay collectively each day from entry to expiry.
-              </p>
-              <div class="table-responsive">
-                <table class="day-progression-table">
-                  <thead>
+            <div class="table-responsive">
+              <table class="sensibull-daybyday-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>NIFTY Spot</th>
+                    <th>25050 PE (6L)</th>
+                    <th>25350 PE (2L)</th>
+                    <th>25600 PE (2L)</th>
+                    <th>Day P&L</th>
+                    <th>Total P&L</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${(strat.dayByDayHistory || []).map(row => `
                     <tr>
-                      <th>Date / Stage</th>
-                      <th>NIFTY Spot</th>
-                      <th>25050 PE (S)</th>
-                      <th>25350 PE (S)</th>
-                      <th>25600 PE (B)</th>
-                      <th>Theta Gain</th>
-                      <th>Cumulative P&L</th>
-                      <th>Remark</th>
+                      <td><strong>${row.date}</strong></td>
+                      <td>${row.spot.toFixed(2)}</td>
+                      <td>₹${row.p25050.toFixed(2)}</td>
+                      <td>₹${row.p25350.toFixed(2)}</td>
+                      <td>₹${row.p25600.toFixed(2)}</td>
+                      <td style="color: ${row.dayPnl >= 0 ? '#10b981' : '#ef4444'}; font-weight: 700;">
+                        ${row.dayPnl >= 0 ? '+' : ''}₹${row.dayPnl.toLocaleString("en-IN")}
+                      </td>
+                      <td style="color: ${row.totalPnl >= 0 ? '#10b981' : '#ef4444'}; font-weight: 800;">
+                        ${row.totalPnl >= 0 ? '+' : ''}₹${row.totalPnl.toLocaleString("en-IN")}
+                      </td>
+                      <td><span style="font-size: 11px; font-weight: 700; color: #10b981;">${row.status}</span></td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    ${strat.dayByDayHistory.map(row => {
-                      const isToday = row.date.includes("Today");
-                      return `
-                        <tr class="${isToday ? 'highlight-today' : ''}">
-                          <td><strong>${row.date}</strong></td>
-                          <td>₹${row.niftySpot.toFixed(2)}</td>
-                          <td>₹${row.leg1Ltp.toFixed(2)}</td>
-                          <td>₹${row.leg2Ltp.toFixed(2)}</td>
-                          <td>₹${row.leg3Ltp.toFixed(2)}</td>
-                          <td style="color: #10b981; font-weight: 700;">${row.dayPnl}</td>
-                          <td style="color: #10b981; font-weight: 800; font-size: 13.5px;">+₹${row.unbookedPnl.toLocaleString("en-IN")}</td>
-                          <td><span style="font-size: 11px; color: #475569;">${row.remark}</span></td>
-                        </tr>
-                      `;
-                    }).join("")}
-                  </tbody>
-                </table>
-              </div>
+                  `).join("")}
+                </tbody>
+              </table>
             </div>
-
-            <!-- VIEW 3: GREEKS -->
-            <div id="sensibullView-greeks" style="display: ${activeSensibullTab === 'greeks' ? 'block' : 'none'};">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; padding: 10px 0;">
-                <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <span style="font-size: 11.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Net Delta</span>
-                  <h3 style="font-size: 18px; color: #2563eb; margin-top: 4px;">${strat.greeks.delta}</h3>
-                  <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Portfolio directional bias is balanced to neutral</p>
-                </div>
-                <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <span style="font-size: 11.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Net Theta</span>
-                  <h3 style="font-size: 18px; color: #10b981; margin-top: 4px;">${strat.greeks.theta}</h3>
-                  <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Daily income generated from time decay</p>
-                </div>
-                <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <span style="font-size: 11.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Net Gamma</span>
-                  <h3 style="font-size: 18px; color: #0f172a; margin-top: 4px;">${strat.greeks.gamma}</h3>
-                  <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Low delta movement risk</p>
-                </div>
-                <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <span style="font-size: 11.5px; color: #64748b; font-weight: 700; text-transform: uppercase;">Net Vega</span>
-                  <h3 style="font-size: 18px; color: #9333ea; margin-top: 4px;">${strat.greeks.vega}</h3>
-                  <p style="font-size: 11px; color: #64748b; margin-top: 4px;">Benefits when market volatility cools off</p>
-                </div>
-              </div>
-            </div>
-
           </div>
+
+          <!-- Sub-Tab 3: Greeks -->
+          <div id="sensibullSubTab_greeks" style="display: ${activeSensibullTab === 'greeks' ? 'block' : 'none'};">
+            <div class="greeks-grid">
+              <div class="greek-card">
+                <span class="g-name">Delta (Δ)</span>
+                <span class="g-val ${strat.greeks.delta >= 0 ? 'green' : 'red'}">${strat.greeks.delta}</span>
+                <span class="g-sub">Neutral Directional Bias</span>
+              </div>
+              <div class="greek-card">
+                <span class="g-name">Theta (Θ)</span>
+                <span class="g-val green">+${strat.greeks.theta}</span>
+                <span class="g-sub">Daily Time Decay Profit</span>
+              </div>
+              <div class="greek-card">
+                <span class="g-name">Vega (ν)</span>
+                <span class="g-val red">${strat.greeks.vega}</span>
+                <span class="g-sub">Short Volatility</span>
+              </div>
+              <div class="greek-card">
+                <span class="g-name">Gamma (Γ)</span>
+                <span class="g-val">${strat.greeks.gamma}</span>
+                <span class="g-sub">Controlled Acceleration</span>
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>
     </div>
+
+    <!-- Subscriber's Personal Lot Size & Capital Calculator -->
+    <div class="subscriber-desk-container">
+      <div class="subscriber-desk-header">
+        <div>
+          <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 3px;">
+            🎯 મારું પર્સનલ ટ્રેડ કેલ્ક્યુલેટર (My Personal Lot Size & Custom P&L)
+          </h3>
+          <p style="font-size: 12.5px; color: #64748b; margin: 0;">
+            માસ્ટર ટ્રેડરનો બેઝિક ટ્રેડ 1x મલ્ટિપ્લાયરનો છે. તમારા કેપિટલ પ્રમાણે અહીં લોટ બદલીને તમારો કસ્ટમાઈઝ્ડ નફો અને માર્જિન રિયલ-ટાઇમ ચેક કરો:
+          </p>
+        </div>
+        <span class="subscriber-badge-tag">👑 SUBSCRIBER TRADE COPIER</span>
+      </div>
+
+      <div class="calc-grid-layout">
+        <div class="calc-input-panel">
+          <div class="calc-input-group">
+            <label>તમારો ટ્રેડ સાઈઝ મલ્ટિપ્લાયર (Lot Multiplier):</label>
+            <select id="subMultiplierSelect" onchange="calculateSubscriberCustomPnl()">
+              <option value="0.5">0.5x Half Size (3 Lots Sell / 1 Lot Buy)</option>
+              <option value="1" selected>1.0x Normal Size (6 Lots Sell / 2 Lots Buy - As Master)</option>
+              <option value="2">2.0x Double Size (12 Lots Sell / 4 Lots Buy)</option>
+              <option value="3">3.0x Triple Size (18 Lots Sell / 6 Lots Buy)</option>
+              <option value="5">5.0x Heavy Size (30 Lots Sell / 10 Lots Buy)</option>
+            </select>
+          </div>
+          <div class="calc-input-group">
+            <label>તમારું ડિપ્લોય કરેલું કેપિટલ (₹):</label>
+            <input type="number" id="subCapitalInput" value="350000" step="25000" oninput="calculateSubscriberCustomPnl()">
+          </div>
+        </div>
+
+        <div class="calc-output-panel">
+          <div class="calc-stat-box">
+            <span class="lbl">અંદાજિત માર્જિન જરૂરિયાત</span>
+            <div class="val" id="subCalcMargin">₹1,85,000</div>
+          </div>
+          <div class="calc-stat-box">
+            <span class="lbl">તમારો લાઈવ કરન્ટ નફો (LTP)</span>
+            <div class="val green" id="subCalcLivePnl">+₹9,276</div>
+          </div>
+          <div class="calc-stat-box">
+            <span class="lbl">એક્સપાયરી પર મહત્તમ નફો</span>
+            <div class="val green" id="subCalcMaxProfit">+₹35,484</div>
+          </div>
+          <div class="calc-stat-box">
+            <span class="lbl">ROI / રિટર્ન ઓન કેપિટલ</span>
+            <div class="val green" id="subCalcRoi">+10.1%</div>
+          </div>
+
+          <div class="calc-advice-banner">
+            <span>💡</span>
+            <span><strong>માસ્ટર ગાઇડન્સ:</strong> એક્સપાયરી સુધી થીટા ડીકેનો પૂરો બેનિફિટ લેવા માટે સ્ટોપ લોસ NIFTY 24,950 રાખવું.</span>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
+
+  if (activeSensibullTab === "payoff") {
+    setTimeout(drawSensibullPayoffGraph, 100);
+  }
 }
 
 function setSensibullTab(tabName) {
@@ -1048,6 +1207,8 @@ function renderMultiStrikeTradeHistoryTable() {
   if (!tbody && !adminTbody) return;
 
   const trades = getMultiStrikeTrades();
+  const role = getSimulatedRole();
+  const isSubscriber = role === "subscriber";
 
   let html = "";
   trades.forEach(trade => {
@@ -1080,18 +1241,35 @@ function renderMultiStrikeTradeHistoryTable() {
       }
 
       // Strikes, CE/PE, Action, Entry, LTP, Net P&L
-      html += `<td><strong>${leg.strike}</strong></td>`;
-      html += `<td><span class="badge-option-${leg.type.toLowerCase()}">${leg.type}</span></td>`;
-      html += `<td><span class="badge-action-${leg.action.toLowerCase()}">${leg.action}</span></td>`;
-      html += `<td>₹${leg.entry.toFixed(2)}</td>`;
-      html += `<td><span class="oc-ltp-val ${isLive ? 'up' : ''}">₹${leg.ltp.toFixed(2)}</span></td>`;
-      html += `<td style="font-weight: 700; color: ${isProfit ? '#10b981' : '#ef4444'}">${isProfit ? '+' : ''}₹${leg.netPnl.toLocaleString("en-IN")}</td>`;
+      if (isLive && !isSubscriber) {
+        // Locked display for free users on active live trade
+        html += `<td><span style="color: #d97706; font-weight: 700;">🔒 25,xxx ${leg.type}</span></td>`;
+        html += `<td><span class="badge-option-${leg.type.toLowerCase()}">${leg.type}</span></td>`;
+        html += `<td><span class="badge-action-${leg.action.toLowerCase()}">${leg.action}</span></td>`;
+        html += `<td><span style="color: #94a3b8; font-size: 11px;">🔒 Locked</span></td>`;
+        html += `<td><span style="color: #94a3b8; font-size: 11px;">🔒 Locked</span></td>`;
+        html += `<td><span style="color: #94a3b8; font-size: 11px;">🔒 Locked</span></td>`;
+      } else {
+        html += `<td><strong>${leg.strike}</strong></td>`;
+        html += `<td><span class="badge-option-${leg.type.toLowerCase()}">${leg.type}</span></td>`;
+        html += `<td><span class="badge-action-${leg.action.toLowerCase()}">${leg.action}</span></td>`;
+        html += `<td>₹${leg.entry.toFixed(2)}</td>`;
+        html += `<td><span class="oc-ltp-val ${isLive ? 'up' : ''}">₹${leg.ltp.toFixed(2)}</span></td>`;
+        html += `<td style="font-weight: 700; color: ${isProfit ? '#10b981' : '#ef4444'}">${isProfit ? '+' : ''}₹${leg.netPnl.toLocaleString("en-IN")}</td>`;
+      }
 
       // Total Profit & Status (rowspan across 3 strikes)
       if (isFirst) {
-        html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="color: ${totalProfit >= 0 ? '#10b981' : '#ef4444'};">
-          ${totalProfit >= 0 ? '+' : ''}₹${totalProfit.toLocaleString("en-IN")}
-        </td>`;
+        if (isLive && !isSubscriber) {
+          html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="color: #d97706; font-size: 12.5px;">
+            🔒 <a href="javascript:void(0)" onclick="switchTab('pricing')" style="color: #2563eb; font-weight: 700; text-decoration: underline;">Subscribe to View</a>
+          </td>`;
+        } else {
+          html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="color: ${totalProfit >= 0 ? '#10b981' : '#ef4444'};">
+            ${totalProfit >= 0 ? '+' : ''}₹${totalProfit.toLocaleString("en-IN")}
+          </td>`;
+        }
+        
         html += `<td rowspan="${legCount}">
           ${isLive ? '<span class="badge-status-live"><span class="live-pulse-dot"></span> LIVE</span>' : '<span class="badge-status-closed">CLOSED</span>'}
           ${isLive ? `<br><button class="oc-act-btn btn-s" style="margin-top: 6px; font-size: 10px; padding: 3px 8px;" onclick="exitMultiStrikeTrade(${trade.tradeNo})" title="Exit Position">Exit Trade</button>` : `<br><button class="oc-act-btn btn-b" style="margin-top: 6px; font-size: 10px; padding: 2px 6px;" onclick="reopenMultiStrikeTrade(${trade.tradeNo})" title="Re-open Live">Reopen</button>`}
@@ -2044,3 +2222,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 });
+
+
+function calculateSubscriberCustomPnl() {
+  const multSelect = document.getElementById("subMultiplierSelect");
+  const capInput = document.getElementById("subCapitalInput");
+  if (!multSelect || !capInput) return;
+
+  const multiplier = parseFloat(multSelect.value) || 1;
+  const capital = parseFloat(capInput.value) || 350000;
+
+  const baseMargin = 185000;
+  const baseLivePnl = 9276;
+  const baseMaxProfit = 35484;
+
+  const userMargin = Math.round(baseMargin * multiplier);
+  const userLivePnl = Math.round(baseLivePnl * multiplier);
+  const userMaxProfit = Math.round(baseMaxProfit * multiplier);
+  const roi = ((userMaxProfit / capital) * 100).toFixed(1);
+
+  const elMargin = document.getElementById("subCalcMargin");
+  const elLive = document.getElementById("subCalcLivePnl");
+  const elMax = document.getElementById("subCalcMaxProfit");
+  const elRoi = document.getElementById("subCalcRoi");
+
+  if (elMargin) elMargin.textContent = "₹" + userMargin.toLocaleString("en-IN");
+  if (elLive) elLive.textContent = "+₹" + userLivePnl.toLocaleString("en-IN");
+  if (elMax) elMax.textContent = "+₹" + userMaxProfit.toLocaleString("en-IN");
+  if (elRoi) elRoi.textContent = "+" + roi + "%";
+}

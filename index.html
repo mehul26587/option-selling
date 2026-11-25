@@ -111,6 +111,26 @@
     <main class="content-container">
 
       <!-- Welcome Banner -->
+      
+      <!-- Role / Demo Simulator Bar (Public vs Subscriber View) -->
+      <div class="role-simulator-bar">
+        <div class="role-sim-left">
+          <span class="role-sim-badge">⚡ LIVE VIEW SWITCHER</span>
+          <span class="role-sim-text">ડેશબોર્ડ મોડ ટેસ્ટ કરો (તમારા યુઝર્સને કેવું દેખાશે):</span>
+        </div>
+        <div class="role-sim-buttons">
+          <button class="btn-role-tab" id="btnRoleGuest" onclick="setSimulatedRole('guest')">
+            <span>👁️ પબ્લિક / ફ્રી યુઝર (Guest View)</span>
+          </button>
+          <button class="btn-role-tab" id="btnRoleUnsubscribed" onclick="setSimulatedRole('unsubscribed')">
+            <span>🔒 લોગિન (સબ્સ્ક્રિપ્શન વગર)</span>
+          </button>
+          <button class="btn-role-tab active" id="btnRoleSubscriber" onclick="setSimulatedRole('subscriber')">
+            <span>👑 પ્રીમિયમ સબ્સ્ક્રાઇબર (Active Paid)</span>
+          </button>
+        </div>
+      </div>
+  
       <div class="welcome-banner">
         <div class="banner-text">
           <h2>Option Selling Premium Terminal ⚡</h2>

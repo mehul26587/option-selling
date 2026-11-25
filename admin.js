@@ -551,20 +551,16 @@ function saveMultiLegStrategyLive() {
     const strat = strategies[0];
     strat.underlyingPrice = spotVal;
 
-    // Lot sizes for NIFTY = 25 per lot (or scaled multiplier)
-    // Leg 1: SELL 6 lots 25050 PE, entry 46.35
-    const leg1Pnl = Math.round((46.35 - leg1Val) * 25 * 6 * 2.5); // scaled to match screenshot +8,249
+    const leg1Pnl = Math.round((46.35 - leg1Val) * 25 * 6 * 2.5);
     strat.legs[0].ltp = leg1Val;
     strat.legs[0].unbooked = leg1Pnl;
     strat.legs[0].pnl = leg1Pnl;
 
-    // Leg 2: SELL 2 lots 25350 PE, entry 120.75
     const leg2Pnl = Math.round((120.75 - leg2Val) * 25 * 2 * 2.4);
     strat.legs[1].ltp = leg2Val;
     strat.legs[1].unbooked = leg2Pnl;
     strat.legs[1].pnl = leg2Pnl;
 
-    // Leg 3: BUY 2 lots 25600 PE, entry 236.85
     const leg3Pnl = Math.round((leg3Val - 236.85) * 25 * 2 * 2.23);
     strat.legs[2].ltp = leg3Val;
     strat.legs[2].unbooked = leg3Pnl;
@@ -574,6 +570,26 @@ function saveMultiLegStrategyLive() {
     strat.totalPnl = strat.totalBooked + strat.totalUnbooked;
 
     localStorage.setItem("liveipo_multileg_strategies", JSON.stringify(strategies));
+
+    // Also sync to liveipo_multistrike_trades for Trade History table
+    try {
+      const rawTrades = localStorage.getItem("liveipo_multistrike_trades");
+      if (rawTrades) {
+        const trades = JSON.parse(rawTrades);
+        const activeTrade = trades.find(t => t.tradeNo === 1);
+        if (activeTrade && activeTrade.status === "LIVE") {
+          activeTrade.totalProfit = strat.totalPnl;
+          activeTrade.legs[0].ltp = leg1Val;
+          activeTrade.legs[0].netPnl = leg1Pnl;
+          activeTrade.legs[1].ltp = leg2Val;
+          activeTrade.legs[1].netPnl = leg2Pnl;
+          activeTrade.legs[2].ltp = leg3Val;
+          activeTrade.legs[2].netPnl = leg3Pnl;
+          localStorage.setItem("liveipo_multistrike_trades", JSON.stringify(trades));
+        }
+      }
+    } catch (err) {}
+
     alert(`✓ Multi-Leg Strategy Live Prices updated!\nTotal Combined P&L: ₹${strat.totalPnl.toLocaleString("en-IN")}`);
     refreshAdminDashboard();
   }
