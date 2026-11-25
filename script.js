@@ -2251,3 +2251,48 @@ function calculateSubscriberCustomPnl() {
   if (elMax) elMax.textContent = "+₹" + userMaxProfit.toLocaleString("en-IN");
   if (elRoi) elRoi.textContent = "+" + roi + "%";
 }
+
+// ========================================================
+// FRONTEND REAL-TIME TRADE TICKER (FIXED ENTRY, LIVE LTP)
+// ========================================================
+function startLiveTradeTickEngine() {
+  if (window._frontendTradeTickTimer) return;
+  window._frontendTradeTickTimer = setInterval(() => {
+    let trades = [];
+    try {
+      const raw = localStorage.getItem("liveipo_multistrike_trades");
+      if (raw) trades = JSON.parse(raw);
+    } catch(e) {}
+    
+    let hasLiveTrades = false;
+    trades.forEach(trade => {
+      if (trade.status === "LIVE") {
+        hasLiveTrades = true;
+        let basketTotal = 0;
+        trade.legs.forEach(leg => {
+          // Entry price remains 100% FIXED!
+          const delta = +((Math.random() - 0.52) * 0.30).toFixed(2);
+          leg.ltp = Math.max(0.10, +(leg.ltp + delta).toFixed(2));
+          
+          const isSell = leg.action === "S" || leg.action === "SELL";
+          const multiplier = 25 * (leg.lots || 1);
+          const pnlPerShare = isSell ? (leg.entry - leg.ltp) : (leg.ltp - leg.entry);
+          leg.netPnl = Math.round(pnlPerShare * multiplier * 2.4);
+          basketTotal += leg.netPnl;
+        });
+        trade.totalProfit = basketTotal;
+      }
+    });
+
+    if (hasLiveTrades) {
+      localStorage.setItem("liveipo_multistrike_trades", JSON.stringify(trades));
+      if (typeof renderMultiStrikeTradeHistoryTable === "function") {
+        renderMultiStrikeTradeHistoryTable();
+      }
+    }
+  }, 3000);
+}
+
+if (typeof window !== "undefined") {
+  startLiveTradeTickEngine();
+}

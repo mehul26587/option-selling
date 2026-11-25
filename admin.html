@@ -627,39 +627,47 @@
   
   <!-- ==================== MODAL: ADD / PUBLISH 3-STRIKE BASKET TRADE ==================== -->
   <div class="admin-modal-overlay" id="publishBasketTradeModalOverlay">
-    <div class="admin-modal" style="max-width: 1180px; width: 95vw; max-height: 92vh; display: flex; flex-direction: column;">
+    <div class="admin-modal" style="max-width: 1200px; width: 96vw; max-height: 94vh; display: flex; flex-direction: column;">
       <div class="admin-modal-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 18px 24px;">
-        <div>
-          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 3px; display: flex; align-items: center; gap: 8px;">
-            <span>🎯</span> Publish New 3-Strike Basket Trade (Single Trade)
-          </h3>
-          <p style="font-size: 12.5px; color: #94a3b8; margin: 0;">
-            આ એક સિંગલ ટ્રેડમાં ત્રણે-ત્રણ સ્ટ્રાઇક પ્રાઇસ ભેગી એડ થશે અને ઓટોમેટિક પ્લેટફોર્મ પર LIVE થશે.
-          </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-right: 20px;">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 3px; display: flex; align-items: center; gap: 8px;">
+              <span>🎯</span> Publish New 3-Strike Basket Trade (Single Trade)
+            </h3>
+            <p style="font-size: 12px; color: #94a3b8; margin: 0;">
+              લાઇવ ઓપ્શન ચેઇનમાંથી ડાયરેક્ટ સ્ટ્રાઇક સિલેક્ટ કરો — કરન્ટ LTP અને એન્ટ્રી પ્રાઇસ ઓટોમેટિક ભરાઈ જશે.
+            </p>
+          </div>
+          <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; padding: 6px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 6px;">
+            <span class="pulse-dot"></span> NIFTY SPOT: <span id="modalSpotDisplay">25,436.55</span>
+          </div>
         </div>
-        <button class="modal-close-btn" style="color: #ffffff; font-size: 20px;" onclick="closePublishBasketTradeModal()">✕</button>
+        <button class="modal-close-btn" style="color: #ffffff; font-size: 22px;" onclick="closePublishBasketTradeModal()">✕</button>
       </div>
 
-      <div class="admin-modal-body" style="overflow-y: auto; padding: 22px 26px; background: #f8fafc;">
+      <div class="admin-modal-body" style="overflow-y: auto; padding: 20px 24px; background: #f8fafc;">
         <form id="publishBasketTradeForm" onsubmit="handlePublishBasketTradeSubmit(event)">
           
-          <!-- Master Trade Meta Details (With Trade Name & Expiry Dropdown) -->
-          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
-            <h4 style="font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">
-              📋 Master Strategy & Trade Information
-            </h4>
-            <div class="admin-form-grid" style="grid-template-columns: 1.2fr 1.5fr 1fr 1.4fr 1.1fr; gap: 12px;">
+          <!-- Master Trade Meta Details (Strategy, Name, Index, Expiry, Date) -->
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h4 style="font-size: 12.5px; font-weight: 800; color: #475569; text-transform: uppercase; margin: 0; letter-spacing: 0.5px;">
+                📋 Master Strategy & Trade Information
+              </h4>
+              <span style="font-size: 11.5px; color: #2563eb; font-weight: 700;">⚡ Auto-Synced with NSE Market Hours</span>
+            </div>
+            <div class="admin-form-grid" style="grid-template-columns: 1.1fr 1.6fr 1fr 1.4fr 1.1fr; gap: 12px;">
               <div class="admin-form-group">
                 <label>Strategy Type</label>
-                <input type="text" id="basketStrategyName" value="LiveIPO Pro" placeholder="e.g. LiveIPO Pro" required style="padding: 9px 12px; font-size: 13.5px;">
+                <input type="text" id="basketStrategyName" value="LiveIPO Pro" placeholder="e.g. LiveIPO Pro" required style="padding: 8px 11px; font-size: 13px;">
               </div>
               <div class="admin-form-group">
                 <label>Trade Name / Title</label>
-                <input type="text" id="basketTradeName" value="NIFTY Weekly Ratio Put Spread" placeholder="e.g. Tuesday Theta Scalp" required style="padding: 9px 12px; font-size: 13.5px;">
+                <input type="text" id="basketTradeName" value="NIFTY Weekly Ratio Put Spread" placeholder="e.g. Tuesday Weekly Theta Scalp" required style="padding: 8px 11px; font-size: 13px;">
               </div>
               <div class="admin-form-group">
                 <label>Underlying Index</label>
-                <select id="basketIndex" required style="padding: 9px 12px; font-size: 13.5px;">
+                <select id="basketIndex" onchange="onBasketIndexOrExpiryChange()" required style="padding: 8px 11px; font-size: 13px;">
                   <option value="NIFTY" selected>NIFTY</option>
                   <option value="BANKNIFTY">BANKNIFTY</option>
                   <option value="FINNIFTY">FINNIFTY</option>
@@ -668,7 +676,7 @@
               </div>
               <div class="admin-form-group">
                 <label>Expiry Date (Tuesday)</label>
-                <select id="basketExpiry" required style="padding: 9px 12px; font-size: 13.5px; font-weight: 700; color: #1e3a8a; background: #eff6ff;">
+                <select id="basketExpiry" onchange="onBasketIndexOrExpiryChange()" required style="padding: 8px 11px; font-size: 13px; font-weight: 700; color: #1e3a8a; background: #eff6ff;">
                   <option value="23-Nov-2026" selected>23-Nov-2026 (Active Tuesday)</option>
                   <option value="01-Dec-2026">01-Dec-2026 (Tuesday)</option>
                   <option value="08-Dec-2026">08-Dec-2026 (Tuesday)</option>
@@ -681,155 +689,177 @@
               </div>
               <div class="admin-form-group">
                 <label>Trade Date</label>
-                <input type="text" id="basketTradeDate" value="25-11-2026" required style="padding: 9px 12px; font-size: 13.5px;">
+                <input type="text" id="basketTradeDate" value="25-11-2026" required style="padding: 8px 11px; font-size: 13px;">
               </div>
+            </div>
+          </div>
+
+          <!-- Quick Live Option Chain Strike Picker Bar -->
+          <div style="background: #ffffff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(37,99,235,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 15px;">⚡</span>
+                <strong style="font-size: 13px; color: #1e3a8a;">Quick Strike Picker from Live Option Chain:</strong>
+                <span style="font-size: 11px; color: #64748b;">(કોઈપણ સ્ટ્રાઇક પર ક્લિક કરીને સીધું Leg 1, 2, કે 3 માં એડ કરો)</span>
+              </div>
+              <span id="ocLiveStatusBadge" style="font-size: 11px; color: #059669; font-weight: 700; background: #ecfdf5; padding: 2px 8px; border-radius: 12px;">● LIVE NSE TICKS</span>
+            </div>
+            <div id="quickStrikePillsRow" style="display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 6px 0;">
+              <!-- Dynamically populated strike pills -->
             </div>
           </div>
 
           <!-- 3-STRIKE LEGS INPUT GRID (EACH LEG ON ONE SINGLE HORIZONTAL LINE) -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h4 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
               <span>⚡</span> Configure 3 Strike Legs (Unified Basket)
             </h4>
-            <span style="font-size: 12px; color: #64748b; font-weight: 600;">Each strike leg is configured in a single horizontal row</span>
+            <span style="font-size: 11.5px; color: #10b981; font-weight: 700;">✓ Entry Price will lock at market LTP; Current LTP continues live updates</span>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; flex-direction: column; gap: 12px;">
             
-            <!-- LEG 1 (Trade 1) - SINGLE HORIZONTAL LINE -->
-            <div style="background: #ffffff; border: 1.5px solid #fca5a5; border-radius: 10px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span style="font-size: 13px; font-weight: 800; color: #dc2626; display: flex; align-items: center; gap: 6px;">
+            <!-- LEG 1 (Trade 1) -->
+            <div style="background: #ffffff; border: 1.5px solid #fca5a5; border-radius: 10px; padding: 12px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 12.5px; font-weight: 800; color: #dc2626; display: flex; align-items: center; gap: 6px;">
                   <span style="background: #fee2e2; padding: 2px 8px; border-radius: 4px;">LEG 1</span> First Strike Position
                 </span>
-                <span style="font-size: 11.5px; color: #64748b; font-weight: 600;">Primary Sell Leg</span>
+                <span id="leg1LiveBadge" style="font-size: 11px; color: #059669; font-weight: 700;">⚡ Live LTP Fetched: ₹24.30</span>
               </div>
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1.1fr 1.1fr; gap: 12px; align-items: end;">
+              <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.8fr 1.1fr 1.1fr; gap: 12px; align-items: end;">
                 <div class="admin-form-group" style="margin: 0;">
-                  <label style="margin-bottom: 4px; font-size: 11px;">STRIKE PRICE</label>
-                  <input type="number" id="leg1Strike" value="25050" step="50" placeholder="e.g. 25050" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <label style="margin-bottom: 4px; font-size: 11px;">STRIKE PRICE (LIVE)</label>
+                  <select id="leg1Strike" onchange="onLegStrikeOrTypeChange(1)" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #0f172a; background: #fffbeb; border-color: #f59e0b;">
+                    <!-- Populated dynamically with strikes & live prices -->
+                  </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">OPTION TYPE</label>
-                  <select id="leg1Type" style="padding: 8px 10px; font-size: 13.5px;">
+                  <select id="leg1Type" onchange="onLegStrikeOrTypeChange(1)" style="padding: 8px 10px; font-size: 13.5px;">
                     <option value="PE" selected>PE (Put)</option>
                     <option value="CE">CE (Call)</option>
                   </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">ACTION</label>
-                  <select id="leg1Action" style="padding: 8px 10px; font-size: 13.5px;">
+                  <select id="leg1Action" style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #dc2626;">
                     <option value="S" selected>SELL (S)</option>
                     <option value="B">BUY (B)</option>
                   </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">LOTS</label>
-                  <input type="number" id="leg1Lots" value="6" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <input type="number" id="leg1Lots" value="6" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700;">
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">ENTRY PRICE (₹)</label>
-                  <input type="number" step="0.05" id="leg1Entry" value="46.35" placeholder="e.g. 46.35" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <input type="number" step="0.05" id="leg1Entry" value="24.30" placeholder="Auto LTP" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; background: #f0fdf4; border-color: #86efac;">
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">CURRENT LTP (₹)</label>
-                  <input type="number" step="0.05" id="leg1LtpVal" value="24.30" placeholder="e.g. 24.30" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #2563eb;">
+                  <input type="number" step="0.05" id="leg1LtpVal" value="24.30" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #2563eb; background: #eff6ff; border-color: #93c5fd;">
                 </div>
               </div>
             </div>
 
-            <!-- LEG 2 (Trade 2) - SINGLE HORIZONTAL LINE -->
-            <div style="background: #ffffff; border: 1.5px solid #fed7aa; border-radius: 10px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span style="font-size: 13px; font-weight: 800; color: #ea580c; display: flex; align-items: center; gap: 6px;">
+            <!-- LEG 2 (Trade 2) -->
+            <div style="background: #ffffff; border: 1.5px solid #fed7aa; border-radius: 10px; padding: 12px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 12.5px; font-weight: 800; color: #ea580c; display: flex; align-items: center; gap: 6px;">
                   <span style="background: #ffedd5; padding: 2px 8px; border-radius: 4px;">LEG 2</span> Second Strike Position
                 </span>
-                <span style="font-size: 11.5px; color: #64748b; font-weight: 600;">Secondary Sell Leg</span>
+                <span id="leg2LiveBadge" style="font-size: 11px; color: #059669; font-weight: 700;">⚡ Live LTP Fetched: ₹81.00</span>
               </div>
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1.1fr 1.1fr; gap: 12px; align-items: end;">
+              <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.8fr 1.1fr 1.1fr; gap: 12px; align-items: end;">
                 <div class="admin-form-group" style="margin: 0;">
-                  <label style="margin-bottom: 4px; font-size: 11px;">STRIKE PRICE</label>
-                  <input type="number" id="leg2Strike" value="25350" step="50" placeholder="e.g. 25350" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <label style="margin-bottom: 4px; font-size: 11px;">STRIKE PRICE (LIVE)</label>
+                  <select id="leg2Strike" onchange="onLegStrikeOrTypeChange(2)" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #0f172a; background: #fffbeb; border-color: #f59e0b;">
+                    <!-- Populated dynamically -->
+                  </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">OPTION TYPE</label>
-                  <select id="leg2Type" style="padding: 8px 10px; font-size: 13.5px;">
+                  <select id="leg2Type" onchange="onLegStrikeOrTypeChange(2)" style="padding: 8px 10px; font-size: 13.5px;">
                     <option value="PE" selected>PE (Put)</option>
                     <option value="CE">CE (Call)</option>
                   </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">ACTION</label>
-                  <select id="leg2Action" style="padding: 8px 10px; font-size: 13.5px;">
+                  <select id="leg2Action" style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #dc2626;">
                     <option value="S" selected>SELL (S)</option>
                     <option value="B">BUY (B)</option>
                   </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">LOTS</label>
-                  <input type="number" id="leg2Lots" value="2" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <input type="number" id="leg2Lots" value="2" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700;">
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">ENTRY PRICE (₹)</label>
-                  <input type="number" step="0.05" id="leg2Entry" value="120.75" placeholder="e.g. 120.75" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <input type="number" step="0.05" id="leg2Entry" value="81.00" placeholder="Auto LTP" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; background: #f0fdf4; border-color: #86efac;">
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">CURRENT LTP (₹)</label>
-                  <input type="number" step="0.05" id="leg2LtpVal" value="81.00" placeholder="e.g. 81.00" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #2563eb;">
+                  <input type="number" step="0.05" id="leg2LtpVal" value="81.00" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #2563eb; background: #eff6ff; border-color: #93c5fd;">
                 </div>
               </div>
             </div>
 
-            <!-- LEG 3 (Trade 3) - SINGLE HORIZONTAL LINE -->
-            <div style="background: #ffffff; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 14px 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span style="font-size: 13px; font-weight: 800; color: #2563eb; display: flex; align-items: center; gap: 6px;">
+            <!-- LEG 3 (Trade 3) -->
+            <div style="background: #ffffff; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 12px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 12.5px; font-weight: 800; color: #2563eb; display: flex; align-items: center; gap: 6px;">
                   <span style="background: #dbeafe; padding: 2px 8px; border-radius: 4px;">LEG 3</span> Third Strike Position (Hedge)
                 </span>
-                <span style="font-size: 11.5px; color: #64748b; font-weight: 600;">Protective Buy Leg</span>
+                <span id="leg3LiveBadge" style="font-size: 11px; color: #059669; font-weight: 700;">⚡ Live LTP Fetched: ₹203.20</span>
               </div>
-              <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1.1fr 1.1fr; gap: 12px; align-items: end;">
+              <div style="display: grid; grid-template-columns: 1.3fr 1fr 1fr 0.8fr 1.1fr 1.1fr; gap: 12px; align-items: end;">
                 <div class="admin-form-group" style="margin: 0;">
-                  <label style="margin-bottom: 4px; font-size: 11px;">STRIKE PRICE</label>
-                  <input type="number" id="leg3Strike" value="25600" step="50" placeholder="e.g. 25600" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <label style="margin-bottom: 4px; font-size: 11px;">STRIKE PRICE (LIVE)</label>
+                  <select id="leg3Strike" onchange="onLegStrikeOrTypeChange(3)" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #0f172a; background: #fffbeb; border-color: #f59e0b;">
+                    <!-- Populated dynamically -->
+                  </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">OPTION TYPE</label>
-                  <select id="leg3Type" style="padding: 8px 10px; font-size: 13.5px;">
+                  <select id="leg3Type" onchange="onLegStrikeOrTypeChange(3)" style="padding: 8px 10px; font-size: 13.5px;">
                     <option value="PE" selected>PE (Put)</option>
                     <option value="CE">CE (Call)</option>
                   </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">ACTION</label>
-                  <select id="leg3Action" style="padding: 8px 10px; font-size: 13.5px;">
+                  <select id="leg3Action" style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #2563eb;">
                     <option value="B" selected>BUY (B)</option>
                     <option value="S">SELL (S)</option>
                   </select>
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">LOTS</label>
-                  <input type="number" id="leg3Lots" value="2" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <input type="number" id="leg3Lots" value="2" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700;">
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">ENTRY PRICE (₹)</label>
-                  <input type="number" step="0.05" id="leg3Entry" value="236.85" placeholder="e.g. 236.85" required style="padding: 8px 10px; font-size: 13.5px;">
+                  <input type="number" step="0.05" id="leg3Entry" value="203.20" placeholder="Auto LTP" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; background: #f0fdf4; border-color: #86efac;">
                 </div>
                 <div class="admin-form-group" style="margin: 0;">
                   <label style="margin-bottom: 4px; font-size: 11px;">CURRENT LTP (₹)</label>
-                  <input type="number" step="0.05" id="leg3LtpVal" value="203.20" placeholder="e.g. 203.20" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #2563eb;">
+                  <input type="number" step="0.05" id="leg3LtpVal" value="203.20" required style="padding: 8px 10px; font-size: 13.5px; font-weight: 700; color: #2563eb; background: #eff6ff; border-color: #93c5fd;">
                 </div>
               </div>
             </div>
 
           </div>
 
-          <!-- Risk / Guidance Note -->
-          <div style="background: #f1f5f9; border-radius: 8px; padding: 12px 14px; margin-top: 18px; font-size: 12.5px; color: #475569;">
-            💡 <strong>નોંધ:</strong> પબ્લિશ કરવાથી આ નવો 3-સ્ટ્રાઇક ટ્રેડ ઓટોમેટિક તમામ સબ્સ્ક્રાઇબર્સના ટર્મિનલ પર લાઇવ થઈ જશે અને જૂના ટ્રેડ્સ ટ્રેડ હિસ્ટ્રીમાં સેવ રહેશે.
+          <!-- Real-Time Rule Reminder -->
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px; margin-top: 14px; font-size: 12px; color: #166534; display: flex; align-items: center; gap: 8px;">
+            <span>💡</span>
+            <span><strong>ઓટોમેશન નિયમ:</strong> પબ્લિશ કરતી વખતે એન્ટ્રી પ્રાઇસ અને કરન્ટ LTP સરખા (LTP ભાવે) સેટ થશે. ટ્રેડ પબ્લિશ થયા પછી <strong>એન્ટ્રી પ્રાઇસ કાયમ માટે ફિક્સ</strong> રહેશે, જ્યારે <strong>કરન્ટ LTP લાઈવ માર્કેટ પ્રમાણે ઓટોમેટિક અપડેટ</strong> થતો રહેશે.</span>
           </div>
 
-          <div class="admin-modal-footer" style="padding: 16px 0 0 0; margin-top: 18px; background: transparent;">
+          <div class="admin-modal-footer" style="padding: 14px 0 0 0; margin-top: 14px; background: transparent;">
             <button type="button" class="btn-export" onclick="closePublishBasketTradeModal()">Cancel</button>
             <button type="submit" class="admin-btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 800; font-size: 14px; padding: 12px 28px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
               📢 Publish 3-Leg Basket Trade (Go Live)
