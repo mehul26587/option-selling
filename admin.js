@@ -1066,3 +1066,260 @@ function startLiveTradeTickEngine() {
 if (typeof window !== "undefined") {
   startLiveTradeTickEngine();
 }
+
+
+// ========================================================
+// SENSIBULL OPTION CHAIN INTERACTIVE STRIKE PICKER
+// ========================================================
+let currentSensibullViewMode = "LTP"; // LTP, OI, GREEKS
+
+function setSensibullViewMode(mode) {
+  currentSensibullViewMode = mode;
+  const bLtp = document.getElementById("btnToggleLtp");
+  const bOi = document.getElementById("btnToggleOi");
+  const bGrk = document.getElementById("btnToggleGreeks");
+
+  if (bLtp) {
+    bLtp.style.background = mode === "LTP" ? "#2563eb" : "#ffffff";
+    bLtp.style.color = mode === "LTP" ? "#ffffff" : "#475569";
+  }
+  if (bOi) {
+    bOi.style.background = mode === "OI" ? "#2563eb" : "#ffffff";
+    bOi.style.color = mode === "OI" ? "#ffffff" : "#475569";
+  }
+  if (bGrk) {
+    bGrk.style.background = mode === "GREEKS" ? "#2563eb" : "#ffffff";
+    bGrk.style.color = mode === "GREEKS" ? "#ffffff" : "#475569";
+  }
+
+  renderSensibullOptionChainTable();
+}
+
+function onSensibullExpiryChange() {
+  const expSel = document.getElementById("sensibullExpirySelect");
+  const basketExp = document.getElementById("basketExpiry");
+  if (expSel && basketExp) {
+    basketExp.value = expSel.value;
+  }
+  renderSensibullOptionChainTable();
+}
+
+function renderSensibullOptionChainTable() {
+  const tbody = document.getElementById("sensibullChainTableBody");
+  if (!tbody) return;
+
+  const symbol = "NIFTY";
+  const spot = 25436.55;
+  const step = 50;
+  const atm = Math.round(spot / step) * step; // 25450
+
+  const spotHead = document.getElementById("sensibullUnderlyingHeader");
+  if (spotHead) spotHead.textContent = `${symbol} ${spot.toFixed(2)}`;
+
+  // Range of strikes around ATM: ATM-10 steps to ATM+15 steps (matching screenshot 25450 to 26200+)
+  const strikes = [];
+  for (let s = 25000; s <= 26200; s += step) {
+    strikes.push(s);
+  }
+
+  const expiry = document.getElementById("sensibullExpirySelect") ? document.getElementById("sensibullExpirySelect").value : "23-Nov-2026";
+
+  let html = "";
+  strikes.forEach(s => {
+    const isAtm = s === atm;
+    const isCallItm = s < spot;
+    const isPutItm = s > spot;
+
+    const callLtp = getLiveOptionLtp(symbol, expiry, s, "CE");
+    const putLtp = getLiveOptionLtp(symbol, expiry, s, "PE");
+
+    // Realistic Delta calculation
+    const callDelta = +(0.50 + ((spot - s) / 1200)).toFixed(2);
+    const putDelta = +(callDelta - 1).toFixed(2);
+    const iv = 17.3;
+
+    // OI calculations & bar widths
+    const callOiVal = Math.round(Math.max(5, 35 - Math.abs(s - spot) / 40));
+    const putOiVal = Math.round(Math.max(4, 38 - Math.abs(s - spot) / 45));
+    const maxBarOi = 40;
+    const callBarWidth = Math.min(65, Math.round((callOiVal / maxBarOi) * 65));
+    const putBarWidth = Math.min(65, Math.round((putOiVal / maxBarOi) * 65));
+
+    // Check if this strike/action is selected in Leg 1, 2, or 3
+    const isLeg1Selected = isStrikeSelectedInLeg(1, s);
+    const isLeg2Selected = isStrikeSelectedInLeg(2, s);
+    const isLeg3Selected = isStrikeSelectedInLeg(3, s);
+
+    html += `<tr style="border-bottom: 1px solid #f1f5f9; background: ${isAtm ? '#fef3c7' : '#ffffff'};">
+      
+      <!-- CALL SIDE -->
+      <td style="padding: 7px 6px; background: ${isCallItm ? '#fef9c3' : 'transparent'}; font-weight: 600; color: #475569;">
+        ${callDelta > 0 ? callDelta.toFixed(2) : '0.05'}
+      </td>
+      <td style="padding: 7px 6px; background: ${isCallItm ? '#fef9c3' : 'transparent'}; font-weight: 800; color: #0f172a;">
+        ${callLtp.toFixed(2)}
+      </td>
+      <td style="padding: 7px 6px; background: ${isCallItm ? '#fef9c3' : 'transparent'}; text-align: right;">
+        <span style="font-size: 11px; color: #64748b;">${callOiVal}L</span>
+        <span style="display: inline-block; width: ${callBarWidth}px; height: 9px; background: #fca5a5; border-radius: 2px; margin-left: 4px; vertical-align: middle;"></span>
+      </td>
+      <td style="padding: 7px 6px; background: ${isCallItm ? '#fef9c3' : 'transparent'}; white-space: nowrap;">
+        <button type="button" class="btn-oc-action-b ${isLegSelected(s, 'CE', 'B') ? 'selected' : ''}" onclick="selectSensibullStrike(${s}, 'CE', 'B', ${callLtp})">B</button>
+        <button type="button" class="btn-oc-action-s ${isLegSelected(s, 'CE', 'S') ? 'selected' : ''}" onclick="selectSensibullStrike(${s}, 'CE', 'S', ${callLtp})">S</button>
+      </td>
+
+      <!-- CENTER STRIKE & IV -->
+      <td style="padding: 7px 10px; background: #f1f5f9; font-weight: 900; color: #0f172a; font-size: 13.5px; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">
+        ${s} ${isAtm ? '<span style="font-size:10px; color:#d97706; display:block;">● ATM</span>' : ''}
+      </td>
+      <td style="padding: 7px 6px; background: #f8fafc; font-size: 11.5px; color: #64748b;">
+        ${iv}
+      </td>
+
+      <!-- PUT SIDE -->
+      <td style="padding: 7px 6px; background: ${isPutItm ? '#fef9c3' : 'transparent'}; white-space: nowrap;">
+        <button type="button" class="btn-oc-action-b ${isLegSelected(s, 'PE', 'B') ? 'selected' : ''}" onclick="selectSensibullStrike(${s}, 'PE', 'B', ${putLtp})">B</button>
+        <button type="button" class="btn-oc-action-s ${isLegSelected(s, 'PE', 'S') ? 'selected' : ''}" onclick="selectSensibullStrike(${s}, 'PE', 'S', ${putLtp})">S</button>
+      </td>
+      <td style="padding: 7px 6px; background: ${isPutItm ? '#fef9c3' : 'transparent'}; text-align: left;">
+        <span style="display: inline-block; width: ${putBarWidth}px; height: 9px; background: #86efac; border-radius: 2px; margin-right: 4px; vertical-align: middle;"></span>
+        <span style="font-size: 11px; color: #64748b;">${putOiVal}L</span>
+      </td>
+      <td style="padding: 7px 6px; background: ${isPutItm ? '#fef9c3' : 'transparent'}; font-weight: 800; color: #0f172a;">
+        ${putLtp.toFixed(2)}
+      </td>
+      <td style="padding: 7px 6px; background: ${isPutItm ? '#fef9c3' : 'transparent'}; font-weight: 600; color: #475569;">
+        ${putDelta < 0 ? putDelta.toFixed(2) : '-0.05'}
+      </td>
+
+    </tr>`;
+  });
+
+  tbody.innerHTML = html;
+}
+
+function isLegSelected(strike, type, action) {
+  for (let i = 1; i <= 3; i++) {
+    const sEl = document.getElementById(`leg${i}Strike`);
+    const tEl = document.getElementById(`leg${i}Type`);
+    const aEl = document.getElementById(`leg${i}Action`);
+    if (sEl && tEl && aEl) {
+      if (parseInt(sEl.value) === strike && tEl.value === type && aEl.value === action) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function isStrikeSelectedInLeg(legNum, strike) {
+  const sEl = document.getElementById(`leg${legNum}Strike`);
+  return sEl && parseInt(sEl.value) === strike;
+}
+
+// WHEN USER CLICKS [B] OR [S] ON ANY STRIKE:
+function selectSensibullStrike(strike, type, action, ltp) {
+  // Find which leg to fill:
+  // First check if already selected in a leg, if so replace that leg
+  let targetLeg = 0;
+  for (let i = 1; i <= 3; i++) {
+    const sEl = document.getElementById(`leg${i}Strike`);
+    const tEl = document.getElementById(`leg${i}Type`);
+    if (sEl && parseInt(sEl.value) === strike && tEl && tEl.value === type) {
+      targetLeg = i;
+      break;
+    }
+  }
+
+  // If not already selected, find the first empty or default slot
+  if (targetLeg === 0) {
+    if (!document.getElementById("leg1Strike").dataset.userModified) {
+      targetLeg = 1;
+    } else if (!document.getElementById("leg2Strike").dataset.userModified) {
+      targetLeg = 2;
+    } else if (!document.getElementById("leg3Strike").dataset.userModified) {
+      targetLeg = 3;
+    } else {
+      // If all 3 were chosen, cycle through 1 -> 2 -> 3
+      window._lastTargetLeg = ((window._lastTargetLeg || 0) % 3) + 1;
+      targetLeg = window._lastTargetLeg;
+    }
+  }
+
+  // Populate Leg
+  const sEl = document.getElementById(`leg${targetLeg}Strike`);
+  const tEl = document.getElementById(`leg${targetLeg}Type`);
+  const aEl = document.getElementById(`leg${targetLeg}Action`);
+  const eEl = document.getElementById(`leg${targetLeg}Entry`);
+  const lEl = document.getElementById(`leg${targetLeg}LtpVal`);
+  const lotsEl = document.getElementById(`leg${targetLeg}Lots`);
+
+  if (sEl) {
+    sEl.value = strike;
+    sEl.dataset.userModified = "true";
+  }
+  if (tEl) tEl.value = type;
+  if (aEl) aEl.value = action;
+  if (eEl) eEl.value = ltp.toFixed(2);
+  if (lEl) lEl.value = ltp.toFixed(2);
+  if (lotsEl && (!lotsEl.value || lotsEl.value == 0)) {
+    lotsEl.value = targetLeg === 1 ? 6 : 2;
+  }
+
+  // Re-render table to show active button highlights
+  renderSensibullOptionChainTable();
+
+  // Highlight the selected leg card smoothly
+  const card = document.getElementById(`legCard${targetLeg}`);
+  if (card) {
+    card.style.transition = "transform 0.2s ease, box-shadow 0.2s ease";
+    card.style.transform = "scale(1.01)";
+    card.style.boxShadow = "0 0 15px rgba(37,99,235,0.3)";
+    setTimeout(() => {
+      card.style.transform = "none";
+      card.style.boxShadow = "none";
+    }, 400);
+  }
+}
+
+function clearLeg(legNum) {
+  const sEl = document.getElementById(`leg${legNum}Strike`);
+  const eEl = document.getElementById(`leg${legNum}Entry`);
+  const lEl = document.getElementById(`leg${legNum}LtpVal`);
+  if (sEl) {
+    sEl.value = "";
+    delete sEl.dataset.userModified;
+  }
+  if (eEl) eEl.value = "";
+  if (lEl) lEl.value = "";
+  renderSensibullOptionChainTable();
+}
+
+function clearSelectedBasketLegs() {
+  clearLeg(1);
+  clearLeg(2);
+  clearLeg(3);
+}
+
+function onManualLegChange(legNum) {
+  const sEl = document.getElementById(`leg${legNum}Strike`);
+  const tEl = document.getElementById(`leg${legNum}Type`);
+  const eEl = document.getElementById(`leg${legNum}Entry`);
+  const lEl = document.getElementById(`leg${legNum}LtpVal`);
+  if (sEl && tEl && eEl && lEl && sEl.value) {
+    const ltp = getLiveOptionLtp("NIFTY", "23-Nov-2026", parseFloat(sEl.value), tEl.value);
+    eEl.value = ltp.toFixed(2);
+    lEl.value = ltp.toFixed(2);
+  }
+  renderSensibullOptionChainTable();
+}
+
+// Hook into openPublishBasketTradeModal
+const originalOpenPublishBasketTradeModalSensibull = window.openPublishBasketTradeModal;
+window.openPublishBasketTradeModal = function() {
+  const overlay = document.getElementById("publishBasketTradeModalOverlay");
+  if (overlay) {
+    overlay.classList.add("active");
+    renderSensibullOptionChainTable();
+  }
+};
