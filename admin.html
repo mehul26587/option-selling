@@ -43,7 +43,7 @@
       </li>
       <li class="admin-nav-item">
         <a class="admin-nav-link" data-tab="strategy" onclick="switchAdminTab('strategy')">
-          <span>🎯</span> 3-Strike Basket Desk
+          <span>🎯</span> Trade Management
         </a>
       </li>
       <li class="admin-nav-item">
@@ -200,9 +200,17 @@
       
       <!-- Live Strategy Quotes Control -->
       <div class="admin-card">
-        <div class="admin-card-head">
-          <h2>🎯 Live 3-Strike Basket Strategy Manager (Sensibull Style)</h2>
-          <button class="admin-btn-primary" onclick="saveMultiLegStrategyLive()">⚡ Update Live Quotes & Recalculate P&L</button>
+        <div class="admin-card-head" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+          <div>
+            <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">🎯 Trade Management (3-Strike Basket Strategy Terminal)</h2>
+            <p style="font-size: 13px; color: #64748b; margin: 0;">Publish unified 3-strike basket trades, update real-time market LTPs, and broadcast automatically to subscribers.</p>
+          </div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="admin-btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 800; font-size: 13.5px; padding: 11px 22px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 8px;" onclick="openPublishBasketTradeModal()">
+              <span style="font-size: 16px;">➕</span> Add New Trade (3 Strikes)
+            </button>
+            <button class="admin-btn-primary" onclick="saveMultiLegStrategyLive()">⚡ Update Live Quotes</button>
+          </div>
         </div>
         <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
           <div class="admin-form-group">
@@ -612,6 +620,206 @@
       </div>
       <div class="admin-modal-footer">
         <button class="btn-export" onclick="closeBulkCsvModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- ==================== MODAL: ADD / PUBLISH 3-STRIKE BASKET TRADE ==================== -->
+  <div class="admin-modal-overlay" id="publishBasketTradeModalOverlay">
+    <div class="admin-modal" style="max-width: 860px; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="admin-modal-header" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 20px 24px;">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+            <span>🎯</span> Publish New 3-Strike Basket Trade (Single Trade)
+          </h3>
+          <p style="font-size: 12.5px; color: #94a3b8; margin: 0;">
+            આ એક સિંગલ ટ્રેડમાં ત્રણે-ત્રણ સ્ટ્રાઇક પ્રાઇસ ભેગી એડ થશે અને ઓટોમેટિક પ્લેટફોર્મ પર LIVE થશે.
+          </p>
+        </div>
+        <button class="modal-close-btn" style="color: #ffffff; font-size: 20px;" onclick="closePublishBasketTradeModal()">✕</button>
+      </div>
+
+      <div class="admin-modal-body" style="overflow-y: auto; padding: 22px 26px; background: #f8fafc;">
+        <form id="publishBasketTradeForm" onsubmit="handlePublishBasketTradeSubmit(event)">
+          
+          <!-- Master Trade Meta Details -->
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+            <h4 style="font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">
+              📋 Master Strategy Information
+            </h4>
+            <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+              <div class="admin-form-group">
+                <label>Strategy Name</label>
+                <input type="text" id="basketStrategyName" value="LiveIPO Pro" placeholder="e.g. LiveIPO Pro / Ratio Put Spread" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Underlying Index</label>
+                <select id="basketIndex" required>
+                  <option value="NIFTY" selected>NIFTY</option>
+                  <option value="BANKNIFTY">BANKNIFTY</option>
+                  <option value="FINNIFTY">FINNIFTY</option>
+                  <option value="SENSEX">SENSEX</option>
+                </select>
+              </div>
+              <div class="admin-form-group">
+                <label>Expiry Date</label>
+                <input type="text" id="basketExpiry" value="23-Nov-2026" placeholder="e.g. 23-Nov-2026" required>
+              </div>
+              <div class="admin-form-group">
+                <label>Trade Date</label>
+                <input type="text" id="basketTradeDate" value="${new Date().toISOString().split('T')[0]}" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3-STRIKE LEGS INPUT GRID -->
+          <h4 style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>⚡</span> Configure 3 Strike Legs (Unified Basket)
+          </h4>
+
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- LEG 1 (Trade 1) -->
+            <div style="background: #ffffff; border: 1.5px solid #fca5a5; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="font-size: 13px; font-weight: 800; color: #dc2626; display: flex; align-items: center; gap: 6px;">
+                  <span style="background: #fee2e2; padding: 2px 8px; border-radius: 4px;">LEG 1</span> First Strike Position
+                </span>
+                <span style="font-size: 11.5px; color: #64748b;">Primary Sell Leg</span>
+              </div>
+              <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
+                <div class="admin-form-group">
+                  <label>Strike Price</label>
+                  <input type="number" id="leg1Strike" value="25050" step="50" placeholder="e.g. 25050" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Option Type</label>
+                  <select id="leg1Type">
+                    <option value="PE" selected>PE (Put)</option>
+                    <option value="CE">CE (Call)</option>
+                  </select>
+                </div>
+                <div class="admin-form-group">
+                  <label>Action</label>
+                  <select id="leg1Action">
+                    <option value="S" selected>SELL (S)</option>
+                    <option value="B">BUY (B)</option>
+                  </select>
+                </div>
+                <div class="admin-form-group">
+                  <label>Lots</label>
+                  <input type="number" id="leg1Lots" value="6" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Entry Price (₹)</label>
+                  <input type="number" step="0.05" id="leg1Entry" value="46.35" placeholder="e.g. 46.35" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Current LTP (₹)</label>
+                  <input type="number" step="0.05" id="leg1LtpVal" value="24.30" placeholder="e.g. 24.30" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- LEG 2 (Trade 2) -->
+            <div style="background: #ffffff; border: 1.5px solid #fed7aa; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="font-size: 13px; font-weight: 800; color: #ea580c; display: flex; align-items: center; gap: 6px;">
+                  <span style="background: #ffedd5; padding: 2px 8px; border-radius: 4px;">LEG 2</span> Second Strike Position
+                </span>
+                <span style="font-size: 11.5px; color: #64748b;">Secondary Sell Leg</span>
+              </div>
+              <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
+                <div class="admin-form-group">
+                  <label>Strike Price</label>
+                  <input type="number" id="leg2Strike" value="25350" step="50" placeholder="e.g. 25350" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Option Type</label>
+                  <select id="leg2Type">
+                    <option value="PE" selected>PE (Put)</option>
+                    <option value="CE">CE (Call)</option>
+                  </select>
+                </div>
+                <div class="admin-form-group">
+                  <label>Action</label>
+                  <select id="leg2Action">
+                    <option value="S" selected>SELL (S)</option>
+                    <option value="B">BUY (B)</option>
+                  </select>
+                </div>
+                <div class="admin-form-group">
+                  <label>Lots</label>
+                  <input type="number" id="leg2Lots" value="2" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Entry Price (₹)</label>
+                  <input type="number" step="0.05" id="leg2Entry" value="120.75" placeholder="e.g. 120.75" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Current LTP (₹)</label>
+                  <input type="number" step="0.05" id="leg2LtpVal" value="81.00" placeholder="e.g. 81.00" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- LEG 3 (Trade 3) -->
+            <div style="background: #ffffff; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span style="font-size: 13px; font-weight: 800; color: #2563eb; display: flex; align-items: center; gap: 6px;">
+                  <span style="background: #dbeafe; padding: 2px 8px; border-radius: 4px;">LEG 3</span> Third Strike Position (Hedge)
+                </span>
+                <span style="font-size: 11.5px; color: #64748b;">Protective Buy Leg</span>
+              </div>
+              <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
+                <div class="admin-form-group">
+                  <label>Strike Price</label>
+                  <input type="number" id="leg3Strike" value="25600" step="50" placeholder="e.g. 25600" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Option Type</label>
+                  <select id="leg3Type">
+                    <option value="PE" selected>PE (Put)</option>
+                    <option value="CE">CE (Call)</option>
+                  </select>
+                </div>
+                <div class="admin-form-group">
+                  <label>Action</label>
+                  <select id="leg3Action">
+                    <option value="B" selected>BUY (B)</option>
+                    <option value="S">SELL (S)</option>
+                  </select>
+                </div>
+                <div class="admin-form-group">
+                  <label>Lots</label>
+                  <input type="number" id="leg3Lots" value="2" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Entry Price (₹)</label>
+                  <input type="number" step="0.05" id="leg3Entry" value="236.85" placeholder="e.g. 236.85" required>
+                </div>
+                <div class="admin-form-group">
+                  <label>Current LTP (₹)</label>
+                  <input type="number" step="0.05" id="leg3LtpVal" value="203.20" placeholder="e.g. 203.20" required>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Risk / Guidance Note -->
+          <div style="background: #f1f5f9; border-radius: 8px; padding: 12px 14px; margin-top: 18px; font-size: 12.5px; color: #475569;">
+            💡 <strong>નોંધ:</strong> પબ્લિશ કરવાથી આ નવો 3-સ્ટ્રાઇક ટ્રેડ ઓટોમેટિક તમામ સબ્સ્ક્રાઇબર્સના ટર્મિનલ પર લાઇવ થઈ જશે અને જૂના ટ્રેડ્સ ટ્રેડ હિસ્ટ્રીમાં સેવ રહેશે.
+          </div>
+
+          <div class="admin-modal-footer" style="padding: 16px 0 0 0; margin-top: 18px; background: transparent;">
+            <button type="button" class="btn-export" onclick="closePublishBasketTradeModal()">Cancel</button>
+            <button type="submit" class="admin-btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 800; font-size: 14px; padding: 12px 26px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+              📢 Publish 3-Leg Basket Trade (Go Live)
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

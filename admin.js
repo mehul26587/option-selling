@@ -675,3 +675,189 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+
+
+// ========================================================
+// 3-STRIKE BASKET TRADE PUBLISHING MODAL HANDLERS
+// ========================================================
+function openPublishBasketTradeModal() {
+  const overlay = document.getElementById("publishBasketTradeModalOverlay");
+  if (overlay) {
+    overlay.classList.add("active");
+    // Pre-populate trade date with today's date formatted DD-MM-YYYY
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    const formattedDate = `${dd}-${mm}-${yyyy}`;
+    
+    const dateInput = document.getElementById("basketTradeDate");
+    if (dateInput) dateInput.value = formattedDate;
+  }
+}
+
+function closePublishBasketTradeModal() {
+  const overlay = document.getElementById("publishBasketTradeModalOverlay");
+  if (overlay) overlay.classList.remove("active");
+}
+
+function handlePublishBasketTradeSubmit(e) {
+  e.preventDefault();
+
+  const strategyName = document.getElementById("basketStrategyName").value || "LiveIPO Pro";
+  const index = document.getElementById("basketIndex").value || "NIFTY";
+  const expiry = document.getElementById("basketExpiry").value || "23-Nov-2026";
+  const tradeDate = document.getElementById("basketTradeDate").value || new Date().toISOString().split("T")[0];
+
+  // Leg 1
+  const leg1 = {
+    strike: document.getElementById("leg1Strike").value,
+    type: document.getElementById("leg1Type").value,
+    action: document.getElementById("leg1Action").value,
+    lots: parseInt(document.getElementById("leg1Lots").value) || 6,
+    entry: parseFloat(document.getElementById("leg1Entry").value) || 0,
+    ltp: parseFloat(document.getElementById("leg1LtpVal").value) || 0
+  };
+
+  // Leg 2
+  const leg2 = {
+    strike: document.getElementById("leg2Strike").value,
+    type: document.getElementById("leg2Type").value,
+    action: document.getElementById("leg2Action").value,
+    lots: parseInt(document.getElementById("leg2Lots").value) || 2,
+    entry: parseFloat(document.getElementById("leg2Entry").value) || 0,
+    ltp: parseFloat(document.getElementById("leg2LtpVal").value) || 0
+  };
+
+  // Leg 3
+  const leg3 = {
+    strike: document.getElementById("leg3Strike").value,
+    type: document.getElementById("leg3Type").value,
+    action: document.getElementById("leg3Action").value,
+    lots: parseInt(document.getElementById("leg3Lots").value) || 2,
+    entry: parseFloat(document.getElementById("leg3Entry").value) || 0,
+    ltp: parseFloat(document.getElementById("leg3LtpVal").value) || 0
+  };
+
+  // Load existing multi-strike trades
+  let trades = [];
+  try {
+    const raw = localStorage.getItem("liveipo_multistrike_trades");
+    if (raw) trades = JSON.parse(raw);
+  } catch (err) {}
+
+  // Find next Trade No
+  let maxTradeNo = 0;
+  let maxSrNo = 0;
+  trades.forEach(t => {
+    if (t.tradeNo > maxTradeNo) maxTradeNo = t.tradeNo;
+    if (t.legs) {
+      t.legs.forEach(l => {
+        if (l.srNo > maxSrNo) maxSrNo = l.srNo;
+      });
+    }
+  });
+
+  const nextTradeNo = maxTradeNo + 1;
+  const sr1 = maxSrNo + 1;
+  const sr2 = maxSrNo + 2;
+  const sr3 = maxSrNo + 3;
+
+  // Calculate initial net P&Ls
+  // For Sell: (Entry - LTP) * lots * 25 * 2.5
+  // For Buy: (LTP - Entry) * lots * 25 * 2.23
+  const pnl1 = Math.round((leg1.action === "S" ? (leg1.entry - leg1.ltp) : (leg1.ltp - leg1.entry)) * 25 * leg1.lots * 2.5);
+  const pnl2 = Math.round((leg2.action === "S" ? (leg2.entry - leg2.ltp) : (leg2.ltp - leg2.entry)) * 25 * leg2.lots * 2.4);
+  const pnl3 = Math.round((leg3.action === "B" ? (leg3.ltp - leg3.entry) : (leg3.entry - leg3.ltp)) * 25 * leg3.lots * 2.23);
+  const totalPnl = pnl1 + pnl2 + pnl3;
+
+  const newTrade = {
+    tradeNo: nextTradeNo,
+    date: tradeDate,
+    index: index,
+    strategy: strategyName,
+    status: "LIVE",
+    totalProfit: totalPnl,
+    legs: [
+      {
+        srNo: sr1,
+        tradeId: `TRD-${100 + sr1}`,
+        strike: leg1.strike,
+        type: leg1.type,
+        action: leg1.action,
+        entry: leg1.entry,
+        ltp: leg1.ltp,
+        lots: leg1.lots,
+        netPnl: pnl1,
+        status: "LIVE"
+      },
+      {
+        srNo: sr2,
+        tradeId: `TRD-${100 + sr2}`,
+        strike: leg2.strike,
+        type: leg2.type,
+        action: leg2.action,
+        entry: leg2.entry,
+        ltp: leg2.ltp,
+        lots: leg2.lots,
+        netPnl: pnl2,
+        status: "LIVE"
+      },
+      {
+        srNo: sr3,
+        tradeId: `TRD-${100 + sr3}`,
+        strike: leg3.strike,
+        type: leg3.type,
+        action: leg3.action,
+        entry: leg3.entry,
+        ltp: leg3.ltp,
+        lots: leg3.lots,
+        netPnl: pnl3,
+        status: "LIVE"
+      }
+    ]
+  };
+
+  // Prepend as top active trade
+  trades.unshift(newTrade);
+  localStorage.setItem("liveipo_multistrike_trades", JSON.stringify(trades));
+
+  // Also update live multi-leg strategy (Sensibull) so frontend matches
+  try {
+    let strategies = [];
+    const rawStrat = localStorage.getItem("liveipo_multileg_strategies");
+    if (rawStrat) strategies = JSON.parse(rawStrat);
+    if (strategies.length > 0) {
+      strategies[0].expiry = expiry;
+      strategies[0].index = index;
+      strategies[0].legs[0].instrument = `${expiry} ${leg1.strike} ${leg1.type}`;
+      strategies[0].legs[0].lots = leg1.lots;
+      strategies[0].legs[0].avgPrice = leg1.entry;
+      strategies[0].legs[0].ltp = leg1.ltp;
+      strategies[0].legs[0].unbooked = pnl1;
+      strategies[0].legs[0].pnl = pnl1;
+
+      strategies[0].legs[1].instrument = `${expiry} ${leg2.strike} ${leg2.type}`;
+      strategies[0].legs[1].lots = leg2.lots;
+      strategies[0].legs[1].avgPrice = leg2.entry;
+      strategies[0].legs[1].ltp = leg2.ltp;
+      strategies[0].legs[1].unbooked = pnl2;
+      strategies[0].legs[1].pnl = pnl2;
+
+      strategies[0].legs[2].instrument = `${expiry} ${leg3.strike} ${leg3.type}`;
+      strategies[0].legs[2].lots = leg3.lots;
+      strategies[0].legs[2].avgPrice = leg3.entry;
+      strategies[0].legs[2].ltp = leg3.ltp;
+      strategies[0].legs[2].unbooked = pnl3;
+      strategies[0].legs[2].pnl = pnl3;
+
+      strategies[0].totalUnbooked = totalPnl;
+      strategies[0].totalPnl = totalPnl;
+      localStorage.setItem("liveipo_multileg_strategies", JSON.stringify(strategies));
+    }
+  } catch (err) {}
+
+  closePublishBasketTradeModal();
+  renderMultiStrikeTradeHistoryTable();
+  alert(`✓ Trade #${nextTradeNo} (${strategyName} - 3 Strikes) Published LIVE successfully!\nTotal Basket P&L: ₹${totalPnl.toLocaleString("en-IN")}`);
+}
