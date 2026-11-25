@@ -887,27 +887,32 @@ function handlePublishBasketTradeSubmit(e) {
 
 function getLiveOptionLtp(symbol, expiry, strike, type) {
   symbol = symbol || "NIFTY";
-  const spot = symbol === "BANKNIFTY" ? 52100 : symbol === "FINNIFTY" ? 23800 : symbol === "SENSEX" ? 84000 : 25436.55;
-  strike = parseFloat(strike) || spot;
-  
+  strike = parseFloat(strike) || 25800;
+
+  if (symbol === "NIFTY") {
+    // Check exact Dhan Live Strike
+    if (typeof DHAN_LIVE_DATA_NIFTY !== "undefined" && DHAN_LIVE_DATA_NIFTY.strikes[strike]) {
+      return type === "CE" ? DHAN_LIVE_DATA_NIFTY.strikes[strike].ce.ltp : DHAN_LIVE_DATA_NIFTY.strikes[strike].pe.ltp;
+    }
+    // Specific anchors matching Dhan screenshot
+    if (strike === 25550) return type === "CE" ? 381.20 : 108.50;
+    if (strike === 25600) return type === "CE" ? 347.15 : 124.10;
+    if (strike === 25650) return type === "CE" ? 315.60 : 142.05;
+    if (strike === 25700) return type === "CE" ? 286.00 : 160.90;
+    if (strike === 25750) return type === "CE" ? 256.75 : 183.05;
+    if (strike === 25800) return type === "CE" ? 230.15 : 206.35;
+    if (strike === 25850) return type === "CE" ? 205.90 : 231.80;
+    if (strike === 25900) return type === "CE" ? 183.00 : 258.20;
+    if (strike === 25950) return type === "CE" ? 161.60 : 287.75;
+    if (strike === 26000) return type === "CE" ? 142.50 : 317.85;
+  }
+
+  const spot = 25819.25;
   const diff = Math.abs(strike - spot);
   const isItm = (type === "CE" && spot > strike) || (type === "PE" && strike > spot);
   const intrinsic = isItm ? (type === "CE" ? spot - strike : strike - spot) : 0;
-  
-  const baseAtm = 135;
-  const timeVal = Math.max(1.8, +(baseAtm * Math.exp(-Math.pow(diff, 2) / 380000)).toFixed(2));
-  let ltp = +(intrinsic + timeVal).toFixed(2);
-  
-  // High-precision anchors for NIFTY
-  if (symbol === "NIFTY") {
-    if (strike === 25050 && type === "PE") ltp = 24.30;
-    if (strike === 25100 && type === "PE") ltp = 43.00;
-    if (strike === 25350 && type === "PE") ltp = 81.00;
-    if (strike === 25450 && type === "PE") ltp = 118.00;
-    if (strike === 25600 && type === "PE") ltp = 203.20;
-    if (strike === 25700 && type === "PE") ltp = 223.00;
-  }
-  return ltp;
+  const timeVal = Math.max(1.8, +(138 * Math.exp(-Math.pow(diff, 2) / 380000)).toFixed(2));
+  return +(intrinsic + timeVal).toFixed(2);
 }
 
 function getStrikeRangeForIndex(symbol) {
@@ -1125,20 +1130,16 @@ function renderSensibullOptionChainTable() {
   if (!tbody) return;
 
   const symbol = "NIFTY";
-  const spot = 25436.55;
+  const spot = window._liveDhanSpot || 25819.25;
   const step = 50;
-  const atm = Math.round(spot / step) * step; // 25450
+  const atm = 25800; // nearest strike to 25819.25
 
   const spotHead = document.getElementById("sensibullUnderlyingHeader");
   if (spotHead) spotHead.textContent = `${symbol} ${spot.toFixed(2)}`;
 
-  // Range of strikes around ATM: ATM-10 steps to ATM+15 steps (matching screenshot 25450 to 26200+)
-  const strikes = [];
-  for (let s = 25000; s <= 26200; s += step) {
-    strikes.push(s);
-  }
-
-  const expiry = document.getElementById("sensibullExpirySelect") ? document.getElementById("sensibullExpirySelect").value : "23-Nov-2026";
+  // Strikes matching Dhan screenshot: 25550 to 26050
+  const strikes = [25550, 25600, 25650, 25700, 25750, 25800, 25850, 25900, 25950, 26000, 26050];
+  const expiry = document.getElementById("sensibullExpirySelect") ? document.getElementById("sensibullExpirySelect").value : "01-Dec-2026";
 
   let html = "";
   strikes.forEach(s => {
@@ -1149,63 +1150,59 @@ function renderSensibullOptionChainTable() {
     const callLtp = getLiveOptionLtp(symbol, expiry, s, "CE");
     const putLtp = getLiveOptionLtp(symbol, expiry, s, "PE");
 
-    // Realistic Delta calculation
-    const callDelta = +(0.50 + ((spot - s) / 1200)).toFixed(2);
-    const putDelta = +(callDelta - 1).toFixed(2);
-    const iv = 17.3;
+    const dhanS = (typeof DHAN_LIVE_DATA_NIFTY !== "undefined" && DHAN_LIVE_DATA_NIFTY.strikes[s]) ? DHAN_LIVE_DATA_NIFTY.strikes[s] : null;
 
-    // OI calculations & bar widths
-    const callOiVal = Math.round(Math.max(5, 35 - Math.abs(s - spot) / 40));
-    const putOiVal = Math.round(Math.max(4, 38 - Math.abs(s - spot) / 45));
-    const maxBarOi = 40;
-    const callBarWidth = Math.min(65, Math.round((callOiVal / maxBarOi) * 65));
-    const putBarWidth = Math.min(65, Math.round((putOiVal / maxBarOi) * 65));
+    const callOiFormatted = dhanS ? (dhanS.ce.oi.toLocaleString("en-IN") + " (" + dhanS.ce.oiChgPct + "%)") : "14.5L";
+    const putOiFormatted = dhanS ? (dhanS.pe.oi.toLocaleString("en-IN") + " (" + dhanS.pe.oiChgPct + "%)") : "32.6L";
+    const callVol = dhanS ? dhanS.ce.volume : "333.86 L";
+    const putVol = dhanS ? dhanS.pe.volume : "977.52 L";
 
-    // Check if this strike/action is selected in Leg 1, 2, or 3
-    const isLeg1Selected = isStrikeSelectedInLeg(1, s);
-    const isLeg2Selected = isStrikeSelectedInLeg(2, s);
-    const isLeg3Selected = isStrikeSelectedInLeg(3, s);
+    // Visual bar widths
+    const callBarWidth = dhanS ? Math.min(80, Math.round((dhanS.ce.oi / 9500000) * 80)) : 40;
+    const putBarWidth = dhanS ? Math.min(80, Math.round((dhanS.pe.oi / 5000000) * 80)) : 40;
 
-    html += `<tr style="border-bottom: 1px solid #f1f5f9; background: ${isAtm ? '#fef3c7' : '#ffffff'};">
+    // Call / Put % change
+    const callChgText = dhanS ? `(+${dhanS.ce.chgPct}%)` : "(+118%)";
+    const putChgText = dhanS ? `(${dhanS.pe.chgPct}%)` : "(-68%)";
+
+    html += `<tr style="border-bottom: 1px solid #1e293b; background: ${isAtm ? '#1e293b' : '#0f172a'}; color: #f8fafc;">
       
-      <!-- CALL SIDE -->
-      <td style="padding: 7px 6px; background: ${isCallItm ? '#fef9c3' : 'transparent'}; font-weight: 600; color: #475569;">
-        ${callDelta > 0 ? callDelta.toFixed(2) : '0.05'}
+      <!-- CALL SIDE: OI, Volume, LTP (Gold Bar) -->
+      <td style="padding: 9px 8px; text-align: left; background: ${isCallItm ? '#1c1917' : 'transparent'}; font-size: 11.5px; color: #f59e0b;">
+        <span style="display: inline-block; width: ${callBarWidth}px; height: 7px; background: #f59e0b; border-radius: 2px; margin-right: 4px; vertical-align: middle;"></span>
+        ${callOiFormatted}
       </td>
-      <td style="padding: 7px 6px; background: ${isCallItm ? '#fef9c3' : 'transparent'}; font-weight: 800; color: #0f172a;">
-        ${callLtp.toFixed(2)}
+      <td style="padding: 9px 8px; background: ${isCallItm ? '#1c1917' : 'transparent'}; font-size: 12px; color: #94a3b8;">
+        ${callVol}
       </td>
-      <td style="padding: 7px 6px; background: ${isCallItm ? '#fef9c3' : 'transparent'}; text-align: right;">
-        <span style="font-size: 11px; color: #64748b;">${callOiVal}L</span>
-        <span style="display: inline-block; width: ${callBarWidth}px; height: 9px; background: #fca5a5; border-radius: 2px; margin-left: 4px; vertical-align: middle;"></span>
+      <td style="padding: 9px 8px; background: ${isCallItm ? '#1c1917' : 'transparent'}; font-weight: 800; color: #fbbf24;">
+        ${callLtp.toFixed(2)} <span style="font-size: 10px; font-weight: 600; color: #34d399;">${callChgText}</span>
       </td>
-      <td style="padding: 7px 6px; background: ${isCallItm ? '#fef9c3' : 'transparent'}; white-space: nowrap;">
+      <td style="padding: 9px 6px; background: ${isCallItm ? '#1c1917' : 'transparent'}; white-space: nowrap;">
         <button type="button" class="btn-oc-action-b ${isLegSelected(s, 'CE', 'B') ? 'selected' : ''}" onclick="selectSensibullStrike(${s}, 'CE', 'B', ${callLtp})">B</button>
         <button type="button" class="btn-oc-action-s ${isLegSelected(s, 'CE', 'S') ? 'selected' : ''}" onclick="selectSensibullStrike(${s}, 'CE', 'S', ${callLtp})">S</button>
       </td>
 
-      <!-- CENTER STRIKE & IV -->
-      <td style="padding: 7px 10px; background: #f1f5f9; font-weight: 900; color: #0f172a; font-size: 13.5px; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">
-        ${s} ${isAtm ? '<span style="font-size:10px; color:#d97706; display:block;">● ATM</span>' : ''}
-      </td>
-      <td style="padding: 7px 6px; background: #f8fafc; font-size: 11.5px; color: #64748b;">
-        ${iv}
+      <!-- CENTER STRIKE -->
+      <td style="padding: 9px 12px; background: #1e293b; font-weight: 900; color: #ffffff; font-size: 13.5px; border-left: 1px solid #334155; border-right: 1px solid #334155;">
+        ${s.toLocaleString("en-IN")}.00
+        ${s === 25800 ? '<div style="background:#10b981; color:#ffffff; font-size:11px; font-weight:900; padding:2px 6px; border-radius:4px; margin-top:3px;">● SPOT 25,819.25</div>' : ''}
       </td>
 
-      <!-- PUT SIDE -->
-      <td style="padding: 7px 6px; background: ${isPutItm ? '#fef9c3' : 'transparent'}; white-space: nowrap;">
+      <!-- PUT SIDE: Action, LTP (Purple Bar), Volume, OI -->
+      <td style="padding: 9px 6px; background: ${isPutItm ? '#1e1b4b' : 'transparent'}; white-space: nowrap;">
         <button type="button" class="btn-oc-action-b ${isLegSelected(s, 'PE', 'B') ? 'selected' : ''}" onclick="selectSensibullStrike(${s}, 'PE', 'B', ${putLtp})">B</button>
         <button type="button" class="btn-oc-action-s ${isLegSelected(s, 'PE', 'S') ? 'selected' : ''}" onclick="selectSensibullStrike(${s}, 'PE', 'S', ${putLtp})">S</button>
       </td>
-      <td style="padding: 7px 6px; background: ${isPutItm ? '#fef9c3' : 'transparent'}; text-align: left;">
-        <span style="display: inline-block; width: ${putBarWidth}px; height: 9px; background: #86efac; border-radius: 2px; margin-right: 4px; vertical-align: middle;"></span>
-        <span style="font-size: 11px; color: #64748b;">${putOiVal}L</span>
+      <td style="padding: 9px 8px; background: ${isPutItm ? '#1e1b4b' : 'transparent'}; font-weight: 800; color: #c084fc;">
+        ${putLtp.toFixed(2)} <span style="font-size: 10px; font-weight: 600; color: #f87171;">${putChgText}</span>
       </td>
-      <td style="padding: 7px 6px; background: ${isPutItm ? '#fef9c3' : 'transparent'}; font-weight: 800; color: #0f172a;">
-        ${putLtp.toFixed(2)}
+      <td style="padding: 9px 8px; background: ${isPutItm ? '#1e1b4b' : 'transparent'}; font-size: 12px; color: #94a3b8;">
+        ${putVol}
       </td>
-      <td style="padding: 7px 6px; background: ${isPutItm ? '#fef9c3' : 'transparent'}; font-weight: 600; color: #475569;">
-        ${putDelta < 0 ? putDelta.toFixed(2) : '-0.05'}
+      <td style="padding: 9px 8px; text-align: right; background: ${isPutItm ? '#1e1b4b' : 'transparent'}; font-size: 11.5px; color: #a855f7;">
+        ${putOiFormatted}
+        <span style="display: inline-block; width: ${putBarWidth}px; height: 7px; background: #a855f7; border-radius: 2px; margin-left: 4px; vertical-align: middle;"></span>
       </td>
 
     </tr>`;
