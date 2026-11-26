@@ -650,3 +650,35 @@ body.admin-body {
   color: #0f172a;
   font-weight: 800;
 }
+
+
+/* Live Pulse & Price Flashing Animations */
+@keyframes liveDotPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  animation: liveDotPulse 1.2s infinite ease-in-out;
+}
+
+.price-tick-val {
+  font-weight: 800;
+  font-size: 13px;
+  display: inline-block;
+  transition: color 0.35s ease, transform 0.2s ease;
+}
+
+.price-tick-val.up {
+  color: #10b981 !important;
+}
+
+.price-tick-val.down {
+  color: #ef4444 !important;
+}
