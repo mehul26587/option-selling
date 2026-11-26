@@ -180,6 +180,9 @@ function renderUsersTable(users) {
       </tr>
     `;
   }).join("");
+
+  if (tbody) tbody.innerHTML = usersHtml;
+  if (detailedTbody) detailedTbody.innerHTML = usersHtml;
 }
 
 function openExtendModal(email) {
@@ -287,6 +290,9 @@ function renderTradesTable(trades) {
       </tr>
     `;
   }).join("");
+
+  if (tbody) tbody.innerHTML = tradesHtml;
+  if (fullTbody) fullTbody.innerHTML = tradesHtml;
 }
 
 function openAddTradeModal() {
