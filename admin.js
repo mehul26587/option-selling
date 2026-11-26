@@ -79,8 +79,15 @@ function getAdminUsers() {
 function getAdminTrades() {
   try {
     const raw = localStorage.getItem("liveipo_shared_trades");
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
   } catch (e) {}
+
+  if (typeof SEED_TRADES !== "undefined" && Array.isArray(SEED_TRADES) && SEED_TRADES.length > 0) {
+    return SEED_TRADES;
+  }
   return [];
 }
 
@@ -696,6 +703,19 @@ function switchAdminTab(tabKey) {
   document.querySelectorAll(".admin-tab-section").forEach(sec => {
     sec.style.display = sec.id === `adminTab-${tabKey}` ? "block" : "none";
   });
+
+  if (tabKey === "users") {
+    renderUsersTable(getAdminUsers());
+  } else if (tabKey === "trades") {
+    renderTradesTable(getAdminTrades());
+  } else if (tabKey === "overview") {
+    refreshAdminDashboard();
+  } else if (tabKey === "strategy") {
+    loadMultiLegStrategyAdmin();
+    renderAllSensibullChains();
+  } else if (tabKey === "optionchain") {
+    renderAllSensibullChains();
+  }
 }
 
 // Init on DOM ready
