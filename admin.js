@@ -1564,7 +1564,10 @@ function stepLiveMarketTick() {
 
   // Update Trade Management Spot input
   const stratSpot = document.getElementById('adminStrategySpot');
-  if (stratSpot) stratSpot.value = state.spot.toFixed(2);
+  if (stratSpot) {
+    stratSpot.value = state.spot.toFixed(2);
+    stratSpot.style.color = spotChange >= 0 ? '#10b981' : '#ef4444';
+  }
 
   // Micro-tick every strike in option chain according to Delta
   Object.keys(state.strikes).forEach(k => {
@@ -1578,13 +1581,26 @@ function stepLiveMarketTick() {
     s.lastPeMove = peMove;
   });
 
-  // Update Trade Management 3-Leg Basket LTP inputs
+  // Update Trade Management 3-Leg Basket LTP inputs dynamically
   const l1Ltp = document.getElementById('adminLeg1Ltp');
   const l2Ltp = document.getElementById('adminLeg2Ltp');
   const l3Ltp = document.getElementById('adminLeg3Ltp');
-  if (l1Ltp) l1Ltp.value = (parseFloat(l1Ltp.value || 24.30) + (spotChange * -0.20 + (Math.random() - 0.5) * 0.08)).toFixed(2);
-  if (l2Ltp) l2Ltp.value = (parseFloat(l2Ltp.value || 81.00) + (spotChange * -0.35 + (Math.random() - 0.5) * 0.12)).toFixed(2);
-  if (l3Ltp) l3Ltp.value = (parseFloat(l3Ltp.value || 203.20) + (spotChange * -0.45 + (Math.random() - 0.5) * 0.18)).toFixed(2);
+  
+  if (l1Ltp) {
+    const p1 = (parseFloat(l1Ltp.value) || 24.30) + (-spotChange * 0.22 + (Math.random() - 0.5) * 0.15);
+    l1Ltp.value = Math.max(0.05, p1).toFixed(2);
+    l1Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
+  }
+  if (l2Ltp) {
+    const p2 = (parseFloat(l2Ltp.value) || 81.00) + (-spotChange * 0.38 + (Math.random() - 0.5) * 0.20);
+    l2Ltp.value = Math.max(0.05, p2).toFixed(2);
+    l2Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
+  }
+  if (l3Ltp) {
+    const p3 = (parseFloat(l3Ltp.value) || 203.20) + (-spotChange * 0.48 + (Math.random() - 0.5) * 0.30);
+    l3Ltp.value = Math.max(0.05, p3).toFixed(2);
+    l3Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
+  }
 
   // Update modal 3-leg basket LTP inputs if modal is active
   const modalL1 = document.getElementById('leg1LtpVal');
