@@ -151,11 +151,12 @@ function refreshAdminDashboard() {
 // ==========================================
 function renderUsersTable(users) {
   const tbody = document.getElementById("adminUsersTableBody");
-  if (!tbody) return;
+  const detailedTbody = document.getElementById("adminUsersDetailedTableBody");
+  if (!tbody && !detailedTbody) return;
 
   const now = new Date();
 
-  tbody.innerHTML = users.map(u => {
+  const usersHtml = users.map(u => {
     const expDate = new Date(u.expiryDate);
     const diffDays = Math.ceil((expDate - now) / 86400000);
     const isExpired = diffDays <= 0;
@@ -192,12 +193,12 @@ function openExtendModal(email) {
   document.getElementById("customExpiryInput").value = user.expiryDate;
 
   const overlay = document.getElementById("extendExpiryModalOverlay");
-  if (overlay) overlay.classList.add("active");
+  if (overlay) overlay.classList.add("active"); overlay.style.display = "flex";
 }
 
 function closeExtendModal() {
   const overlay = document.getElementById("extendExpiryModalOverlay");
-  if (overlay) overlay.classList.remove("active");
+  if (overlay) overlay.classList.remove("active"); overlay.style.display = "none";
   selectedUserForExpiry = null;
 }
 
@@ -256,9 +257,10 @@ function saveNewUserExpiry(email, newExpiryDate) {
 // ==========================================
 function renderTradesTable(trades) {
   const tbody = document.getElementById("adminTradesTableBody");
-  if (!tbody) return;
+  const fullTbody = document.getElementById("adminTradesFullTableBody");
+  if (!tbody && !fullTbody) return;
 
-  tbody.innerHTML = trades.map(t => {
+  const tradesHtml = trades.map(t => {
     const isProfit = (t.pnl || 0) >= 0;
     return `
       <tr>
