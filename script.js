@@ -803,22 +803,28 @@ function renderSensibullInterface(containerId) {
                   </tr>
                 </thead>
                 <tbody>
-                  ${(strat.dayByDayHistory || []).map(row => `
-                    <tr>
-                      <td><strong>${row.date}</strong></td>
-                      <td>${row.spot.toFixed(2)}</td>
-                      <td>₹${row.p25050.toFixed(2)}</td>
-                      <td>₹${row.p25350.toFixed(2)}</td>
-                      <td>₹${row.p25600.toFixed(2)}</td>
-                      <td style="color: ${row.dayPnl >= 0 ? '#10b981' : '#ef4444'}; font-weight: 700;">
-                        ${row.dayPnl >= 0 ? '+' : ''}₹${row.dayPnl.toLocaleString("en-IN")}
+                  ${(strat.dayByDayHistory || []).map(row => {
+                    const spotVal = (row.spot ?? row.niftySpot ?? 25819.25);
+                    const p1Val = (row.p25050 ?? row.leg1Ltp ?? 0);
+                    const p2Val = (row.p25350 ?? row.leg2Ltp ?? 0);
+                    const p3Val = (row.p25600 ?? row.leg3Ltp ?? 0);
+                    const dPnl = (row.dayPnl ?? row.unbookedPnl ?? 0);
+                    const tPnl = (row.totalPnl ?? 0);
+                    return `<tr>
+                      <td><strong>${row.date || '-'}</strong></td>
+                      <td>${typeof spotVal === 'number' ? spotVal.toFixed(2) : spotVal}</td>
+                      <td>₹${typeof p1Val === 'number' ? p1Val.toFixed(2) : p1Val}</td>
+                      <td>₹${typeof p2Val === 'number' ? p2Val.toFixed(2) : p2Val}</td>
+                      <td>₹${typeof p3Val === 'number' ? p3Val.toFixed(2) : p3Val}</td>
+                      <td style="color: ${dPnl >= 0 ? '#10b981' : '#ef4444'}; font-weight: 700;">
+                        ${dPnl >= 0 ? '+' : ''}₹${dPnl.toLocaleString("en-IN")}
                       </td>
-                      <td style="color: ${row.totalPnl >= 0 ? '#10b981' : '#ef4444'}; font-weight: 800;">
-                        ${row.totalPnl >= 0 ? '+' : ''}₹${row.totalPnl.toLocaleString("en-IN")}
+                      <td style="color: ${tPnl >= 0 ? '#10b981' : '#ef4444'}; font-weight: 800;">
+                        ${tPnl >= 0 ? '+' : ''}₹${tPnl.toLocaleString("en-IN")}
                       </td>
-                      <td><span style="font-size: 11px; font-weight: 700; color: #10b981;">${row.status}</span></td>
-                    </tr>
-                  `).join("")}
+                      <td><span style="font-size: 11px; font-weight: 700; color: #10b981;">${row.status || 'Active'}</span></td>
+                    </tr>`;
+                  }).join("")}
                 </tbody>
               </table>
             </div>
@@ -915,7 +921,7 @@ function renderSensibullInterface(containerId) {
   `;
 
   if (activeSensibullTab === "payoff") {
-    setTimeout(drawSensibullPayoffGraph, 100);
+    if (typeof drawSensibullPayoffGraph === "function") { setTimeout(drawSensibullPayoffGraph, 100); }
   }
 }
 
@@ -1918,6 +1924,8 @@ function generateOptionChainData(symbol, spot) {
   }
 
   return {
+    symbol,
+    spotPrice: spot,
     strikes,
     totalCallOi: +totalCallOi.toFixed(2),
     totalPutOi: +totalPutOi.toFixed(2),
@@ -1951,7 +1959,9 @@ function renderOptionChainTable(data) {
   const now = new Date();
   const timeStr = `${now.getDate().toString().padStart(2, '0')}-Nov-2026 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} IST`;
 
-  const spotText = `Underlying Index : ${data.symbol} ${data.spotPrice.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} As on ${timeStr}`;
+  const spotVal = data.spotPrice ?? data.underlyingPrice ?? window._liveDhanSpot ?? 25819.25;
+  const spotFormatted = typeof spotVal === 'number' ? spotVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : spotVal;
+  const spotText = `Underlying Index : ${data.symbol || 'NIFTY'} ${spotFormatted} As on ${timeStr}`;
   const spotEl = document.getElementById("ocUnderlyingIndexLine");
   const adminSpotEl = document.getElementById("adminOcUnderlyingIndexLine");
 
@@ -2424,7 +2434,7 @@ setInterval(() => {
 // ========================================================
 // PURE WHITE SENSIBULL UNIFIED RENDERER ENGINE
 // ========================================================
-let activeSensibullExpiry = "01-Dec-2026";
+var activeSensibullExpiry = window.activeSensibullExpiry || "01-Dec-2026";
 
 function switchPureSensibullExpiry(exp) {
   activeSensibullExpiry = exp;
@@ -2571,3 +2581,5 @@ if (typeof window !== "undefined") {
   setInterval(renderAllSensibullChains, 1000);
   setTimeout(renderAllSensibullChains, 250);
 }
+
+function drawSensibullPayoffGraph() {}

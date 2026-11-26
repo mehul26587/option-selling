@@ -666,6 +666,19 @@ function handleAddDayRecordSubmit(e) {
 }
 
 // Switch Admin Section
+
+// Explicit Window Global Bindings for Sidebar Navigation & Modals
+if (typeof window !== "undefined") {
+  window.switchAdminTab = switchAdminTab;
+  window.openPublishBasketTradeModal = openPublishBasketTradeModal;
+  if (typeof closePublishBasketTradeModal === "function") window.closePublishBasketTradeModal = closePublishBasketTradeModal;
+  if (typeof selectSensibullStrike === "function") window.selectSensibullStrike = selectSensibullStrike;
+  if (typeof switchPureSensibullExpiry === "function") window.switchPureSensibullExpiry = switchPureSensibullExpiry;
+  if (typeof renderAllSensibullChains === "function") window.renderAllSensibullChains = renderAllSensibullChains;
+  if (typeof renderSensibullOptionChainTable === "function") window.renderSensibullOptionChainTable = renderSensibullOptionChainTable;
+  if (typeof refreshAdminDashboard === "function") window.refreshAdminDashboard = refreshAdminDashboard;
+}
+
 function switchAdminTab(tabKey) {
   currentAdminTab = tabKey;
   document.querySelectorAll(".admin-nav-link").forEach(link => {
@@ -1452,7 +1465,7 @@ if (typeof window !== "undefined") {
 // ========================================================
 // PURE WHITE SENSIBULL UNIFIED RENDERER ENGINE
 // ========================================================
-let activeSensibullExpiry = "01-Dec-2026";
+var activeSensibullExpiry = window.activeSensibullExpiry || "01-Dec-2026";
 
 function switchPureSensibullExpiry(exp) {
   activeSensibullExpiry = exp;
