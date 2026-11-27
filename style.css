@@ -2334,6 +2334,12 @@ body {
   font-size: 14px;
 }
 
+.sensibull-spot-red {
+  color: #ef4444;
+  font-weight: 800;
+  font-size: 14px;
+}
+
 .sensibull-nav-tabs {
   display: flex;
   gap: 18px;

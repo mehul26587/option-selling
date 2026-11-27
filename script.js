@@ -3,62 +3,62 @@
 // DHANHQ REAL-TIME OPTION CHAIN FEED (EXACT SCREENSHOT DATA)
 // ========================================================
 const DHAN_LIVE_DATA_NIFTY = {
-  spot: 25819.25,
-  change: 469.60,
-  changePct: "+1.85%",
+  spot: 25677.10,
+  change: -207.40,
+  changePct: "-0.80%",
   expiry: "01-Dec-2026",
   strikes: {
+    25400: {
+      ce: { ltp: 321.05, chgPct: -42.61, oi: 1373125, oiChgPct: -27.12, volume: "51.85 L" },
+      pe: { ltp: 48.80, chgPct: 72.74, oi: 7379645, oiChgPct: 36.10, volume: "1362.29 L" }
+    },
+    25450: {
+      ce: { ltp: 282.60, chgPct: -45.09, oi: 274950, oiChgPct: 10.56, volume: "30.09 L" },
+      pe: { ltp: 61.70, chgPct: 79.62, oi: 3404895, oiChgPct: 52.92, volume: "870.41 L" }
+    },
     25500: {
-      ce: { ltp: 415.50, chgPct: 111.20, oi: 215400, oiChgPct: -55.20, volume: "45.10 L" },
-      pe: { ltp: 95.20, chgPct: -71.40, oi: 945000, oiChgPct: 175.40, volume: "320.10 L" }
+      ce: { ltp: 247.80, chgPct: -47.59, oi: 2949700, oiChgPct: 16.25, volume: "211.06 L" },
+      pe: { ltp: 77.00, chgPct: 85.77, oi: 10327395, oiChgPct: 36.34, volume: "2519.97 L" }
     },
     25550: {
-      ce: { ltp: 381.20, chgPct: 114.40, oi: 364195, oiChgPct: -52.93, volume: "64.25 L" },
-      pe: { ltp: 108.50, chgPct: -69.53, oi: 864500, oiChgPct: 159.71, volume: "403.62 L" }
+      ce: { ltp: 216.90, chgPct: -49.62, oi: 729300, oiChgPct: 128.37, volume: "109.29 L" },
+      pe: { ltp: 94.45, chgPct: 88.71, oi: 3989180, oiChgPct: 138.77, volume: "1219.70 L" }
     },
     25600: {
-      ce: { ltp: 347.15, chgPct: 117.92, oi: 1455805, oiChgPct: -50.65, volume: "333.86 L" },
-      pe: { ltp: 124.10, chgPct: -68.02, oi: 3265925, oiChgPct: 105.11, volume: "977.52 L" }
+      ce: { ltp: 188.00, chgPct: -51.82, oi: 3533205, oiChgPct: 195.92, volume: "558.66 L" },
+      pe: { ltp: 114.70, chgPct: 91.65, oi: 8125195, oiChgPct: 32.30, volume: "2380.73 L" }
     },
     25650: {
-      ce: { ltp: 315.60, chgPct: 121.09, oi: 562380, oiChgPct: -33.95, volume: "296.58 L" },
-      pe: { ltp: 142.05, chgPct: -66.10, oi: 1454635, oiChgPct: 473.23, volume: "661.16 L" }
+      ce: { ltp: 161.00, chgPct: -54.14, oi: 4103125, oiChgPct: 951.91, volume: "770.87 L" },
+      pe: { ltp: 138.45, chgPct: 93.37, oi: 6333730, oiChgPct: 210.82, volume: "2040.61 L" }
     },
     25700: {
-      ce: { ltp: 286.00, chgPct: 123.18, oi: 3163030, oiChgPct: 6.34, volume: "1178.72 L" },
-      pe: { ltp: 160.90, chgPct: -54.68, oi: 4983810, oiChgPct: 256.62, volume: "1781.92 L" }
+      ce: { ltp: 137.45, chgPct: -56.28, oi: 10896860, oiChgPct: 524.56, volume: "2098.12 L" },
+      pe: { ltp: 164.75, chgPct: 91.68, oi: 10274030, oiChgPct: 117.93, volume: "3287.02 L" }
     },
     25750: {
-      ce: { ltp: 256.75, chgPct: 124.14, oi: 2001350, oiChgPct: 142.42, volume: "1014.97 L" },
-      pe: { ltp: 183.05, chgPct: -62.61, oi: 2109640, oiChgPct: 813.48, volume: "1021.44 L" }
+      ce: { ltp: 116.30, chgPct: -58.66, oi: 6636760, oiChgPct: 551.22, volume: "1411.66 L" },
+      pe: { ltp: 193.80, chgPct: 89.72, oi: 3120000, oiChgPct: 17.35, volume: "1761.71 L" }
     },
     25800: {
-      ce: { ltp: 230.15, chgPct: 127.65, oi: 5714150, oiChgPct: 27.46, volume: "1644.32 L" },
-      pe: { ltp: 206.35, chgPct: -60.91, oi: 4353310, oiChgPct: 170.11, volume: "1344.27 L" }
+      ce: { ltp: 97.70, chgPct: -60.83, oi: 16909620, oiChgPct: 324.90, volume: "2619.24 L" },
+      pe: { ltp: 226.25, chgPct: 89.17, oi: 6647940, oiChgPct: 19.97, volume: "2759.96 L" }
     },
     25850: {
-      ce: { ltp: 205.90, chgPct: 128.40, oi: 1702740, oiChgPct: 114.00, volume: "753.12 L" },
-      pe: { ltp: 231.80, chgPct: -58.93, oi: 993395, oiChgPct: 774.31, volume: "438.07 L" }
+      ce: { ltp: 80.75, chgPct: -63.17, oi: 11619595, oiChgPct: 552.90, volume: "1876.01 L" },
+      pe: { ltp: 260.85, chgPct: 87.26, oi: 2484560, oiChgPct: 24.22, volume: "1457.57 L" }
     },
     25900: {
-      ce: { ltp: 183.00, chgPct: 128.04, oi: 4271280, oiChgPct: 103.79, volume: "1246.49 L" },
-      pe: { ltp: 258.20, chgPct: -57.61, oi: 1883700, oiChgPct: 322.63, volume: "689.34 L" }
+      ce: { ltp: 67.70, chgPct: -64.81, oi: 14867255, oiChgPct: 142.79, volume: "2460.98 L" },
+      pe: { ltp: 295.20, chgPct: 83.58, oi: 3980145, oiChgPct: -19.20, volume: "1191.60 L" }
     },
     25950: {
-      ce: { ltp: 161.60, chgPct: 127.45, oi: 1910415, oiChgPct: 132.01, volume: "681.50 L" },
-      pe: { ltp: 287.75, chgPct: -55.74, oi: 501670, oiChgPct: 1058.86, volume: "211.74 L" }
+      ce: { ltp: 56.20, chgPct: -66.50, oi: 8520000, oiChgPct: 110.00, volume: "1800.00 L" },
+      pe: { ltp: 330.10, chgPct: 80.00, oi: 2110000, oiChgPct: -25.00, volume: "950.00 L" }
     },
     26000: {
-      ce: { ltp: 142.50, chgPct: 129.28, oi: 9323145, oiChgPct: 10.75, volume: "1967.53 L" },
-      pe: { ltp: 317.85, chgPct: -53.82, oi: 2521090, oiChgPct: 64.98, volume: "377.89 L" }
-    },
-    26050: {
-      ce: { ltp: 125.40, chgPct: 131.10, oi: 1245000, oiChgPct: 15.20, volume: "850.10 L" },
-      pe: { ltp: 350.20, chgPct: -51.20, oi: 1840000, oiChgPct: 45.10, volume: "280.40 L" }
-    },
-    26100: {
-      ce: { ltp: 110.10, chgPct: 133.20, oi: 3450000, oiChgPct: 18.50, volume: "1120.30 L" },
-      pe: { ltp: 384.60, chgPct: -48.90, oi: 1420000, oiChgPct: 38.20, volume: "190.50 L" }
+      ce: { ltp: 46.50, chgPct: -68.00, oi: 19240000, oiChgPct: 95.00, volume: "2200.00 L" },
+      pe: { ltp: 368.40, chgPct: 75.00, oi: 1580000, oiChgPct: -30.00, volume: "800.00 L" }
     }
   }
 };
@@ -394,7 +394,7 @@ let currentUser = null;
 let currentTab = "dashboard";
 let selectedPlanForPayment = null;
 let activeSensibullTab = "payoff";
-let currentSimulatedTargetNifty = 25819.25;
+let currentSimulatedTargetNifty = 25677.10;
 let currentSimulatedDaysToExpiry = 2;
 
 // ==========================================
@@ -804,7 +804,7 @@ function renderSensibullInterface(containerId) {
                 </thead>
                 <tbody>
                   ${(strat.dayByDayHistory || []).map(row => {
-                    const spotVal = (row.spot ?? row.niftySpot ?? 25819.25);
+                    const spotVal = (row.spot ?? row.niftySpot ?? 25677.10);
                     const p1Val = (row.p25050 ?? row.leg1Ltp ?? 0);
                     const p2Val = (row.p25350 ?? row.leg2Ltp ?? 0);
                     const p3Val = (row.p25600 ?? row.leg3Ltp ?? 0);
@@ -1769,9 +1769,9 @@ let currentOcExpiry = "23-Nov-2026";
 let currentOcRange = 15; // ATM +/- 15 strikes
 let ocAutoRefreshActive = true;
 let ocRefreshInterval = null;
-let currentOcSpotPrice = 25819.25;
-let currentOcSpotChg = 210.20;
-let currentOcSpotPct = "+0.83%";
+let currentOcSpotPrice = 25677.10;
+let currentOcSpotChg = -207.40;
+let currentOcSpotPct = "-0.80%";
 let cachedOptionChainData = null;
 
 const INDEX_STRIKE_STEPS = {
@@ -1839,7 +1839,7 @@ function populateStrikePriceDropdown(strikes) {
 
 function generateOptionChainData(symbol, spot) {
   symbol = symbol || "NIFTY";
-  spot = symbol === "NIFTY" ? (window._liveDhanSpot || 25819.25) : spot;
+  spot = symbol === "NIFTY" ? (window._liveDhanSpot || 25677.10) : spot;
   const step = INDEX_STRIKE_STEPS[symbol] || 50;
   const atmStrike = Math.round(spot / step) * step;
   const strikes = [];
@@ -1959,7 +1959,7 @@ function renderOptionChainTable(data) {
   const now = new Date();
   const timeStr = `${now.getDate().toString().padStart(2, '0')}-Nov-2026 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} IST`;
 
-  const spotVal = data.spotPrice ?? data.underlyingPrice ?? window._liveDhanSpot ?? 25819.25;
+  const spotVal = data.spotPrice ?? data.underlyingPrice ?? window._liveDhanSpot ?? 25677.10;
   const spotFormatted = typeof spotVal === 'number' ? spotVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : spotVal;
   const spotText = `Underlying Index : ${data.symbol || 'NIFTY'} ${spotFormatted} As on ${timeStr}`;
   const spotEl = document.getElementById("ocUnderlyingIndexLine");
@@ -2377,7 +2377,7 @@ setInterval(() => {
   if (typeof DHAN_LIVE_DATA_NIFTY !== "undefined" && DHAN_LIVE_DATA_NIFTY.strikes) {
     // Micro-tick underlying spot by +/- 0.35
     const spotDelta = +((Math.random() - 0.49) * 0.35).toFixed(2);
-    window._liveDhanSpot = +( (window._liveDhanSpot || 25819.25) + spotDelta ).toFixed(2);
+    window._liveDhanSpot = +( (window._liveDhanSpot || 25677.10) + spotDelta ).toFixed(2);
 
     // Micro-tick each strike LTP by +/- 0.10
     Object.keys(DHAN_LIVE_DATA_NIFTY.strikes).forEach(k => {
