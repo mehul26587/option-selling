@@ -3,63 +3,31 @@
 // DHANHQ REAL-TIME OPTION CHAIN FEED (EXACT SCREENSHOT DATA)
 // ========================================================
 const DHAN_LIVE_DATA_NIFTY = {
-  spot: 25677.10,
-  change: -207.40,
-  changePct: "-0.80%",
+  spot: 25607.20,
+  change: -277.30,
+  changePct: "-1.07%",
   expiry: "01-Dec-2026",
   strikes: {
-    25400: {
-      ce: { ltp: 321.05, chgPct: -42.61, oi: 1373125, oiChgPct: -27.12, volume: "51.85 L" },
-      pe: { ltp: 48.80, chgPct: 72.74, oi: 7379645, oiChgPct: 36.10, volume: "1362.29 L" }
-    },
-    25450: {
-      ce: { ltp: 282.60, chgPct: -45.09, oi: 274950, oiChgPct: 10.56, volume: "30.09 L" },
-      pe: { ltp: 61.70, chgPct: 79.62, oi: 3404895, oiChgPct: 52.92, volume: "870.41 L" }
-    },
-    25500: {
-      ce: { ltp: 247.80, chgPct: -47.59, oi: 2949700, oiChgPct: 16.25, volume: "211.06 L" },
-      pe: { ltp: 77.00, chgPct: 85.77, oi: 10327395, oiChgPct: 36.34, volume: "2519.97 L" }
-    },
-    25550: {
-      ce: { ltp: 216.90, chgPct: -49.62, oi: 729300, oiChgPct: 128.37, volume: "109.29 L" },
-      pe: { ltp: 94.45, chgPct: 88.71, oi: 3989180, oiChgPct: 138.77, volume: "1219.70 L" }
-    },
-    25600: {
-      ce: { ltp: 188.00, chgPct: -51.82, oi: 3533205, oiChgPct: 195.92, volume: "558.66 L" },
-      pe: { ltp: 114.70, chgPct: 91.65, oi: 8125195, oiChgPct: 32.30, volume: "2380.73 L" }
-    },
-    25650: {
-      ce: { ltp: 161.00, chgPct: -54.14, oi: 4103125, oiChgPct: 951.91, volume: "770.87 L" },
-      pe: { ltp: 138.45, chgPct: 93.37, oi: 6333730, oiChgPct: 210.82, volume: "2040.61 L" }
-    },
-    25700: {
-      ce: { ltp: 137.45, chgPct: -56.28, oi: 10896860, oiChgPct: 524.56, volume: "2098.12 L" },
-      pe: { ltp: 164.75, chgPct: 91.68, oi: 10274030, oiChgPct: 117.93, volume: "3287.02 L" }
-    },
-    25750: {
-      ce: { ltp: 116.30, chgPct: -58.66, oi: 6636760, oiChgPct: 551.22, volume: "1411.66 L" },
-      pe: { ltp: 193.80, chgPct: 89.72, oi: 3120000, oiChgPct: 17.35, volume: "1761.71 L" }
-    },
-    25800: {
-      ce: { ltp: 97.70, chgPct: -60.83, oi: 16909620, oiChgPct: 324.90, volume: "2619.24 L" },
-      pe: { ltp: 226.25, chgPct: 89.17, oi: 6647940, oiChgPct: 19.97, volume: "2759.96 L" }
-    },
-    25850: {
-      ce: { ltp: 80.75, chgPct: -63.17, oi: 11619595, oiChgPct: 552.90, volume: "1876.01 L" },
-      pe: { ltp: 260.85, chgPct: 87.26, oi: 2484560, oiChgPct: 24.22, volume: "1457.57 L" }
-    },
-    25900: {
-      ce: { ltp: 67.70, chgPct: -64.81, oi: 14867255, oiChgPct: 142.79, volume: "2460.98 L" },
-      pe: { ltp: 295.20, chgPct: 83.58, oi: 3980145, oiChgPct: -19.20, volume: "1191.60 L" }
-    },
-    25950: {
-      ce: { ltp: 56.20, chgPct: -66.50, oi: 8520000, oiChgPct: 110.00, volume: "1800.00 L" },
-      pe: { ltp: 330.10, chgPct: 80.00, oi: 2110000, oiChgPct: -25.00, volume: "950.00 L" }
-    },
-    26000: {
-      ce: { ltp: 46.50, chgPct: -68.00, oi: 19240000, oiChgPct: 95.00, volume: "2200.00 L" },
-      pe: { ltp: 368.40, chgPct: 75.00, oi: 1580000, oiChgPct: -30.00, volume: "800.00 L" }
-    }
+    25200: { ce: { ltp: 408.00, chgPct: -44.20, oi: 85000, oiChgPct: 8.50, volume: "15.20 L" }, pe: { ltp: 24.50, chgPct: 95.00, oi: 1820000, oiChgPct: 15.20, volume: "140.00 L" } },
+    25250: { ce: { ltp: 365.00, chgPct: -47.69, oi: 143000, oiChgPct: 4.28, volume: "25.10 L" }, pe: { ltp: 32.50, chgPct: 105.05, oi: 2665000, oiChgPct: 11.58, volume: "280.00 L" } },
+    25300: { ce: { ltp: 324.25, chgPct: -50.12, oi: 607000, oiChgPct: -20.03, volume: "45.20 L" }, pe: { ltp: 41.80, chgPct: 120.58, oi: 6162000, oiChgPct: -0.47, volume: "620.00 L" } },
+    25350: { ce: { ltp: 287.55, chgPct: -52.23, oi: 230000, oiChgPct: 2.31, volume: "30.00 L" }, pe: { ltp: 54.70, chgPct: 134.26, oi: 2028000, oiChgPct: 24.71, volume: "410.00 L" } },
+    25400: { ce: { ltp: 252.00, chgPct: -54.95, oi: 1355000, oiChgPct: -28.10, volume: "95.00 L" }, pe: { ltp: 68.90, chgPct: 143.89, oi: 6185000, oiChgPct: 14.06, volume: "980.00 L" } },
+    25450: { ce: { ltp: 220.15, chgPct: -57.23, oi: 340000, oiChgPct: 36.85, volume: "60.00 L" }, pe: { ltp: 87.05, chgPct: 153.42, oi: 2611000, oiChgPct: 17.25, volume: "750.00 L" } },
+    25500: { ce: { ltp: 189.80, chgPct: -59.86, oi: 3409000, oiChgPct: 34.34, volume: "320.00 L" }, pe: { ltp: 107.50, chgPct: 159.35, oi: 8106000, oiChgPct: 7.01, volume: "1850.00 L" } },
+    25550: { ce: { ltp: 163.30, chgPct: -62.07, oi: 1076000, oiChgPct: 237.04, volume: "210.00 L" }, pe: { ltp: 131.55, chgPct: 162.84, oi: 2072000, oiChgPct: 24.03, volume: "940.00 L" } },
+    25600: { ce: { ltp: 140.00, chgPct: -64.12, oi: 5549000, oiChgPct: 364.71, volume: "1450.00 L" }, pe: { ltp: 157.70, chgPct: 163.49, oi: 5713000, oiChgPct: -6.98, volume: "2150.00 L" } },
+    25650: { ce: { ltp: 119.30, chgPct: -66.02, oi: 3310000, oiChgPct: 740.56, volume: "890.00 L" }, pe: { ltp: 187.75, chgPct: 162.22, oi: 2144000, oiChgPct: 5.20, volume: "1320.00 L" } },
+    25700: { ce: { ltp: 100.90, chgPct: -67.91, oi: 8501000, oiChgPct: 387.23, volume: "1980.00 L" }, pe: { ltp: 219.85, chgPct: 155.79, oi: 4798000, oiChgPct: 1.77, volume: "1820.00 L" } },
+    25750: { ce: { ltp: 85.90, chgPct: -69.47, oi: 5376000, oiChgPct: 427.51, volume: "1250.00 L" }, pe: { ltp: 254.25, chgPct: 148.90, oi: 1778000, oiChgPct: -33.15, volume: "790.00 L" } },
+    25800: { ce: { ltp: 71.70, chgPct: -71.25, oi: 13948000, oiChgPct: 250.47, volume: "2450.00 L" }, pe: { ltp: 290.05, chgPct: 142.52, oi: 4879000, oiChgPct: -11.96, volume: "1280.00 L" } },
+    25850: { ce: { ltp: 60.50, chgPct: -72.41, oi: 8498000, oiChgPct: 377.47, volume: "1480.00 L" }, pe: { ltp: 328.25, chgPct: 135.64, oi: 1509000, oiChgPct: -24.54, volume: "560.00 L" } },
+    25900: { ce: { ltp: 50.60, chgPct: -73.70, oi: 12213000, oiChgPct: 99.45, volume: "2120.00 L" }, pe: { ltp: 368.70, chgPct: 129.29, oi: 2939000, oiChgPct: -40.33, volume: "840.00 L" } },
+    25950: { ce: { ltp: 42.15, chgPct: -74.72, oi: 5493000, oiChgPct: 82.37, volume: "1050.00 L" }, pe: { ltp: 410.30, chgPct: 121.31, oi: 660000, oiChgPct: -51.30, volume: "260.00 L" } },
+    26000: { ce: { ltp: 35.15, chgPct: -75.56, oi: 18985000, oiChgPct: 74.50, volume: "2980.00 L" }, pe: { ltp: 453.50, chgPct: 114.07, oi: 2637000, oiChgPct: -26.84, volume: "680.00 L" } },
+    26050: { ce: { ltp: 29.00, chgPct: -76.15, oi: 3837000, oiChgPct: 131.51, volume: "820.00 L" }, pe: { ltp: 496.60, chgPct: 106.06, oi: 194000, oiChgPct: -26.83, volume: "110.00 L" } },
+    26100: { ce: { ltp: 23.75, chgPct: -77.02, oi: 9187000, oiChgPct: 134.25, volume: "1420.00 L" }, pe: { ltp: 541.90, chgPct: 99.34, oi: 393000, oiChgPct: -19.94, volume: "180.00 L" } },
+    26150: { ce: { ltp: 19.60, chgPct: -77.41, oi: 3966000, oiChgPct: 30.45, volume: "650.00 L" }, pe: { ltp: 588.50, chgPct: 92.79, oi: 99000, oiChgPct: -15.50, volume: "60.00 L" } }
   }
 };
 
@@ -394,7 +362,7 @@ let currentUser = null;
 let currentTab = "dashboard";
 let selectedPlanForPayment = null;
 let activeSensibullTab = "payoff";
-let currentSimulatedTargetNifty = 25677.10;
+let currentSimulatedTargetNifty = 25607.20;
 let currentSimulatedDaysToExpiry = 2;
 
 // ==========================================
@@ -804,7 +772,7 @@ function renderSensibullInterface(containerId) {
                 </thead>
                 <tbody>
                   ${(strat.dayByDayHistory || []).map(row => {
-                    const spotVal = (row.spot ?? row.niftySpot ?? 25677.10);
+                    const spotVal = (row.spot ?? row.niftySpot ?? 25607.20);
                     const p1Val = (row.p25050 ?? row.leg1Ltp ?? 0);
                     const p2Val = (row.p25350 ?? row.leg2Ltp ?? 0);
                     const p3Val = (row.p25600 ?? row.leg3Ltp ?? 0);
@@ -1769,9 +1737,9 @@ let currentOcExpiry = "23-Nov-2026";
 let currentOcRange = 15; // ATM +/- 15 strikes
 let ocAutoRefreshActive = true;
 let ocRefreshInterval = null;
-let currentOcSpotPrice = 25677.10;
-let currentOcSpotChg = -207.40;
-let currentOcSpotPct = "-0.80%";
+let currentOcSpotPrice = 25607.20;
+let currentOcSpotChg = -277.30;
+let currentOcSpotPct = "-1.07%";
 let cachedOptionChainData = null;
 
 const INDEX_STRIKE_STEPS = {
@@ -1839,7 +1807,7 @@ function populateStrikePriceDropdown(strikes) {
 
 function generateOptionChainData(symbol, spot) {
   symbol = symbol || "NIFTY";
-  spot = symbol === "NIFTY" ? (window._liveDhanSpot || 25677.10) : spot;
+  spot = symbol === "NIFTY" ? (window._liveDhanSpot || 25607.20) : spot;
   const step = INDEX_STRIKE_STEPS[symbol] || 50;
   const atmStrike = Math.round(spot / step) * step;
   const strikes = [];
@@ -1959,7 +1927,7 @@ function renderOptionChainTable(data) {
   const now = new Date();
   const timeStr = `${now.getDate().toString().padStart(2, '0')}-Nov-2026 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} IST`;
 
-  const spotVal = data.spotPrice ?? data.underlyingPrice ?? window._liveDhanSpot ?? 25677.10;
+  const spotVal = data.spotPrice ?? data.underlyingPrice ?? window._liveDhanSpot ?? 25607.20;
   const spotFormatted = typeof spotVal === 'number' ? spotVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : spotVal;
   const spotText = `Underlying Index : ${data.symbol || 'NIFTY'} ${spotFormatted} As on ${timeStr}`;
   const spotEl = document.getElementById("ocUnderlyingIndexLine");
@@ -2377,7 +2345,7 @@ setInterval(() => {
   if (typeof DHAN_LIVE_DATA_NIFTY !== "undefined" && DHAN_LIVE_DATA_NIFTY.strikes) {
     // Micro-tick underlying spot by +/- 0.35
     const spotDelta = +((Math.random() - 0.49) * 0.35).toFixed(2);
-    window._liveDhanSpot = +( (window._liveDhanSpot || 25677.10) + spotDelta ).toFixed(2);
+    window._liveDhanSpot = +( (window._liveDhanSpot || 25607.20) + spotDelta ).toFixed(2);
 
     // Micro-tick each strike LTP by +/- 0.10
     Object.keys(DHAN_LIVE_DATA_NIFTY.strikes).forEach(k => {
@@ -2434,12 +2402,21 @@ setInterval(() => {
 // ========================================================
 // PURE WHITE SENSIBULL UNIFIED RENDERER ENGINE
 // ========================================================
+const EXPIRY_CONFIG = {
+  "01-Dec-2026": { dte: 4, tMult: 1.00, oiMult: 1.00, label: "1 Dec (4 days)" },
+  "08-Dec-2026": { dte: 11, tMult: 1.66, oiMult: 0.45, label: "8 Dec (11 days)" },
+  "15-Dec-2026": { dte: 18, tMult: 2.12, oiMult: 0.32, label: "15 Dec (3 weeks)" },
+  "22-Dec-2026": { dte: 25, tMult: 2.50, oiMult: 0.72, label: "22 Dec (4 weeks)" }
+};
+
 var activeSensibullExpiry = window.activeSensibullExpiry || "01-Dec-2026";
 
 function switchPureSensibullExpiry(exp) {
   activeSensibullExpiry = exp;
+  window.activeSensibullExpiry = exp;
+  const expDay = parseInt(exp.split("-")[0], 10);
   document.querySelectorAll(".sensibull-expiry-pill").forEach(p => {
-    p.classList.toggle("active", p.textContent.includes(exp.split("-")[0]));
+    p.classList.toggle("active", p.textContent.trim().startsWith(expDay + " Dec"));
   });
   renderAllSensibullChains();
 }
@@ -2450,28 +2427,33 @@ function renderAllSensibullChains() {
   renderSensibullTableById("frontPageOcBody");
 }
 
-
-
 // ========================================================
 // REAL-TIME 1-SECOND LIVE MARKET TICK ENGINE (DHANHQ SYNCED)
 // ========================================================
 window._liveMarketState = {
-  spot: 25677.10,
+  spot: 25607.20,
   basePrevClose: 25884.50,
   strikes: {
-    25400: { ce: 321.05, pe: 48.80, callDelta: 0.85, putDelta: -0.15, callOi: 13.73, putOi: 73.80, iv: 17.5, lastCeMove: 0, lastPeMove: 0 },
-    25450: { ce: 282.60, pe: 61.70, callDelta: 0.81, putDelta: -0.19, callOi: 2.75, putOi: 34.05, iv: 17.4, lastCeMove: 0, lastPeMove: 0 },
-    25500: { ce: 247.80, pe: 77.00, callDelta: 0.76, putDelta: -0.24, callOi: 29.50, putOi: 103.27, iv: 17.4, lastCeMove: 0, lastPeMove: 0 },
-    25550: { ce: 216.90, pe: 94.45, callDelta: 0.70, putDelta: -0.30, callOi: 7.29, putOi: 39.89, iv: 17.3, lastCeMove: 0, lastPeMove: 0 },
-    25600: { ce: 188.00, pe: 114.70, callDelta: 0.64, putDelta: -0.36, callOi: 35.33, putOi: 81.25, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25650: { ce: 161.00, pe: 138.45, callDelta: 0.57, putDelta: -0.43, callOi: 41.03, putOi: 63.34, iv: 17.4, lastCeMove: 0, lastPeMove: 0 },
-    25700: { ce: 137.45, pe: 164.75, callDelta: 0.50, putDelta: -0.50, callOi: 108.97, putOi: 102.74, iv: 17.3, lastCeMove: 0, lastPeMove: 0 },
-    25750: { ce: 116.30, pe: 193.80, callDelta: 0.43, putDelta: -0.57, callOi: 66.37, putOi: 31.20, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25800: { ce: 97.70, pe: 226.25, callDelta: 0.36, putDelta: -0.64, callOi: 169.10, putOi: 66.48, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25850: { ce: 80.75, pe: 260.85, callDelta: 0.30, putDelta: -0.70, callOi: 116.20, putOi: 24.85, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25900: { ce: 67.70, pe: 295.20, callDelta: 0.25, putDelta: -0.75, callOi: 148.67, putOi: 39.80, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25950: { ce: 56.20, pe: 330.10, callDelta: 0.20, putDelta: -0.80, callOi: 85.20, putOi: 21.10, iv: 17.3, lastCeMove: 0, lastPeMove: 0 },
-    26000: { ce: 46.50, pe: 368.40, callDelta: 0.16, putDelta: -0.84, callOi: 192.40, putOi: 15.80, iv: 17.2, lastCeMove: 0, lastPeMove: 0 }
+    25200: { ce: 408.00, pe: 24.50, callDelta: 0.91, putDelta: -0.09, callOi: 0.85, putOi: 18.20, iv: 14.8, lastCeMove: 0, lastPeMove: 0 },
+    25250: { ce: 365.00, pe: 32.50, callDelta: 0.88, putDelta: -0.12, callOi: 1.43, putOi: 26.65, iv: 14.6, lastCeMove: 0, lastPeMove: 0 },
+    25300: { ce: 324.25, pe: 41.80, callDelta: 0.84, putDelta: -0.16, callOi: 6.07, putOi: 61.62, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
+    25350: { ce: 287.55, pe: 54.70, callDelta: 0.80, putDelta: -0.20, callOi: 2.30, putOi: 20.28, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
+    25400: { ce: 252.00, pe: 68.90, callDelta: 0.76, putDelta: -0.24, callOi: 13.55, putOi: 61.85, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
+    25450: { ce: 220.15, pe: 87.05, callDelta: 0.70, putDelta: -0.30, callOi: 3.40, putOi: 26.11, iv: 14.1, lastCeMove: 0, lastPeMove: 0 },
+    25500: { ce: 189.80, pe: 107.50, callDelta: 0.65, putDelta: -0.35, callOi: 34.09, putOi: 81.06, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
+    25550: { ce: 163.30, pe: 131.55, callDelta: 0.58, putDelta: -0.42, callOi: 10.76, putOi: 20.72, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
+    25600: { ce: 140.00, pe: 157.70, callDelta: 0.50, putDelta: -0.50, callOi: 55.49, putOi: 57.13, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
+    25650: { ce: 119.30, pe: 187.75, callDelta: 0.43, putDelta: -0.57, callOi: 33.10, putOi: 21.44, iv: 14.1, lastCeMove: 0, lastPeMove: 0 },
+    25700: { ce: 100.90, pe: 219.85, callDelta: 0.36, putDelta: -0.64, callOi: 85.01, putOi: 47.98, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
+    25750: { ce: 85.90, pe: 254.25, callDelta: 0.30, putDelta: -0.70, callOi: 53.76, putOi: 17.78, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
+    25800: { ce: 71.70, pe: 290.05, callDelta: 0.25, putDelta: -0.75, callOi: 139.48, putOi: 48.79, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
+    25850: { ce: 60.50, pe: 328.25, callDelta: 0.20, putDelta: -0.80, callOi: 84.98, putOi: 15.09, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
+    25900: { ce: 50.60, pe: 368.70, callDelta: 0.16, putDelta: -0.84, callOi: 122.13, putOi: 29.39, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
+    25950: { ce: 42.15, pe: 410.30, callDelta: 0.13, putDelta: -0.87, callOi: 54.93, putOi: 6.60, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
+    26000: { ce: 35.15, pe: 453.50, callDelta: 0.10, putDelta: -0.90, callOi: 189.85, putOi: 26.37, iv: 14.5, lastCeMove: 0, lastPeMove: 0 },
+    26050: { ce: 29.00, pe: 496.60, callDelta: 0.08, putDelta: -0.92, callOi: 38.37, putOi: 1.94, iv: 14.6, lastCeMove: 0, lastPeMove: 0 },
+    26100: { ce: 23.75, pe: 541.90, callDelta: 0.06, putDelta: -0.94, callOi: 91.87, putOi: 3.93, iv: 14.7, lastCeMove: 0, lastPeMove: 0 },
+    26150: { ce: 19.60, pe: 588.50, callDelta: 0.05, putDelta: -0.95, callOi: 39.66, putOi: 0.99, iv: 14.8, lastCeMove: 0, lastPeMove: 0 }
   }
 };
 
@@ -2529,17 +2511,17 @@ function stepLiveMarketTick() {
   const l3Ltp = document.getElementById('adminLeg3Ltp');
   
   if (l1Ltp) {
-    const p1 = (parseFloat(l1Ltp.value) || 14.50) + (-spotChange * 0.20 + (Math.random() - 0.5) * 0.12);
+    const p1 = (parseFloat(l1Ltp.value) || 18.50) + (-spotChange * 0.20 + (Math.random() - 0.5) * 0.12);
     l1Ltp.value = Math.max(0.05, p1).toFixed(2);
     l1Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
   }
   if (l2Ltp) {
-    const p2 = (parseFloat(l2Ltp.value) || 38.20) + (-spotChange * 0.35 + (Math.random() - 0.5) * 0.18);
+    const p2 = (parseFloat(l2Ltp.value) || 42.15) + (-spotChange * 0.35 + (Math.random() - 0.5) * 0.18);
     l2Ltp.value = Math.max(0.05, p2).toFixed(2);
     l2Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
   }
   if (l3Ltp) {
-    const p3 = (parseFloat(l3Ltp.value) || 164.75) + (-spotChange * 0.48 + (Math.random() - 0.5) * 0.28);
+    const p3 = (parseFloat(l3Ltp.value) || 157.70) + (-spotChange * 0.48 + (Math.random() - 0.5) * 0.28);
     l3Ltp.value = Math.max(0.05, p3).toFixed(2);
     l3Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
   }
@@ -2561,15 +2543,20 @@ function renderSensibullTableById(tbodyId) {
   if (!tbody) return;
 
   const state = window._liveMarketState;
-  const spot = state ? state.spot : 25677.10;
-  const atm = Math.round(spot / 50) * 50; // Dynamic ATM strike calculation
+  const spot = state ? state.spot : 25607.20;
+  const atm = Math.round(spot / 50) * 50; // Dynamic ATM strike calculation (25600)
 
-  // Strikes from 25400 to 26000 matching Dhan screenshot exactly
-  const strikes = [
-    25400, 25450, 25500, 25550, 25600, 25650, 
-    25700, 
-    25750, 25800, 25850, 25900, 25950, 26000
-  ];
+  // Current active expiry config
+  const expKey = window.activeSensibullExpiry || "01-Dec-2026";
+  const expConfig = EXPIRY_CONFIG[expKey] || EXPIRY_CONFIG["01-Dec-2026"];
+  const tMult = expConfig.tMult;
+  const oiMult = expConfig.oiMult;
+
+  // Generate dynamic strikes around ATM (from ATM - 350 to ATM + 350)
+  const strikes = [];
+  for (let s = atm - 350; s <= atm + 350; s += 50) {
+    strikes.push(s);
+  }
 
   let html = "";
   strikes.forEach(s => {
@@ -2577,75 +2564,79 @@ function renderSensibullTableById(tbodyId) {
     const isCallItm = s < spot;
     const isPutItm = s > spot;
 
-    const sData = (state && state.strikes[s]) ? state.strikes[s] : {
-      ce: 100, pe: 100, callDelta: 0.5, putDelta: -0.5, callOi: 20, putOi: 20, iv: 17.2, lastCeMove: 0, lastPeMove: 0
-    };
+    const sData = (state && state.strikes && state.strikes[s]) ? state.strikes[s] : null;
 
-    const callLtp = sData.ce;
-    const putLtp = sData.pe;
-    const callOiLakhs = sData.callOi;
-    const putOiLakhs = sData.putOi;
-    const callDelta = sData.callDelta;
-    const putDelta = sData.putDelta;
-    const iv = sData.iv;
+    let baseCe, basePe, callOiLakhs, putOiLakhs, callDelta, putDelta, iv;
 
-    const callLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(callOiLakhs) * 0.4)));
-    const putLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(putOiLakhs) * 0.4)));
+    if (sData) {
+      baseCe = sData.ce;
+      basePe = sData.pe;
+      callOiLakhs = sData.callOi;
+      putOiLakhs = sData.putOi;
+      callDelta = sData.callDelta;
+      putDelta = sData.putDelta;
+      iv = sData.iv;
+    } else {
+      const diff = Math.abs(s - spot);
+      const intrinsicCe = Math.max(0, spot - s);
+      const intrinsicPe = Math.max(0, s - spot);
+      const timeVal = Math.max(2.0, +(140 * Math.exp(-Math.pow(diff, 2) / 360000)).toFixed(2));
+      baseCe = +(intrinsicCe + timeVal).toFixed(2);
+      basePe = +(intrinsicPe + timeVal).toFixed(2);
+      callOiLakhs = Math.max(0.5, +(50 * Math.exp(-Math.pow(diff, 2) / 250000))).toFixed(2);
+      putOiLakhs = Math.max(0.5, +(50 * Math.exp(-Math.pow(diff, 2) / 250000))).toFixed(2);
+      callDelta = s < spot ? +(0.5 + 0.45 * Math.min(1, (spot - s) / 400)).toFixed(2) : +(0.5 - 0.45 * Math.min(1, (s - spot) / 400)).toFixed(2);
+      putDelta = +(callDelta - 1.0).toFixed(2);
+      iv = 14.2;
+    }
+
+    // Dynamic Intrinsic & Extrinsic time value scaling based on selected expiry (tMult)
+    const intrinsicCe = Math.max(0, spot - s);
+    const intrinsicPe = Math.max(0, s - spot);
+    const timeValCe = Math.max(1.5, baseCe - intrinsicCe);
+    const timeValPe = Math.max(1.5, basePe - intrinsicPe);
+
+    const callLtp = +(intrinsicCe + (timeValCe * tMult)).toFixed(2);
+    const putLtp = +(intrinsicPe + (timeValPe * tMult)).toFixed(2);
+    const dispCallOi = +(parseFloat(callOiLakhs) * oiMult).toFixed(2);
+    const dispPutOi = +(parseFloat(putOiLakhs) * oiMult).toFixed(2);
+
+    const callLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(dispCallOi) * 0.4)));
+    const putLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(dispPutOi) * 0.4)));
 
     // Flash colors on live price ticks
-    const ceClass = sData.lastCeMove > 0 ? "up" : (sData.lastCeMove < 0 ? "down" : "");
-    const peClass = sData.lastPeMove > 0 ? "up" : (sData.lastPeMove < 0 ? "down" : "");
+    const ceClass = (sData && sData.lastCeMove > 0) ? "up" : ((sData && sData.lastCeMove < 0) ? "down" : "");
+    const peClass = (sData && sData.lastPeMove > 0) ? "up" : ((sData && sData.lastPeMove < 0) ? "down" : "");
 
     html += `<tr class="${isCallItm ? 'itm-call' : ''} ${isPutItm ? 'itm-put' : ''}">
-      
-      <!-- CALL DELTA -->
       <td class="call-cell" style="color: #64748b; font-weight: 600;">${callDelta}</td>
-
-      <!-- CALL LTP (LIVE TICKING) -->
       <td class="call-cell">
         <span class="price-tick-val ${ceClass}">${callLtp.toFixed(2)}</span>
       </td>
-
-      <!-- CALL OI with Red Bar -->
       <td class="call-cell" style="text-align: left; padding-left: 12px; font-weight: 700;">
-        <strong>${callOiLakhs}</strong>
+        <strong>${dispCallOi}</strong>
         <span class="oi-red-line" style="width: ${callLineWidth}px;"></span>
       </td>
-
-      <!-- CALL ACTION: B and S -->
       <td class="call-cell" style="white-space: nowrap;">
         <button type="button" class="btn-oc-action-b" onclick="selectSensibullStrike(${s}, 'CE', 'B', ${callLtp})" title="Buy Call">B</button>
         <button type="button" class="btn-oc-action-s" onclick="selectSensibullStrike(${s}, 'CE', 'S', ${callLtp})" title="Sell Call">S</button>
       </td>
-
-      <!-- STRIKE (CENTER) with ATM Box -->
       <td class="strike-cell">
         <span class="strike-pill-badge ${isAtm ? 'atm' : ''}">${s}</span>
       </td>
-
-      <!-- IV -->
       <td style="color: #64748b; font-weight: 600;">${iv}</td>
-
-      <!-- PUT ACTION: B and S -->
       <td class="put-cell" style="white-space: nowrap;">
         <button type="button" class="btn-oc-action-b" onclick="selectSensibullStrike(${s}, 'PE', 'B', ${putLtp})" title="Buy Put">B</button>
         <button type="button" class="btn-oc-action-s" onclick="selectSensibullStrike(${s}, 'PE', 'S', ${putLtp})" title="Sell Put">S</button>
       </td>
-
-      <!-- PUT OI with Green Bar -->
       <td class="put-cell" style="text-align: right; padding-right: 12px; font-weight: 700;">
         <span class="oi-green-line" style="width: ${putLineWidth}px;"></span>
-        <strong>${putOiLakhs}</strong>
+        <strong>${dispPutOi}</strong>
       </td>
-
-      <!-- PUT LTP (LIVE TICKING) -->
       <td class="put-cell">
         <span class="price-tick-val ${peClass}">${putLtp.toFixed(2)}</span>
       </td>
-
-      <!-- PUT DELTA -->
       <td class="put-cell" style="color: #64748b; font-weight: 600;">${putDelta}</td>
-
     </tr>`;
   });
 

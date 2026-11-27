@@ -928,35 +928,28 @@ function handlePublishBasketTradeSubmit(e) {
 
 function getLiveOptionLtp(symbol, expiry, strike, type) {
   symbol = symbol || "NIFTY";
-  strike = parseFloat(strike) || 25800;
+  strike = parseFloat(strike) || 25600;
+  expiry = expiry || window.activeSensibullExpiry || "01-Dec-2026";
+
+  const expConfig = typeof EXPIRY_CONFIG !== "undefined" ? (EXPIRY_CONFIG[expiry] || EXPIRY_CONFIG["01-Dec-2026"]) : null;
+  const tMult = expConfig ? expConfig.tMult : 1.0;
+  const spot = window._liveMarketState ? window._liveMarketState.spot : (window._liveDhanSpot || 25607.20);
 
   if (symbol === "NIFTY") {
-    // Check exact Dhan Live Strike
-    if (typeof DHAN_LIVE_DATA_NIFTY !== "undefined" && DHAN_LIVE_DATA_NIFTY.strikes[strike]) {
-      return type === "CE" ? DHAN_LIVE_DATA_NIFTY.strikes[strike].ce.ltp : DHAN_LIVE_DATA_NIFTY.strikes[strike].pe.ltp;
+    if (window._liveMarketState && window._liveMarketState.strikes && window._liveMarketState.strikes[strike]) {
+      const s = window._liveMarketState.strikes[strike];
+      const basePrice = type === "CE" ? s.ce : s.pe;
+      const intrinsic = type === "CE" ? Math.max(0, spot - strike) : Math.max(0, strike - spot);
+      const timeVal = Math.max(1.5, basePrice - intrinsic);
+      return +(intrinsic + (timeVal * tMult)).toFixed(2);
     }
-    // Specific anchors matching Dhan screenshot
-    if (strike === 25400) return type === "CE" ? 321.05 : 48.80;
-    if (strike === 25450) return type === "CE" ? 282.60 : 61.70;
-    if (strike === 25500) return type === "CE" ? 247.80 : 77.00;
-    if (strike === 25550) return type === "CE" ? 216.90 : 94.45;
-    if (strike === 25600) return type === "CE" ? 188.00 : 114.70;
-    if (strike === 25650) return type === "CE" ? 161.00 : 138.45;
-    if (strike === 25700) return type === "CE" ? 137.45 : 164.75;
-    if (strike === 25750) return type === "CE" ? 116.30 : 193.80;
-    if (strike === 25800) return type === "CE" ? 97.70 : 226.25;
-    if (strike === 25850) return type === "CE" ? 80.75 : 260.85;
-    if (strike === 25900) return type === "CE" ? 67.70 : 295.20;
-    if (strike === 25950) return type === "CE" ? 56.20 : 330.10;
-    if (strike === 26000) return type === "CE" ? 46.50 : 368.40;
   }
 
-  const spot = window._liveDhanSpot || 25677.10;
   const diff = Math.abs(strike - spot);
   const isItm = (type === "CE" && spot > strike) || (type === "PE" && strike > spot);
   const intrinsic = isItm ? (type === "CE" ? spot - strike : strike - spot) : 0;
-  const timeVal = Math.max(1.8, +(138 * Math.exp(-Math.pow(diff, 2) / 380000)).toFixed(2));
-  return +(intrinsic + timeVal).toFixed(2);
+  const timeVal = Math.max(1.8, +(140 * Math.exp(-Math.pow(diff, 2) / 360000)).toFixed(2));
+  return +(intrinsic + (timeVal * tMult)).toFixed(2);
 }
 
 function getStrikeRangeForIndex(symbol) {
@@ -1414,12 +1407,21 @@ if (typeof window !== "undefined") {
 // ========================================================
 // PURE WHITE SENSIBULL UNIFIED RENDERER ENGINE
 // ========================================================
+const EXPIRY_CONFIG = {
+  "01-Dec-2026": { dte: 4, tMult: 1.00, oiMult: 1.00, label: "1 Dec (4 days)" },
+  "08-Dec-2026": { dte: 11, tMult: 1.66, oiMult: 0.45, label: "8 Dec (11 days)" },
+  "15-Dec-2026": { dte: 18, tMult: 2.12, oiMult: 0.32, label: "15 Dec (3 weeks)" },
+  "22-Dec-2026": { dte: 25, tMult: 2.50, oiMult: 0.72, label: "22 Dec (4 weeks)" }
+};
+
 var activeSensibullExpiry = window.activeSensibullExpiry || "01-Dec-2026";
 
 function switchPureSensibullExpiry(exp) {
   activeSensibullExpiry = exp;
+  window.activeSensibullExpiry = exp;
+  const expDay = parseInt(exp.split("-")[0], 10);
   document.querySelectorAll(".sensibull-expiry-pill").forEach(p => {
-    p.classList.toggle("active", p.textContent.includes(exp.split("-")[0]));
+    p.classList.toggle("active", p.textContent.trim().startsWith(expDay + " Dec"));
   });
   renderAllSensibullChains();
 }
@@ -1430,28 +1432,33 @@ function renderAllSensibullChains() {
   renderSensibullTableById("frontPageOcBody");
 }
 
-
-
 // ========================================================
 // REAL-TIME 1-SECOND LIVE MARKET TICK ENGINE (DHANHQ SYNCED)
 // ========================================================
 window._liveMarketState = {
-  spot: 25677.10,
+  spot: 25607.20,
   basePrevClose: 25884.50,
   strikes: {
-    25400: { ce: 321.05, pe: 48.80, callDelta: 0.85, putDelta: -0.15, callOi: 13.73, putOi: 73.80, iv: 17.5, lastCeMove: 0, lastPeMove: 0 },
-    25450: { ce: 282.60, pe: 61.70, callDelta: 0.81, putDelta: -0.19, callOi: 2.75, putOi: 34.05, iv: 17.4, lastCeMove: 0, lastPeMove: 0 },
-    25500: { ce: 247.80, pe: 77.00, callDelta: 0.76, putDelta: -0.24, callOi: 29.50, putOi: 103.27, iv: 17.4, lastCeMove: 0, lastPeMove: 0 },
-    25550: { ce: 216.90, pe: 94.45, callDelta: 0.70, putDelta: -0.30, callOi: 7.29, putOi: 39.89, iv: 17.3, lastCeMove: 0, lastPeMove: 0 },
-    25600: { ce: 188.00, pe: 114.70, callDelta: 0.64, putDelta: -0.36, callOi: 35.33, putOi: 81.25, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25650: { ce: 161.00, pe: 138.45, callDelta: 0.57, putDelta: -0.43, callOi: 41.03, putOi: 63.34, iv: 17.4, lastCeMove: 0, lastPeMove: 0 },
-    25700: { ce: 137.45, pe: 164.75, callDelta: 0.50, putDelta: -0.50, callOi: 108.97, putOi: 102.74, iv: 17.3, lastCeMove: 0, lastPeMove: 0 },
-    25750: { ce: 116.30, pe: 193.80, callDelta: 0.43, putDelta: -0.57, callOi: 66.37, putOi: 31.20, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25800: { ce: 97.70, pe: 226.25, callDelta: 0.36, putDelta: -0.64, callOi: 169.10, putOi: 66.48, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25850: { ce: 80.75, pe: 260.85, callDelta: 0.30, putDelta: -0.70, callOi: 116.20, putOi: 24.85, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25900: { ce: 67.70, pe: 295.20, callDelta: 0.25, putDelta: -0.75, callOi: 148.67, putOi: 39.80, iv: 17.2, lastCeMove: 0, lastPeMove: 0 },
-    25950: { ce: 56.20, pe: 330.10, callDelta: 0.20, putDelta: -0.80, callOi: 85.20, putOi: 21.10, iv: 17.3, lastCeMove: 0, lastPeMove: 0 },
-    26000: { ce: 46.50, pe: 368.40, callDelta: 0.16, putDelta: -0.84, callOi: 192.40, putOi: 15.80, iv: 17.2, lastCeMove: 0, lastPeMove: 0 }
+    25200: { ce: 408.00, pe: 24.50, callDelta: 0.91, putDelta: -0.09, callOi: 0.85, putOi: 18.20, iv: 14.8, lastCeMove: 0, lastPeMove: 0 },
+    25250: { ce: 365.00, pe: 32.50, callDelta: 0.88, putDelta: -0.12, callOi: 1.43, putOi: 26.65, iv: 14.6, lastCeMove: 0, lastPeMove: 0 },
+    25300: { ce: 324.25, pe: 41.80, callDelta: 0.84, putDelta: -0.16, callOi: 6.07, putOi: 61.62, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
+    25350: { ce: 287.55, pe: 54.70, callDelta: 0.80, putDelta: -0.20, callOi: 2.30, putOi: 20.28, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
+    25400: { ce: 252.00, pe: 68.90, callDelta: 0.76, putDelta: -0.24, callOi: 13.55, putOi: 61.85, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
+    25450: { ce: 220.15, pe: 87.05, callDelta: 0.70, putDelta: -0.30, callOi: 3.40, putOi: 26.11, iv: 14.1, lastCeMove: 0, lastPeMove: 0 },
+    25500: { ce: 189.80, pe: 107.50, callDelta: 0.65, putDelta: -0.35, callOi: 34.09, putOi: 81.06, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
+    25550: { ce: 163.30, pe: 131.55, callDelta: 0.58, putDelta: -0.42, callOi: 10.76, putOi: 20.72, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
+    25600: { ce: 140.00, pe: 157.70, callDelta: 0.50, putDelta: -0.50, callOi: 55.49, putOi: 57.13, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
+    25650: { ce: 119.30, pe: 187.75, callDelta: 0.43, putDelta: -0.57, callOi: 33.10, putOi: 21.44, iv: 14.1, lastCeMove: 0, lastPeMove: 0 },
+    25700: { ce: 100.90, pe: 219.85, callDelta: 0.36, putDelta: -0.64, callOi: 85.01, putOi: 47.98, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
+    25750: { ce: 85.90, pe: 254.25, callDelta: 0.30, putDelta: -0.70, callOi: 53.76, putOi: 17.78, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
+    25800: { ce: 71.70, pe: 290.05, callDelta: 0.25, putDelta: -0.75, callOi: 139.48, putOi: 48.79, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
+    25850: { ce: 60.50, pe: 328.25, callDelta: 0.20, putDelta: -0.80, callOi: 84.98, putOi: 15.09, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
+    25900: { ce: 50.60, pe: 368.70, callDelta: 0.16, putDelta: -0.84, callOi: 122.13, putOi: 29.39, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
+    25950: { ce: 42.15, pe: 410.30, callDelta: 0.13, putDelta: -0.87, callOi: 54.93, putOi: 6.60, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
+    26000: { ce: 35.15, pe: 453.50, callDelta: 0.10, putDelta: -0.90, callOi: 189.85, putOi: 26.37, iv: 14.5, lastCeMove: 0, lastPeMove: 0 },
+    26050: { ce: 29.00, pe: 496.60, callDelta: 0.08, putDelta: -0.92, callOi: 38.37, putOi: 1.94, iv: 14.6, lastCeMove: 0, lastPeMove: 0 },
+    26100: { ce: 23.75, pe: 541.90, callDelta: 0.06, putDelta: -0.94, callOi: 91.87, putOi: 3.93, iv: 14.7, lastCeMove: 0, lastPeMove: 0 },
+    26150: { ce: 19.60, pe: 588.50, callDelta: 0.05, putDelta: -0.95, callOi: 39.66, putOi: 0.99, iv: 14.8, lastCeMove: 0, lastPeMove: 0 }
   }
 };
 
@@ -1509,17 +1516,17 @@ function stepLiveMarketTick() {
   const l3Ltp = document.getElementById('adminLeg3Ltp');
   
   if (l1Ltp) {
-    const p1 = (parseFloat(l1Ltp.value) || 14.50) + (-spotChange * 0.20 + (Math.random() - 0.5) * 0.12);
+    const p1 = (parseFloat(l1Ltp.value) || 18.50) + (-spotChange * 0.20 + (Math.random() - 0.5) * 0.12);
     l1Ltp.value = Math.max(0.05, p1).toFixed(2);
     l1Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
   }
   if (l2Ltp) {
-    const p2 = (parseFloat(l2Ltp.value) || 38.20) + (-spotChange * 0.35 + (Math.random() - 0.5) * 0.18);
+    const p2 = (parseFloat(l2Ltp.value) || 42.15) + (-spotChange * 0.35 + (Math.random() - 0.5) * 0.18);
     l2Ltp.value = Math.max(0.05, p2).toFixed(2);
     l2Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
   }
   if (l3Ltp) {
-    const p3 = (parseFloat(l3Ltp.value) || 164.75) + (-spotChange * 0.48 + (Math.random() - 0.5) * 0.28);
+    const p3 = (parseFloat(l3Ltp.value) || 157.70) + (-spotChange * 0.48 + (Math.random() - 0.5) * 0.28);
     l3Ltp.value = Math.max(0.05, p3).toFixed(2);
     l3Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
   }
@@ -1541,15 +1548,20 @@ function renderSensibullTableById(tbodyId) {
   if (!tbody) return;
 
   const state = window._liveMarketState;
-  const spot = state ? state.spot : 25677.10;
-  const atm = Math.round(spot / 50) * 50; // Dynamic ATM strike calculation
+  const spot = state ? state.spot : 25607.20;
+  const atm = Math.round(spot / 50) * 50; // Dynamic ATM strike calculation (25600)
 
-  // Strikes from 25400 to 26000 matching Dhan screenshot exactly
-  const strikes = [
-    25400, 25450, 25500, 25550, 25600, 25650, 
-    25700, 
-    25750, 25800, 25850, 25900, 25950, 26000
-  ];
+  // Current active expiry config
+  const expKey = window.activeSensibullExpiry || "01-Dec-2026";
+  const expConfig = EXPIRY_CONFIG[expKey] || EXPIRY_CONFIG["01-Dec-2026"];
+  const tMult = expConfig.tMult;
+  const oiMult = expConfig.oiMult;
+
+  // Generate dynamic strikes around ATM (from ATM - 350 to ATM + 350)
+  const strikes = [];
+  for (let s = atm - 350; s <= atm + 350; s += 50) {
+    strikes.push(s);
+  }
 
   let html = "";
   strikes.forEach(s => {
@@ -1557,75 +1569,79 @@ function renderSensibullTableById(tbodyId) {
     const isCallItm = s < spot;
     const isPutItm = s > spot;
 
-    const sData = (state && state.strikes[s]) ? state.strikes[s] : {
-      ce: 100, pe: 100, callDelta: 0.5, putDelta: -0.5, callOi: 20, putOi: 20, iv: 17.2, lastCeMove: 0, lastPeMove: 0
-    };
+    const sData = (state && state.strikes && state.strikes[s]) ? state.strikes[s] : null;
 
-    const callLtp = sData.ce;
-    const putLtp = sData.pe;
-    const callOiLakhs = sData.callOi;
-    const putOiLakhs = sData.putOi;
-    const callDelta = sData.callDelta;
-    const putDelta = sData.putDelta;
-    const iv = sData.iv;
+    let baseCe, basePe, callOiLakhs, putOiLakhs, callDelta, putDelta, iv;
 
-    const callLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(callOiLakhs) * 0.4)));
-    const putLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(putOiLakhs) * 0.4)));
+    if (sData) {
+      baseCe = sData.ce;
+      basePe = sData.pe;
+      callOiLakhs = sData.callOi;
+      putOiLakhs = sData.putOi;
+      callDelta = sData.callDelta;
+      putDelta = sData.putDelta;
+      iv = sData.iv;
+    } else {
+      const diff = Math.abs(s - spot);
+      const intrinsicCe = Math.max(0, spot - s);
+      const intrinsicPe = Math.max(0, s - spot);
+      const timeVal = Math.max(2.0, +(140 * Math.exp(-Math.pow(diff, 2) / 360000)).toFixed(2));
+      baseCe = +(intrinsicCe + timeVal).toFixed(2);
+      basePe = +(intrinsicPe + timeVal).toFixed(2);
+      callOiLakhs = Math.max(0.5, +(50 * Math.exp(-Math.pow(diff, 2) / 250000))).toFixed(2);
+      putOiLakhs = Math.max(0.5, +(50 * Math.exp(-Math.pow(diff, 2) / 250000))).toFixed(2);
+      callDelta = s < spot ? +(0.5 + 0.45 * Math.min(1, (spot - s) / 400)).toFixed(2) : +(0.5 - 0.45 * Math.min(1, (s - spot) / 400)).toFixed(2);
+      putDelta = +(callDelta - 1.0).toFixed(2);
+      iv = 14.2;
+    }
+
+    // Dynamic Intrinsic & Extrinsic time value scaling based on selected expiry (tMult)
+    const intrinsicCe = Math.max(0, spot - s);
+    const intrinsicPe = Math.max(0, s - spot);
+    const timeValCe = Math.max(1.5, baseCe - intrinsicCe);
+    const timeValPe = Math.max(1.5, basePe - intrinsicPe);
+
+    const callLtp = +(intrinsicCe + (timeValCe * tMult)).toFixed(2);
+    const putLtp = +(intrinsicPe + (timeValPe * tMult)).toFixed(2);
+    const dispCallOi = +(parseFloat(callOiLakhs) * oiMult).toFixed(2);
+    const dispPutOi = +(parseFloat(putOiLakhs) * oiMult).toFixed(2);
+
+    const callLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(dispCallOi) * 0.4)));
+    const putLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(dispPutOi) * 0.4)));
 
     // Flash colors on live price ticks
-    const ceClass = sData.lastCeMove > 0 ? "up" : (sData.lastCeMove < 0 ? "down" : "");
-    const peClass = sData.lastPeMove > 0 ? "up" : (sData.lastPeMove < 0 ? "down" : "");
+    const ceClass = (sData && sData.lastCeMove > 0) ? "up" : ((sData && sData.lastCeMove < 0) ? "down" : "");
+    const peClass = (sData && sData.lastPeMove > 0) ? "up" : ((sData && sData.lastPeMove < 0) ? "down" : "");
 
     html += `<tr class="${isCallItm ? 'itm-call' : ''} ${isPutItm ? 'itm-put' : ''}">
-      
-      <!-- CALL DELTA -->
       <td class="call-cell" style="color: #64748b; font-weight: 600;">${callDelta}</td>
-
-      <!-- CALL LTP (LIVE TICKING) -->
       <td class="call-cell">
         <span class="price-tick-val ${ceClass}">${callLtp.toFixed(2)}</span>
       </td>
-
-      <!-- CALL OI with Red Bar -->
       <td class="call-cell" style="text-align: left; padding-left: 12px; font-weight: 700;">
-        <strong>${callOiLakhs}</strong>
+        <strong>${dispCallOi}</strong>
         <span class="oi-red-line" style="width: ${callLineWidth}px;"></span>
       </td>
-
-      <!-- CALL ACTION: B and S -->
       <td class="call-cell" style="white-space: nowrap;">
         <button type="button" class="btn-oc-action-b" onclick="selectSensibullStrike(${s}, 'CE', 'B', ${callLtp})" title="Buy Call">B</button>
         <button type="button" class="btn-oc-action-s" onclick="selectSensibullStrike(${s}, 'CE', 'S', ${callLtp})" title="Sell Call">S</button>
       </td>
-
-      <!-- STRIKE (CENTER) with ATM Box -->
       <td class="strike-cell">
         <span class="strike-pill-badge ${isAtm ? 'atm' : ''}">${s}</span>
       </td>
-
-      <!-- IV -->
       <td style="color: #64748b; font-weight: 600;">${iv}</td>
-
-      <!-- PUT ACTION: B and S -->
       <td class="put-cell" style="white-space: nowrap;">
         <button type="button" class="btn-oc-action-b" onclick="selectSensibullStrike(${s}, 'PE', 'B', ${putLtp})" title="Buy Put">B</button>
         <button type="button" class="btn-oc-action-s" onclick="selectSensibullStrike(${s}, 'PE', 'S', ${putLtp})" title="Sell Put">S</button>
       </td>
-
-      <!-- PUT OI with Green Bar -->
       <td class="put-cell" style="text-align: right; padding-right: 12px; font-weight: 700;">
         <span class="oi-green-line" style="width: ${putLineWidth}px;"></span>
-        <strong>${putOiLakhs}</strong>
+        <strong>${dispPutOi}</strong>
       </td>
-
-      <!-- PUT LTP (LIVE TICKING) -->
       <td class="put-cell">
         <span class="price-tick-val ${peClass}">${putLtp.toFixed(2)}</span>
       </td>
-
-      <!-- PUT DELTA -->
       <td class="put-cell" style="color: #64748b; font-weight: 600;">${putDelta}</td>
-
     </tr>`;
   });
 
