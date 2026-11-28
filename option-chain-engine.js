@@ -278,9 +278,8 @@
   // ========================================================
   // 4. STATE STORE & MULTI-INDEX SYNTHESIS / DHAN OVERRIDE
   // ========================================================
-  // Once your Cloudflare Worker is deployed, paste its *.workers.dev URL below
-  // so ALL Frontend (index.html) visitors & Admin users auto-connect cleanly!
-  const DEFAULT_PUBLIC_WORKER_URL = "";
+  // Cloudflare Worker URL wired for BOTH Admin Panel & Public Frontend (index.html)
+  const DEFAULT_PUBLIC_WORKER_URL = "https://optionselling.mehul26587.workers.dev";
 
   const _hosts = new Set();
 
