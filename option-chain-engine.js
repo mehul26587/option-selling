@@ -127,10 +127,10 @@
 
   function isIndianMarketOpen(istDate) {
     const d = istDate || getISTNow();
-    const day = d.getDay(); // 0 = Sun, 6 = Sat
+    const day = d.getDay(); // 0 = Sun, 6 = Sat (Open Mon-Fri)
     if (day === 0 || day === 6) return false;
     const mins = d.getHours() * 60 + d.getMinutes();
-    return mins >= (9 * 60 + 15) && mins <= (15 * 60 + 30);
+    return mins >= (9 * 60) && mins <= (15 * 60 + 40);
   }
 
   function formatISTDateISO(d) {
@@ -164,7 +164,7 @@
       // Find next target weeklyDay (2 = Tuesday for NIFTY, 4 = Thursday for SENSEX)
       const cursor = new Date(todayMidnight);
       let diff = (cfg.weeklyDay - cursor.getDay() + 7) % 7;
-      if (diff === 0 && (istNow.getHours() * 60 + istNow.getMinutes()) > (15 * 60 + 30)) {
+      if (diff === 0 && (istNow.getHours() * 60 + istNow.getMinutes()) > (15 * 60 + 40)) {
         diff = 7;
       }
       cursor.setDate(cursor.getDate() + diff);
@@ -1066,7 +1066,7 @@
         if (pulseDot) pulseDot.style.background = "#2563eb";
       } else {
         mktBadge.className = "oc-market-badge closed";
-        mktText.textContent = "MARKET CLOSED (09:15–15:30)";
+        mktText.textContent = "MARKET CLOSED (09:00–15:40)";
         if (pulseDot) pulseDot.style.background = "#94a3b8";
       }
     }

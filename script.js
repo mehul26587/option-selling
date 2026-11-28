@@ -2328,7 +2328,7 @@ function syncLiveMultiStrikeTrades() {
 
 setInterval(() => {
   if (window.OCEngine && !window.OCEngine.isLiveActive()) {
-    return; // Outside IST 09:15-15:30 Mon-Fri unless Preview toggled ON
+    return; // Outside IST 09:00-15:40 Mon-Fri unless Preview toggled ON
   }
   syncLiveMultiStrikeTrades();
 }, 1000);
