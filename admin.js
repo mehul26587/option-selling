@@ -1407,7 +1407,7 @@ if (typeof window !== "undefined") {
 // ========================================================
 // PURE WHITE SENSIBULL UNIFIED RENDERER ENGINE
 // ========================================================
-const EXPIRY_CONFIG = {
+var EXPIRY_CONFIG = window.EXPIRY_CONFIG || {
   "01-Dec-2026": { dte: 4, tMult: 1.00, oiMult: 1.00, label: "1 Dec (4 days)" },
   "08-Dec-2026": { dte: 11, tMult: 1.66, oiMult: 0.45, label: "8 Dec (11 days)" },
   "15-Dec-2026": { dte: 18, tMult: 2.12, oiMult: 0.32, label: "15 Dec (3 weeks)" },
