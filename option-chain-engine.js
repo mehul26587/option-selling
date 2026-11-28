@@ -746,7 +746,7 @@
             <select id="${hostId}_indexSelect" class="oc-index-select" onchange="window.OCEngine.selectIndex(this.value)" title="Select Index">
               ${symbolOptionsHtml}
             </select>
-            <span id="${hostId}_spotVal" style="font-weight: 900; font-size: 15.5px; color: #0f172a;">25,607.20</span>
+            <span id="${hostId}_spotVal" style="font-weight: 600; font-size: 15px; color: #1e293b;">25,607.20</span>
             <span id="${hostId}_spotChg" class="sensibull-spot-red" style="font-size: 13px;">-277.30 (-1.07%)</span>
           </div>
 
@@ -775,7 +775,7 @@
               <button type="button" id="${hostId}_btnViewOI" class="sensibull-view-btn active" onclick="window.OCEngine.setViewMode('OI')">OI</button>
               <button type="button" id="${hostId}_btnViewGreeks" class="sensibull-view-btn" onclick="window.OCEngine.setViewMode('GREEKS')">Greeks</button>
             </div>
-            <span id="${hostId}_dhanSourcePill" style="font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
+            <span id="${hostId}_dhanSourcePill" style="font-size: 11px; font-weight: 500; color: #475569; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
               Market Sync
             </span>
           </div>
@@ -792,22 +792,22 @@
         <!-- BOTTOM METRICS BAR (Matches Screenshot: PCR | Max Pain | ATM IV | IV Percentile) -->
         <div class="sensibull-footer-bar" style="justify-content: center; gap: 36px; padding: 12px 20px; background: #ffffff; border-top: 1px solid #e2e8f0;">
           <div style="text-align: center;">
-            <div style="font-size: 11px; color: #64748b; font-weight: 700;">PCR</div>
+            <div style="font-size: 11px; color: #64748b; font-weight: 500;">PCR</div>
             <div class="sensibull-metric-badge" id="${hostId}_pcr" style="font-size: 14px;">0.59</div>
           </div>
           <div style="text-align: center;">
-            <div style="font-size: 11px; color: #64748b; font-weight: 700;">Max Pain</div>
+            <div style="font-size: 11px; color: #64748b; font-weight: 500;">Max Pain</div>
             <div class="sensibull-metric-badge" id="${hostId}_maxPain" style="font-size: 14px;">25700</div>
           </div>
           <div style="text-align: center;">
-            <div style="font-size: 11px; color: #64748b; font-weight: 700;">ATM IV</div>
+            <div style="font-size: 11px; color: #64748b; font-weight: 500;">ATM IV</div>
             <div class="sensibull-metric-badge" id="${hostId}_atmIv" style="font-size: 14px;">14.20</div>
           </div>
           <div style="text-align: center;">
-            <div style="font-size: 11px; color: #64748b; font-weight: 700;">IV Percentile</div>
+            <div style="font-size: 11px; color: #64748b; font-weight: 500;">IV Percentile</div>
             <div class="sensibull-metric-badge" id="${hostId}_ivPct" style="font-size: 14px;">63.00 - High</div>
           </div>
-          ${allowTradeActions ? `<div style="margin-left: auto; color: #059669; font-weight: 700; font-size: 12px;">✓ Click [S] or [B] on any strike to add to 3-Strike Basket</div>` : ""}
+          ${allowTradeActions ? `<div style="margin-left: auto; color: #059669; font-weight: 500; font-size: 12px;">✓ Click [S] or [B] on any strike to add to 3-Strike Basket</div>` : ""}
         </div>
       </div>
     `;
@@ -926,7 +926,7 @@
           ${allowActions ? `<th style="width:68px;">Action</th>` : ""}
           <th style="text-align:right;">Chg%</th>
           <th style="text-align:right; padding-right:10px;">Call LTP</th>
-          <th style="width:94px; background:#f1f5f9; color:#0f172a;">Strike</th>
+          <th style="width:94px; background:#f1f5f9; color:#1e293b;">Strike</th>
           <th style="text-align:left; padding-left:10px;">Put LTP</th>
           <th style="text-align:left;">Chg%</th>
           ${allowActions ? `<th style="width:68px;">Action</th>` : ""}
@@ -992,7 +992,7 @@
           <th>Delta</th>
           <th>Call LTP</th>
           ${allowActions ? `<th style="width:68px;">Action</th>` : ""}
-          <th style="width:94px; background:#f1f5f9; color:#0f172a;">Strike</th>
+          <th style="width:94px; background:#f1f5f9; color:#1e293b;">Strike</th>
           <th>IV</th>
           ${allowActions ? `<th style="width:68px;">Action</th>` : ""}
           <th>Put LTP</th>
@@ -1015,7 +1015,7 @@
             <td class="call-cell oc-greek">${r.ceGreeks.theta.toFixed(2)}</td>
             <td class="call-cell oc-greek">${r.ceGreeks.vega.toFixed(2)}</td>
             <td class="call-cell oc-greek">${r.ceGreeks.gamma.toFixed(4)}</td>
-            <td class="call-cell oc-greek" style="font-weight:700;">${r.ceGreeks.delta.toFixed(2)}</td>
+            <td class="call-cell oc-greek" style="font-weight:500;">${r.ceGreeks.delta.toFixed(2)}</td>
             <td class="call-cell"><span class="price-tick-val ${ceMoveCls}">${r.callLtp.toFixed(2)}</span></td>
             ${allowActions ? `
               <td class="call-cell" style="white-space:nowrap;">
@@ -1026,7 +1026,7 @@
             <td class="strike-cell">
               <span class="strike-pill-badge ${r.isAtm ? "atm" : ""}">${r.strike}</span>
             </td>
-            <td class="oc-greek" style="font-weight:700;">${r.iv.toFixed(2)}</td>
+            <td class="oc-greek" style="font-weight:500;">${r.iv.toFixed(2)}</td>
             ${allowActions ? `
               <td class="put-cell" style="white-space:nowrap;">
                 <button type="button" class="btn-oc-action-b ${peSelB}" onclick="window.OCEngine.onLegAction(${r.strike}, 'PE', 'B', ${r.putLtp})">B</button>
@@ -1034,7 +1034,7 @@
               </td>
             ` : ""}
             <td class="put-cell"><span class="price-tick-val ${peMoveCls}">${r.putLtp.toFixed(2)}</span></td>
-            <td class="put-cell oc-greek" style="font-weight:700;">${r.peGreeks.delta.toFixed(2)}</td>
+            <td class="put-cell oc-greek" style="font-weight:500;">${r.peGreeks.delta.toFixed(2)}</td>
             <td class="put-cell oc-greek">${r.peGreeks.gamma.toFixed(4)}</td>
             <td class="put-cell oc-greek">${r.peGreeks.vega.toFixed(2)}</td>
             <td class="put-cell oc-greek">${r.peGreeks.theta.toFixed(2)}</td>

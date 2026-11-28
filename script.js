@@ -1266,7 +1266,7 @@ function renderMultiStrikeTradeHistoryTable() {
 
       // Trade No (rowspan across the 3 strikes)
       if (isFirst) {
-        html += `<td rowspan="${legCount}" style="background: #ffffff; font-size: 15px; font-weight: 900;">${trade.tradeNo}</td>`;
+        html += `<td rowspan="${legCount}" style="background: #ffffff; font-size: 14px; font-weight: 600; color: #1e293b;">${trade.tradeNo}</td>`;
       }
 
       // Trade ID
@@ -1276,13 +1276,13 @@ function renderMultiStrikeTradeHistoryTable() {
       if (isFirst) {
         html += `<td rowspan="${legCount}">${trade.date}</td>`;
         html += `<td rowspan="${legCount}"><strong>${trade.index}</strong></td>`;
-        html += `<td rowspan="${legCount}"><strong>${trade.strategy}</strong>${trade.tradeName ? `<br><span style="font-size: 11px; color: #64748b; font-weight: 600;">${trade.tradeName}</span>` : ""}</td>`;
+        html += `<td rowspan="${legCount}"><strong>${trade.strategy}</strong>${trade.tradeName ? `<br><span style="font-size: 11px; color: #64748b; font-weight: 500;">${trade.tradeName}</span>` : ""}</td>`;
       }
 
       // Strikes, CE/PE, Action, Entry, LTP, Net P&L
       if (isLive && !isSubscriber) {
         // Locked display for free users on active live trade
-        html += `<td><span style="color: #d97706; font-weight: 700;">🔒 25,xxx ${leg.type}</span></td>`;
+        html += `<td><span style="color: #b45309; font-weight: 500;">🔒 25,xxx ${leg.type}</span></td>`;
         html += `<td><span class="badge-option-${leg.type.toLowerCase()}">${leg.type}</span></td>`;
         html += `<td><span class="badge-action-${leg.action.toLowerCase()}">${leg.action}</span></td>`;
         html += `<td><span style="color: #94a3b8; font-size: 11px;">🔒 Locked</span></td>`;
@@ -1294,14 +1294,14 @@ function renderMultiStrikeTradeHistoryTable() {
         html += `<td><span class="badge-action-${leg.action.toLowerCase()}">${leg.action}</span></td>`;
         html += `<td>₹${leg.entry.toFixed(2)}</td>`;
         html += `<td><span class="oc-ltp-val ${isLive ? 'up' : ''}">₹${leg.ltp.toFixed(2)}</span></td>`;
-        html += `<td style="font-weight: 700; color: ${isProfit ? '#10b981' : '#ef4444'}">${isProfit ? '+' : ''}₹${leg.netPnl.toLocaleString("en-IN")}</td>`;
+        html += `<td style="font-weight: 500; color: ${isProfit ? '#059669' : '#dc2626'}">${isProfit ? '+' : ''}₹${leg.netPnl.toLocaleString("en-IN")}</td>`;
       }
 
       // Total Profit & Status (rowspan across 3 strikes)
       if (isFirst) {
         if (isLive && !isSubscriber) {
-          html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="color: #d97706; font-size: 12.5px;">
-            🔒 <a href="javascript:void(0)" onclick="switchTab('pricing')" style="color: #2563eb; font-weight: 700; text-decoration: underline;">Subscribe to View</a>
+          html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="color: #b45309; font-size: 12.5px;">
+            🔒 <a href="javascript:void(0)" onclick="switchTab('pricing')" style="color: #2563eb; font-weight: 600; text-decoration: underline;">Subscribe to View</a>
           </td>`;
         } else {
           html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="color: ${totalProfit >= 0 ? '#10b981' : '#ef4444'};">

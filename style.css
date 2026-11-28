@@ -1797,9 +1797,9 @@ body {
 
 .trade-history-table th {
   background: #f8fafc;
-  color: #0f172a;
-  font-weight: 800;
-  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
+  font-size: 11.5px;
   padding: 12px 8px;
   border: 1px solid #cbd5e1;
   text-transform: uppercase;
@@ -1810,8 +1810,9 @@ body {
 .trade-history-table td {
   padding: 10px 8px;
   border: 1px solid #e2e8f0;
-  color: #1e293b;
+  color: #334155;
   font-size: 12.5px;
+  font-weight: 400;
   vertical-align: middle;
 }
 
@@ -1827,7 +1828,7 @@ body {
 .badge-action-b {
   background: #eff6ff;
   color: #2563eb;
-  font-weight: 800;
+  font-weight: 600;
   padding: 2px 8px;
   border-radius: 4px;
   border: 1px solid #bfdbfe;
@@ -1837,7 +1838,7 @@ body {
 .badge-action-s {
   background: #fef2f2;
   color: #ef4444;
-  font-weight: 800;
+  font-weight: 600;
   padding: 2px 8px;
   border-radius: 4px;
   border: 1px solid #fecaca;
@@ -2299,9 +2300,10 @@ body {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  color: #0f172a;
+  color: #334155;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 .sensibull-header-bar {
@@ -2323,21 +2325,21 @@ body {
   border: 1px solid #cbd5e1;
   padding: 8px 16px;
   border-radius: 8px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #1e293b;
 }
 
 .sensibull-spot-green {
   color: #10b981;
-  font-weight: 800;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 13.5px;
 }
 
 .sensibull-spot-red {
   color: #ef4444;
-  font-weight: 800;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 13.5px;
 }
 
 .sensibull-nav-tabs {
@@ -2351,7 +2353,7 @@ body {
 .sensibull-nav-tab {
   padding: 10px 4px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   color: #64748b;
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -2360,6 +2362,7 @@ body {
 
 .sensibull-nav-tab.active {
   color: #2563eb;
+  font-weight: 600;
   border-bottom-color: #2563eb;
 }
 
@@ -2388,21 +2391,21 @@ body {
   padding: 5px 12px;
   border-radius: 20px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .sensibull-expiry-pill:hover {
   background: #f1f5f9;
-  color: #0f172a;
+  color: #1e293b;
 }
 
 .sensibull-expiry-pill.active {
   background: #eff6ff;
   color: #2563eb;
   border-color: #2563eb;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .sensibull-view-toggle {
@@ -2416,7 +2419,7 @@ body {
 .sensibull-view-btn {
   padding: 5px 12px;
   font-size: 11.5px;
-  font-weight: 700;
+  font-weight: 500;
   border: none;
   background: transparent;
   color: #64748b;
@@ -2426,6 +2429,7 @@ body {
 .sensibull-view-btn.active {
   background: #2563eb;
   color: #ffffff;
+  font-weight: 600;
 }
 
 .sensibull-table-wrapper {
@@ -2454,8 +2458,8 @@ body {
 .sensibull-pure-table th {
   padding: 10px 8px;
   font-size: 11.5px;
-  font-weight: 800;
-  color: #64748b;
+  font-weight: 600;
+  color: #475569;
   background: #f8fafc;
   letter-spacing: 0.3px;
   border-bottom: 1px solid #e2e8f0;
@@ -2464,7 +2468,8 @@ body {
 .sensibull-pure-table td {
   padding: 8px 6px;
   border-bottom: 1px solid #f1f5f9;
-  color: #0f172a;
+  color: #334155;
+  font-weight: 400;
   vertical-align: middle;
 }
 
@@ -2480,7 +2485,7 @@ body {
 /* Center Strike Cell */
 .sensibull-pure-table td.strike-cell {
   background: #f8fafc;
-  font-weight: 800;
+  font-weight: 500;
   border-left: 1px solid #e2e8f0;
   border-right: 1px solid #e2e8f0;
 }
@@ -2490,17 +2495,18 @@ body {
   border: 1px solid #cbd5e1;
   padding: 4px 10px;
   border-radius: 6px;
-  font-weight: 900;
-  font-size: 13px;
-  color: #0f172a;
+  font-weight: 500;
+  font-size: 12.5px;
+  color: #334155;
   display: inline-block;
 }
 
 .strike-pill-badge.atm {
-  background: #0f172a;
+  background: #1e293b;
   color: #ffffff;
-  border-color: #0f172a;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+  border-color: #1e293b;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(30, 41, 59, 0.2);
 }
 
 /* Buy / Sell Buttons */
@@ -2508,7 +2514,7 @@ body {
   background: #2563eb;
   color: #ffffff;
   border: none;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 11px;
   padding: 3px 8px;
   border-radius: 4px;
@@ -2526,7 +2532,7 @@ body {
   background: #ea580c;
   color: #ffffff;
   border: none;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 11px;
   padding: 3px 8px;
   border-radius: 4px;
@@ -2570,13 +2576,13 @@ body {
   flex-wrap: wrap;
   gap: 12px;
   font-size: 12.5px;
-  font-weight: 700;
-  color: #475569;
+  font-weight: 400;
+  color: #64748b;
 }
 
 .sensibull-metric-badge {
-  color: #0f172a;
-  font-weight: 800;
+  color: #1e293b;
+  font-weight: 600;
 }
 
 
@@ -2597,8 +2603,8 @@ body {
 }
 
 .price-tick-val {
-  font-weight: 800;
-  font-size: 13px;
+  font-weight: 500;
+  font-size: 12.5px;
   display: inline-block;
   transition: color 0.35s ease, transform 0.2s ease;
 }
@@ -2619,8 +2625,8 @@ body {
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 13.5px;
-  font-weight: 800;
-  color: #0f172a;
+  font-weight: 600;
+  color: #1e293b;
   cursor: pointer;
   outline: none;
 }
@@ -2636,7 +2642,7 @@ body {
   padding: 5px 10px;
   border-radius: 20px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
   outline: none;
 }
@@ -2645,12 +2651,12 @@ body {
   background: #eff6ff;
   color: #2563eb;
   border-color: #2563eb;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .exp-w-badge {
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 600;
   color: #2563eb;
   margin-left: 3px;
 }
@@ -2659,7 +2665,7 @@ body {
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2691,7 +2697,7 @@ body {
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -2719,7 +2725,7 @@ body {
 
 .oc-pct {
   font-size: 11px !important;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .oc-pct.pos {
@@ -2731,12 +2737,13 @@ body {
 }
 
 .oc-oi-num {
-  font-weight: 700;
-  color: #0f172a;
+  font-weight: 400;
+  color: #334155;
 }
 
 .oc-greek {
   font-size: 11.5px !important;
+  font-weight: 400;
   color: #475569 !important;
 }
 
@@ -2764,7 +2771,7 @@ body {
 
 .btn-oc-action-b.selected,
 .btn-oc-action-s.selected {
-  outline: 2px solid #0f172a;
+  outline: 2px solid #1e293b;
   outline-offset: 1px;
   transform: scale(1.1);
 }

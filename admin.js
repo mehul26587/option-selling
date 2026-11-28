@@ -282,10 +282,10 @@ function renderTradesTable(trades) {
         <td>${t.action}</td>
         <td>₹${t.entryPrice}</td>
         <td>₹${t.currentPrice || t.targetPrice}</td>
-        <td style="font-weight: 700; color: ${isProfit ? '#10b981' : '#ef4444'}">
+        <td style="font-weight: 600; color: ${isProfit ? '#10b981' : '#ef4444'}">
           ${isProfit ? '+' : ''}₹${(t.pnl || 0).toLocaleString("en-IN")}
         </td>
-        <td><span style="font-weight: 700; font-size: 11.5px;">${t.status}</span></td>
+        <td><span style="font-weight: 600; font-size: 11.5px;">${t.status}</span></td>
         <td>
           <div style="display: flex; gap: 6px;">
             ${t.status === 'OPEN' ? `
@@ -637,8 +637,8 @@ function renderAdminDayByDayTable(history) {
       <td>₹${row.leg1Ltp.toFixed(2)}</td>
       <td>₹${row.leg2Ltp.toFixed(2)}</td>
       <td>₹${row.leg3Ltp.toFixed(2)}</td>
-      <td style="color: #10b981; font-weight: 700;">${row.dayPnl}</td>
-      <td style="color: #10b981; font-weight: 800;">+₹${row.unbookedPnl.toLocaleString("en-IN")}</td>
+      <td style="color: #10b981; font-weight: 500;">${row.dayPnl}</td>
+      <td style="color: #10b981; font-weight: 600;">+₹${row.unbookedPnl.toLocaleString("en-IN")}</td>
       <td><span style="font-size: 11.5px; color: #64748b;">${row.remark}</span></td>
     </tr>
   `).join("");
