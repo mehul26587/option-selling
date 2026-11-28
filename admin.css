@@ -3,7 +3,7 @@
  */
 
 :root {
-  --admin-sidebar-w: 260px;
+  --admin-sidebar-w: 224px;
   --admin-primary: #0f172a;
   --admin-blue: #2563eb;
   --admin-blue-hover: #1d4ed8;
@@ -56,7 +56,7 @@ body.admin-body h4 {
   top: 0;
   bottom: 0;
   left: 0;
-  padding: 24px 16px;
+  padding: 18px 12px;
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 12px rgba(0,0,0,0.12);
@@ -64,35 +64,35 @@ body.admin-body h4 {
 }
 
 .admin-brand {
-  font-size: 17px;
+  font-size: 16.5px;
   font-weight: 600;
   color: #ffffff;
-  padding-bottom: 20px;
+  padding-bottom: 14px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .admin-nav {
   list-style: none;
   padding: 0;
-  margin: 20px 0 0 0;
+  margin: 14px 0 0 0;
   flex: 1;
 }
 
 .admin-nav-item {
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 
 .admin-nav-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
+  gap: 10px;
+  padding: 9px 12px;
   color: #cbd5e1;
   text-decoration: none;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
   border-radius: 8px;
   cursor: pointer;
@@ -112,7 +112,7 @@ body.admin-body h4 {
 
 .admin-footer {
   border-top: 1px solid rgba(255,255,255,0.08);
-  padding-top: 16px;
+  padding-top: 12px;
 }
 
 .btn-admin-logout {
@@ -120,7 +120,7 @@ body.admin-body h4 {
   background: #fee2e2;
   color: #b91c1c;
   border: none;
-  padding: 10px;
+  padding: 9px;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
@@ -136,7 +136,7 @@ body.admin-body h4 {
 .admin-main {
   margin-left: var(--admin-sidebar-w);
   flex: 1;
-  padding: 24px;
+  padding: 16px 20px;
   min-height: 100vh;
   min-width: 0;
   max-width: calc(100vw - var(--admin-sidebar-w));
@@ -147,49 +147,53 @@ body.admin-body h4 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .admin-title h1 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--admin-text);
-  margin-bottom: 4px;
+  margin: 0 0 3px 0;
 }
 
 .admin-title p {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 400;
   color: var(--admin-muted);
+  margin: 0;
 }
 
 /* Metric Cards */
 .admin-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  margin-bottom: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
 .admin-stat-card {
   background: #ffffff;
-  padding: 20px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
   border: 1px solid var(--admin-border);
   box-shadow: 0 2px 4px rgba(0,0,0,0.03);
 }
 
 .admin-stat-label {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.3px;
   text-transform: uppercase;
   color: var(--admin-muted);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .admin-stat-value {
-  font-size: 26px;
+  font-size: 23px;
+  line-height: 1.2;
   font-weight: 600;
   color: var(--admin-text);
 }
@@ -197,26 +201,29 @@ body.admin-body h4 {
 /* Section Cards */
 .admin-card {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid var(--admin-border);
   box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-  margin-bottom: 28px;
+  margin-bottom: 16px;
   overflow: hidden;
 }
 
 .admin-card-head {
-  padding: 18px 24px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--admin-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   background: #f8fafc;
 }
 
 .admin-card-head h2 {
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 600;
   color: var(--admin-text);
+  margin: 0;
 }
 
 .admin-btn-primary {
@@ -262,19 +269,20 @@ body.admin-body h4 {
 /* Form Styles */
 .admin-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 20px 24px;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 12px;
+  padding: 14px 18px;
 }
 
 .admin-form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
 }
 
 .admin-form-group label {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: #475569;
   letter-spacing: 0.3px;
@@ -283,13 +291,15 @@ body.admin-body h4 {
 
 .admin-form-group input,
 .admin-form-group select {
-  padding: 9px 12px;
+  padding: 7px 10px;
   border: 1px solid var(--admin-border);
   border-radius: 6px;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 400;
   color: #334155;
   outline: none;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .admin-form-group input:focus,
@@ -326,7 +336,7 @@ body.admin-body h4 {
 }
 
 .admin-modal-header {
-  padding: 18px 24px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--admin-border);
   display: flex;
   align-items: center;
@@ -334,15 +344,15 @@ body.admin-body h4 {
 }
 
 .admin-modal-body {
-  padding: 24px;
+  padding: 14px 18px;
 }
 
 .admin-modal-footer {
-  padding: 16px 24px;
+  padding: 12px 18px;
   border-top: 1px solid var(--admin-border);
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 10px;
   background: #f8fafc;
 }
 
@@ -356,6 +366,8 @@ body.admin-body h4 {
   }
   .admin-main {
     margin-left: 0;
+    max-width: 100vw;
+    padding: 14px;
   }
 }
 
@@ -363,20 +375,48 @@ body.admin-body h4 {
 /* ========================================================
    CLEAN READABLE TYPOGRAPHY OVERRIDES FOR ADMIN TABLES
    ======================================================== */
-body.admin-body .custom-table th,
-body.admin-body .trade-history-table th {
+body.admin-body .custom-table th {
   font-weight: 600 !important;
-  font-size: 12px !important;
+  font-size: 11.5px !important;
   color: #475569 !important;
   background: #f8fafc !important;
   letter-spacing: 0.3px;
+  padding: 9px 12px !important;
 }
 
-body.admin-body .custom-table td,
+body.admin-body .custom-table td {
+  font-weight: 400 !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+  padding: 9px 12px !important;
+}
+
+body.admin-body .trade-history-basket-card {
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
+  border-radius: 10px;
+}
+
+body.admin-body .table-toolbar {
+  padding: 10px 16px !important;
+  gap: 10px !important;
+}
+
+body.admin-body .trade-history-table th {
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  color: #475569 !important;
+  background: #f8fafc !important;
+  letter-spacing: 0.2px;
+  padding: 8px 6px !important;
+}
+
 body.admin-body .trade-history-table td {
   font-weight: 400 !important;
-  font-size: 13.5px !important;
+  font-size: 12.5px !important;
   color: #334155 !important;
+  padding: 7px 6px !important;
+  line-height: 1.35;
 }
 
 /* ========================================================
@@ -396,21 +436,21 @@ body.admin-body .trade-history-table td {
 .sensibull-header-bar {
   background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
-  padding: 14px 20px;
+  padding: 10px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .sensibull-spot-search {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
-  padding: 7px 14px;
+  padding: 5px 12px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -456,12 +496,12 @@ body.admin-body .trade-history-table td {
 .sensibull-filter-bar {
   background: #ffffff;
   border-bottom: 1px solid #f1f5f9;
-  padding: 12px 20px;
+  padding: 9px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .sensibull-expiry-pills {
@@ -544,7 +584,7 @@ body.admin-body .trade-history-table td {
 }
 
 .sensibull-pure-table th {
-  padding: 10px 8px;
+  padding: 8px 6px;
   font-size: 12px;
   font-weight: 600;
   color: #475569;
@@ -554,7 +594,7 @@ body.admin-body .trade-history-table td {
 }
 
 .sensibull-pure-table td {
-  padding: 8px 6px;
+  padding: 6px 5px;
   border-bottom: 1px solid #f1f5f9;
   color: #334155;
   font-weight: 400;
@@ -657,12 +697,12 @@ body.admin-body .trade-history-table td {
 .sensibull-footer-bar {
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
-  padding: 12px 20px;
+  padding: 10px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px 24px;
   font-size: 12.5px;
   font-weight: 500;
   color: #64748b;
@@ -800,9 +840,9 @@ body.admin-body .trade-history-table td {
 }
 
 .sb-clone-table td {
-  padding: 7px 6px;
+  padding: 6px 5px;
   border-bottom: 1px solid #f1f5f9;
-  font-size: 13px;
+  font-size: 12.5px;
 }
 
 .sb-clone-table tr.atm-row td {

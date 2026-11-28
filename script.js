@@ -1270,11 +1270,11 @@ function renderMultiStrikeTradeHistoryTable() {
       }
 
       // Trade ID
-      html += `<td><strong>${leg.tradeId}</strong></td>`;
+      html += `<td style="white-space: nowrap;"><strong>${leg.tradeId}</strong></td>`;
 
       // Grouped Date, Index, Strategy (rowspan across 3 strikes)
       if (isFirst) {
-        html += `<td rowspan="${legCount}">${trade.date}</td>`;
+        html += `<td rowspan="${legCount}" style="white-space: nowrap;">${trade.date}</td>`;
         html += `<td rowspan="${legCount}"><strong>${trade.index}</strong></td>`;
         html += `<td rowspan="${legCount}"><strong>${trade.strategy}</strong>${trade.tradeName ? `<br><span style="font-size: 11px; color: #64748b; font-weight: 500;">${trade.tradeName}</span>` : ""}</td>`;
       }
@@ -1282,19 +1282,19 @@ function renderMultiStrikeTradeHistoryTable() {
       // Strikes, CE/PE, Action, Entry, LTP, Net P&L
       if (isLive && !isSubscriber) {
         // Locked display for free users on active live trade
-        html += `<td><span style="color: #b45309; font-weight: 500;">🔒 25,xxx ${leg.type}</span></td>`;
+        html += `<td style="white-space: nowrap;"><span style="color: #b45309; font-weight: 500;">🔒 25,xxx ${leg.type}</span></td>`;
         html += `<td><span class="badge-option-${leg.type.toLowerCase()}">${leg.type}</span></td>`;
         html += `<td><span class="badge-action-${leg.action.toLowerCase()}">${leg.action}</span></td>`;
         html += `<td><span style="color: #94a3b8; font-size: 11px;">🔒 Locked</span></td>`;
         html += `<td><span style="color: #94a3b8; font-size: 11px;">🔒 Locked</span></td>`;
         html += `<td><span style="color: #94a3b8; font-size: 11px;">🔒 Locked</span></td>`;
       } else {
-        html += `<td><strong>${leg.strike}</strong></td>`;
+        html += `<td style="white-space: nowrap;"><strong>${leg.strike}</strong></td>`;
         html += `<td><span class="badge-option-${leg.type.toLowerCase()}">${leg.type}</span></td>`;
         html += `<td><span class="badge-action-${leg.action.toLowerCase()}">${leg.action}</span></td>`;
-        html += `<td>₹${leg.entry.toFixed(2)}</td>`;
-        html += `<td><span class="oc-ltp-val ${isLive ? 'up' : ''}">₹${leg.ltp.toFixed(2)}</span></td>`;
-        html += `<td style="font-weight: 500; color: ${isProfit ? '#059669' : '#dc2626'}">${isProfit ? '+' : ''}₹${leg.netPnl.toLocaleString("en-IN")}</td>`;
+        html += `<td style="white-space: nowrap;">₹${leg.entry.toFixed(2)}</td>`;
+        html += `<td style="white-space: nowrap;"><span class="oc-ltp-val ${isLive ? 'up' : ''}">₹${leg.ltp.toFixed(2)}</span></td>`;
+        html += `<td style="white-space: nowrap; font-weight: 500; color: ${isProfit ? '#059669' : '#dc2626'}">${isProfit ? '+' : ''}₹${leg.netPnl.toLocaleString("en-IN")}</td>`;
       }
 
       // Total Profit & Status (rowspan across 3 strikes)
@@ -1304,14 +1304,14 @@ function renderMultiStrikeTradeHistoryTable() {
             🔒 <a href="javascript:void(0)" onclick="switchTab('pricing')" style="color: #2563eb; font-weight: 600; text-decoration: underline;">Subscribe to View</a>
           </td>`;
         } else {
-          html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="color: ${totalProfit >= 0 ? '#10b981' : '#ef4444'};">
+          html += `<td rowspan="${legCount}" class="trade-total-profit-cell" style="white-space: nowrap; color: ${totalProfit >= 0 ? '#10b981' : '#ef4444'};">
             ${totalProfit >= 0 ? '+' : ''}₹${totalProfit.toLocaleString("en-IN")}
           </td>`;
         }
         
-        html += `<td rowspan="${legCount}">
+        html += `<td rowspan="${legCount}" style="white-space: nowrap;">
           ${isLive ? '<span class="badge-status-live"><span class="live-pulse-dot"></span> LIVE</span>' : '<span class="badge-status-closed">CLOSED</span>'}
-          ${isLive ? `<br><button class="oc-act-btn btn-s" style="margin-top: 6px; font-size: 10px; padding: 3px 8px;" onclick="exitMultiStrikeTrade(${trade.tradeNo})" title="Exit Position">Exit Trade</button>` : `<br><button class="oc-act-btn btn-b" style="margin-top: 6px; font-size: 10px; padding: 2px 6px;" onclick="reopenMultiStrikeTrade(${trade.tradeNo})" title="Re-open Live">Reopen</button>`}
+          ${isLive ? `<br><button class="oc-act-btn btn-s" style="margin-top: 4px; font-size: 10px; padding: 3px 8px;" onclick="exitMultiStrikeTrade(${trade.tradeNo})" title="Exit Position">Exit Trade</button>` : `<br><button class="oc-act-btn btn-b" style="margin-top: 4px; font-size: 10px; padding: 2px 6px;" onclick="reopenMultiStrikeTrade(${trade.tradeNo})" title="Re-open Live">Reopen</button>`}
         </td>`;
       }
 

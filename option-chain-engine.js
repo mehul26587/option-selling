@@ -740,17 +740,17 @@
     hostEl.innerHTML = `
       <div class="sensibull-pure-white-card" data-oc-card="${hostId}">
         <!-- ROW 1: Index Dropdown + Spot Price + Live Market Clock -->
-        <div class="sensibull-header-bar" style="padding: 12px 18px; border-bottom: 1px solid #e2e8f0;">
-          <div class="sensibull-spot-search" style="padding: 6px 12px; gap: 10px;">
+        <div class="sensibull-header-bar" style="padding: 9px 14px; border-bottom: 1px solid #e2e8f0;">
+          <div class="sensibull-spot-search" style="padding: 5px 10px; gap: 8px;">
             <span style="font-size: 14px;">🔍</span>
             <select id="${hostId}_indexSelect" class="oc-index-select" onchange="window.OCEngine.selectIndex(this.value)" title="Select Index">
               ${symbolOptionsHtml}
             </select>
-            <span id="${hostId}_spotVal" style="font-weight: 600; font-size: 15px; color: #1e293b;">25,607.20</span>
-            <span id="${hostId}_spotChg" class="sensibull-spot-red" style="font-size: 13px;">-277.30 (-1.07%)</span>
+            <span id="${hostId}_spotVal" style="font-weight: 600; font-size: 14.5px; color: #1e293b;">25,607.20</span>
+            <span id="${hostId}_spotChg" class="sensibull-spot-red" style="font-size: 12.5px;">-277.30 (-1.07%)</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span id="${hostId}_marketBadge" class="oc-market-badge closed">
               <span class="live-pulse-dot" id="${hostId}_pulseDot"></span>
               <span id="${hostId}_marketText">MARKET CLOSED</span>
@@ -764,18 +764,18 @@
         </div>
 
         <!-- ROW 2: Expiry Pills + More Expiries Dropdown + OI/Greeks Segmented Control -->
-        <div class="sensibull-header-bar" style="padding: 10px 18px; background: #fafbfc; border-bottom: 1px solid #e2e8f0;">
+        <div class="sensibull-header-bar" style="padding: 8px 14px; background: #fafbfc; border-bottom: 1px solid #e2e8f0;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <div id="${hostId}_expiryPills" class="sensibull-expiry-pills"></div>
             <select id="${hostId}_expiryMore" class="sensibull-expiry-select" onchange="window.OCEngine.selectExpiry(this.value)" title="More Expiries"></select>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
             <div class="sensibull-view-toggle">
               <button type="button" id="${hostId}_btnViewOI" class="sensibull-view-btn active" onclick="window.OCEngine.setViewMode('OI')">OI</button>
               <button type="button" id="${hostId}_btnViewGreeks" class="sensibull-view-btn" onclick="window.OCEngine.setViewMode('GREEKS')">Greeks</button>
             </div>
-            <span id="${hostId}_dhanSourcePill" style="font-size: 11px; font-weight: 500; color: #475569; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
+            <span id="${hostId}_dhanSourcePill" style="font-size: 11px; font-weight: 500; color: #475569; background: #f1f5f9; padding: 4px 9px; border-radius: 6px; border: 1px solid #cbd5e1;">
               Market Sync
             </span>
           </div>
@@ -790,7 +790,7 @@
         </div>
 
         <!-- BOTTOM METRICS BAR (Matches Screenshot: PCR | Max Pain | ATM IV | IV Percentile) -->
-        <div class="sensibull-footer-bar" style="justify-content: center; gap: 36px; padding: 12px 20px; background: #ffffff; border-top: 1px solid #e2e8f0;">
+        <div class="sensibull-footer-bar" style="justify-content: center; gap: 12px 26px; padding: 9px 16px; background: #ffffff; border-top: 1px solid #e2e8f0;">
           <div style="text-align: center;">
             <div style="font-size: 11px; color: #64748b; font-weight: 500;">PCR</div>
             <div class="sensibull-metric-badge" id="${hostId}_pcr" style="font-size: 14px;">0.59</div>
