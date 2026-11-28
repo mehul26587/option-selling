@@ -1,22 +1,8 @@
 
-// Auto-initialize Dhan Credentials
-(function() {
-  const current = localStorage.getItem("liveipo_dhan_config");
-  if (!current) {
-    const defaultCfg = {
-      apiKey: "6f503e08",
-      apiSecret: "c2d7f9fd-f1dc-49d7-a937-6eb6edcd105e",
-      clientId: "1102733692",
-      accessToken: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJwX2lwIjoiIiwic19pcCI6IiIsInVzZXJSZWdpb24iOiJSMSIsImlzcyI6ImRoYW4iLCJwYXJ0bmVySWQiOiIiLCJleHAiOjE3OTU2ODY1NTgsImlhdCI6MTc5NTYwMDE1OCwidG9rZW5Db25zdW1lclR5cGUiOiJTRUxGIiwid2ViaG9va1VybCI6Imh0dHBzOi8vbWVodWwyNjU4Ny5naXRodWIuaW8vb3B0aW9uLXNlbGxpbmcvYWRtaW4uaHRtbCIsImRoYW5DbGllbnRJZCI6IjExMDI3MzM2OTIifQ.PVYdhOyf6DaFd0rI-qck50OKPqxTCzqHwKpKtOVnhJ4KvVZVIGgicO0ePuACNmwT7X4o9q7bPdugBp3urkW9UA",
-      updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem("liveipo_dhan_config", JSON.stringify(defaultCfg));
-  }
-})();
-
 /**
  * LiveIPO Option Selling Admin Panel Script (admin.js)
  * Standalone client-side admin controller with persistent localStorage backing.
+ * DhanHQ credentials are stored ONLY in Cloudflare Worker KV/Secrets or local Admin browser storage.
  */
 
 // ==========================================
@@ -821,18 +807,24 @@ function handlePublishBasketTradeSubmit(e) {
   const sr2 = maxSrNo + 2;
   const sr3 = maxSrNo + 3;
 
-  // Calculate initial net P&Ls
-  // For Sell: (Entry - LTP) * lots * 25 * 2.5
-  // For Buy: (LTP - Entry) * lots * 25 * 2.23
-  const pnl1 = Math.round((leg1.action === "S" ? (leg1.entry - leg1.ltp) : (leg1.ltp - leg1.entry)) * 25 * leg1.lots * 2.5);
-  const pnl2 = Math.round((leg2.action === "S" ? (leg2.entry - leg2.ltp) : (leg2.ltp - leg2.entry)) * 25 * leg2.lots * 2.4);
-  const pnl3 = Math.round((leg3.action === "B" ? (leg3.ltp - leg3.entry) : (leg3.entry - leg3.ltp)) * 25 * leg3.lots * 2.23);
+  // Calculate initial net P&Ls using exact exchange lot sizes from OCEngine
+  const calcPnl = (sym, leg) => {
+    if (window.OCEngine && typeof window.OCEngine.calcLegPnl === "function") {
+      return window.OCEngine.calcLegPnl(sym, leg.entry, leg.ltp, leg.lots, leg.action);
+    }
+    const diff = leg.action === "S" ? (leg.entry - leg.ltp) : (leg.ltp - leg.entry);
+    return Math.round(diff * (leg.lots || 1) * 65);
+  };
+  const pnl1 = calcPnl(index, leg1);
+  const pnl2 = calcPnl(index, leg2);
+  const pnl3 = calcPnl(index, leg3);
   const totalPnl = pnl1 + pnl2 + pnl3;
 
   const newTrade = {
     tradeNo: nextTradeNo,
     date: tradeDate,
     index: index,
+    expiry: expiry,
     strategy: strategyName,
     tradeName: tradeName,
     status: "LIVE",
@@ -1243,35 +1235,60 @@ window.openPublishBasketTradeModal = function() {
 
 
 // ========================================================
-// DHANHQ REAL-TIME OPTION CHAIN INTEGRATION (STRICTLY READ-ONLY)
+// DHANHQ REAL-TIME OPTION CHAIN & WORKER INTEGRATION (STRICTLY READ-ONLY)
 // ========================================================
-function loadDhanConfig() {
-  const stored = localStorage.getItem("liveipo_dhan_config");
-  if (stored) {
-    try {
-      const cfg = JSON.parse(stored);
-      if (document.getElementById("dhanClientIdInput")) {
-        document.getElementById("dhanClientIdInput").value = cfg.clientId || "";
+async function loadDhanConfig() {
+  let cfg = {};
+  try {
+    const raw = localStorage.getItem("liveipo_dhan_config");
+    if (raw) cfg = JSON.parse(raw) || {};
+  } catch (e) {}
+
+  const engineWorkerUrl = (window.OCEngine && typeof window.OCEngine.getWorkerUrl === "function")
+    ? window.OCEngine.getWorkerUrl()
+    : "";
+  const effectiveUrl = (cfg.proxyUrl || engineWorkerUrl || "").trim();
+
+  if (document.getElementById("dhanProxyUrlInput")) {
+    document.getElementById("dhanProxyUrlInput").value = effectiveUrl;
+  }
+  if (document.getElementById("dhanWorkerAdminKeyInput")) {
+    document.getElementById("dhanWorkerAdminKeyInput").value = cfg.workerAdminKey || "";
+  }
+  if (document.getElementById("dhanClientIdInput")) {
+    document.getElementById("dhanClientIdInput").value = cfg.clientId || "";
+  }
+  if (document.getElementById("dhanAccessTokenInput")) {
+    document.getElementById("dhanAccessTokenInput").value = cfg.accessToken || "";
+  }
+
+  if (effectiveUrl && window.OCEngine && typeof window.OCEngine.checkWorkerStatus === "function") {
+    const status = await window.OCEngine.checkWorkerStatus(effectiveUrl);
+    if (status && status.ok) {
+      if (status.tokenValid) {
+        updateDhanBadge(true, `🟢 Worker Ready (${status.storage.toUpperCase()}) • Token Active`);
+      } else if (status.hasCredentials) {
+        updateDhanBadge(false, "⚠️ Worker Token Expired • Paste New Token");
+      } else {
+        updateDhanBadge(false, "⚠️ Worker Online • Add Dhan Credentials");
       }
-      if (document.getElementById("dhanAccessTokenInput")) {
-        document.getElementById("dhanAccessTokenInput").value = cfg.accessToken || "";
-      }
-      if (document.getElementById("dhanProxyUrlInput")) {
-        document.getElementById("dhanProxyUrlInput").value = cfg.proxyUrl || "";
-      }
-      if (cfg.clientId && cfg.accessToken) {
-        const jwtCheck = (window.OCEngine && typeof window.OCEngine.inspectJwtExpiry === "function")
-          ? window.OCEngine.inspectJwtExpiry(cfg.accessToken)
-          : { valid: false, reason: "Unable to verify token" };
-        if (!jwtCheck.valid) {
-          updateDhanBadge(false, `⚠️ ${jwtCheck.reason}`);
-        } else if (cfg.proxyUrl) {
-          updateDhanBadge(false, "Token Valid • Click Connect");
-        } else {
-          updateDhanBadge(false, "Token Valid • CORS Proxy Needed");
-        }
-      }
-    } catch (e) {}
+      return;
+    }
+  }
+
+  if (cfg.clientId && cfg.accessToken) {
+    const jwtCheck = (window.OCEngine && typeof window.OCEngine.inspectJwtExpiry === "function")
+      ? window.OCEngine.inspectJwtExpiry(cfg.accessToken)
+      : { valid: false, reason: "Unable to verify token" };
+    if (!jwtCheck.valid) {
+      updateDhanBadge(false, `⚠️ ${jwtCheck.reason}`);
+    } else if (effectiveUrl) {
+      updateDhanBadge(false, "Local Token Valid • Click Save & Connect");
+    } else {
+      updateDhanBadge(false, "Configure Cloudflare Worker URL");
+    }
+  } else {
+    updateDhanBadge(false, "Configure Cloudflare Worker URL");
   }
 }
 
@@ -1293,48 +1310,122 @@ function updateDhanBadge(isConnected, text) {
 }
 
 async function saveAndTestDhanConnection() {
-  const clientId = document.getElementById("dhanClientIdInput").value.trim();
-  const accessToken = document.getElementById("dhanAccessTokenInput").value.trim();
-  const proxyUrlEl = document.getElementById("dhanProxyUrlInput");
-  const proxyUrl = proxyUrlEl ? proxyUrlEl.value.trim() : "";
+  const workerUrlEl = document.getElementById("dhanProxyUrlInput");
+  const adminKeyEl = document.getElementById("dhanWorkerAdminKeyInput");
+  const clientIdEl = document.getElementById("dhanClientIdInput");
+  const accessTokenEl = document.getElementById("dhanAccessTokenInput");
 
-  if (!clientId || !accessToken) {
-    alert("⚠️ કૃપા કરીને તમારો Dhan Client ID (10 આંકડાનો) અને Dhan Access Token દાખલ કરો.");
+  const workerUrl = workerUrlEl ? workerUrlEl.value.trim().replace(/\/+$/, "") : "";
+  const workerAdminKey = adminKeyEl ? adminKeyEl.value.trim() : "";
+  const clientId = clientIdEl ? clientIdEl.value.trim() : "";
+  const accessToken = accessTokenEl ? accessTokenEl.value.trim() : "";
+
+  if (!workerUrl) {
+    alert("⚠️ કૃપા કરીને પહેલા તમારો Cloudflare Worker URL દાખલ કરો (ઉદા. https://liveipo-oc.yourname.workers.dev).");
     return;
   }
 
   const config = {
-    apiKey: "6f503e08",
-    apiSecret: "c2d7f9fd-f1dc-49d7-a937-6eb6edcd105e",
-    clientId: clientId,
-    accessToken: accessToken,
-    proxyUrl: proxyUrl,
+    clientId,
+    accessToken,
+    proxyUrl: workerUrl,
+    workerAdminKey,
     updatedAt: new Date().toISOString()
   };
 
   localStorage.setItem("liveipo_dhan_config", JSON.stringify(config));
-  updateDhanBadge(false, "Testing DhanHQ Read-Only Feed...");
+  if (window.OCEngine && typeof window.OCEngine.setWorkerUrl === "function") {
+    window.OCEngine.setWorkerUrl(workerUrl);
+  }
 
+  updateDhanBadge(false, "Connecting Cloudflare Worker...");
+
+  // Check if target is our upgraded Cloudflare Worker (/live/status)
+  const workerStatus = (window.OCEngine && typeof window.OCEngine.checkWorkerStatus === "function")
+    ? await window.OCEngine.checkWorkerStatus(workerUrl)
+    : { ok: false };
+
+  // If Admin entered fresh credentials + Admin Key, securely push them into Cloudflare Worker KV
+  if (workerStatus.ok && workerAdminKey && clientId && accessToken) {
+    try {
+      const saveRes = await fetch(`${workerUrl}/live/admin-token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-key": workerAdminKey
+        },
+        body: JSON.stringify({ clientId, accessToken })
+      });
+      const saveJson = await saveRes.json();
+      if (!saveRes.ok) {
+        updateDhanBadge(false, `⚠️ Worker Auth/KV: ${saveJson.reason || saveRes.status}`);
+        alert(`⚠️ Cloudflare Worker માં ટોકન સેવ ન થયો:\n\n${saveJson.error || JSON.stringify(saveJson)}`);
+        return;
+      }
+    } catch (err) {
+      updateDhanBadge(false, "⚠️ Worker Save Failed");
+      alert(`⚠️ Worker કનેક્શન એરર: ${err.message}`);
+      return;
+    }
+  } else if (workerStatus.ok && !workerStatus.tokenValid && (!clientId || !accessToken || !workerAdminKey)) {
+    updateDhanBadge(false, "⚠️ Worker Token Expired / Missing");
+    alert("⚠️ Worker માં Dhan ટોકન સેટ નથી અથવા એક્સપાયર થઈ ગયો છે.\n\nકૃપા કરીને Dhan Client ID, આજનો 24h Access Token અને Worker Admin Key નાખીને ફરી ક્લિક કરો (અથવા Cloudflare Dashboard -> Variables માં અપડેટ કરો).");
+    return;
+  }
+
+  updateDhanBadge(false, "Testing Live Dhan Option Chain Feed...");
   const activeSym = window.OCEngine ? window.OCEngine.getActiveSymbol() : "NIFTY";
-  const activeExp = window.OCEngine ? window.OCEngine.getActiveExpiry() : "2026-12-01";
+  const activeExp = window.OCEngine ? window.OCEngine.getActiveExpiry() : "";
   const result = window.OCEngine
     ? await window.OCEngine.fetchDhanOptionChainReadOnly(activeSym, activeExp)
     : { ok: false, reason: "ENGINE_MISSING" };
 
   if (result.ok) {
-    updateDhanBadge(true, "🟢 DhanHQ Live Read-Only Connected");
+    updateDhanBadge(true, "🟢 DhanHQ Worker Live (Read-Only)");
     window.OCEngine.renderAll();
-    alert("✓ DhanHQ Live Option Chain Connected (Read-Only Mode)! કોઈપણ રિયલ ટ્રેડ વગર લાઈવ ડેટા ફેચ થઈ ગયો છે.");
+    alert("✓ Cloudflare Worker + DhanHQ Live Option Chain Connected (Read-Only)!\n\nહવે Admin અને Frontend બંને પર અસલ લાઈવ માર્કેટ ડેટા ચાલશે.");
   } else if (result.reason === "TOKEN_EXPIRED") {
     updateDhanBadge(false, "⚠️ Dhan Token Expired (24h)");
     const expStr = result.expDate ? result.expDate.toLocaleString("en-IN") : "24h limit";
-    alert(`⚠️ તમારો Dhan Access Token એક્સપાયર થઈ ગયો છે (${expStr}).\n\nધન પોર્ટલમાંથી આજનો નવો 24-કલાકનો Access Token કોપી કરીને અહીં પેસ્ટ કરો.`);
+    alert(`⚠️ તમારો Dhan Access Token એક્સપાયર થઈ ગયો છે (${expStr}).\n\nધન પોર્ટલમાંથી આજનો નવો Access Token કોપી કરીને અહીં પેસ્ટ કરો.`);
   } else if (result.reason === "CORS_BLOCKED") {
-    updateDhanBadge(false, "📡 CORS Proxy Required (Static Web)");
-    alert("⚠️ બ્રાઉઝર CORS સિક્યુરિટીને કારણે GitHub Pages પરથી api.dhan.co ડાયરેક્ટ બ્લોક થાય છે.\n\nલાઈવ API કનેક્ટ કરવા માટે 'node dhan-proxy.mjs' ચાલુ કરો અથવા Cloudflare Worker URL દાખલ કરો. અત્યારે માર્કેટ-ટાઈમ સિંક મોડ ચાલુ છે.");
+    updateDhanBadge(false, "📡 CORS Proxy Required");
+    alert("⚠️ બ્રાઉઝર CORS બ્લોક થયું છે. કૃપા કરીને માન્ય Cloudflare Worker URL ચકાસો.");
   } else {
     updateDhanBadge(false, `⚠️ Dhan Error: ${result.reason}`);
     alert(`⚠️ Dhan API Error: ${result.detail || result.reason}`);
+  }
+}
+
+async function renewDhanTokenViaWorker() {
+  const workerUrlEl = document.getElementById("dhanProxyUrlInput");
+  const adminKeyEl = document.getElementById("dhanWorkerAdminKeyInput");
+  const workerUrl = (workerUrlEl ? workerUrlEl.value.trim() : "").replace(/\/+$/, "")
+    || (window.OCEngine && window.OCEngine.getWorkerUrl ? window.OCEngine.getWorkerUrl() : "");
+  const workerAdminKey = adminKeyEl ? adminKeyEl.value.trim() : "";
+
+  if (!workerUrl || !workerAdminKey) {
+    alert("⚠️ Auto-Renew માટે Cloudflare Worker URL અને Worker Admin Key બંને જરૂરી છે.");
+    return;
+  }
+
+  try {
+    updateDhanBadge(false, "Renewing Dhan Token (+24h)...");
+    const res = await fetch(`${workerUrl}/live/renew-now`, {
+      method: "POST",
+      headers: { "x-admin-key": workerAdminKey }
+    });
+    const json = await res.json();
+    if (res.ok && json.ok) {
+      updateDhanBadge(true, "🟢 Token Renewed (+24h)");
+      alert(`✓ Dhan Access Token સફળતાપૂર્વક 24 કલાક માટે રિન્યુ થઈ ગયો!\nExpiry: ${json.expiryTime || "Extended +24h"}`);
+    } else {
+      updateDhanBadge(false, `⚠️ Renew Failed: ${json.reason || res.status}`);
+      alert(`⚠️ ટોકન રિન્યુ ન થઈ શક્યો:\n${json.message || JSON.stringify(json)}\n\n(નોંધ: જો જૂનો ટોકન પહેલેથી જ એક્સપાયર થઈ ગયો હોય, તો Dhan પોર્ટલમાંથી એકવાર નવો ટોકન કોપી કરીને સેવ કરવો પડે છે).`);
+    }
+  } catch (err) {
+    updateDhanBadge(false, "⚠️ Worker Unreachable");
+    alert(`⚠️ Worker કનેક્શન એરર: ${err.message}`);
   }
 }
 

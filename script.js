@@ -2289,12 +2289,8 @@ function startLiveTradeTickEngine() {
   // Handled cleanly by the unified 1-second sync loop below
 }
 
-// Unified Option Chain Engine sync for Live Trades (Respects IST Market Hours)
-setInterval(() => {
-  if (window.OCEngine && !window.OCEngine.isLiveActive()) {
-    return; // Outside IST 09:15-15:30 Mon-Fri unless Preview toggled ON
-  }
-
+// Unified Option Chain Engine sync for Live Trades (Real Lot Sizes + Worker Sync)
+function syncLiveMultiStrikeTrades() {
   let trades = [];
   try {
     const raw = localStorage.getItem("liveipo_multistrike_trades");
@@ -2309,12 +2305,13 @@ setInterval(() => {
       const sym = t.index || "NIFTY";
       t.legs.forEach(l => {
         if (window.OCEngine) {
-          l.ltp = window.OCEngine.getLiveLtp(sym, null, l.strike, l.type);
+          l.ltp = window.OCEngine.getLiveLtp(sym, t.expiry || null, l.strike, l.type);
+          l.netPnl = window.OCEngine.calcLegPnl(sym, l.entry, l.ltp, l.lots, l.action);
+        } else {
+          const isSell = l.action === "S" || l.action === "SELL";
+          const pnlPerShare = isSell ? (l.entry - l.ltp) : (l.ltp - l.entry);
+          l.netPnl = Math.round(pnlPerShare * (l.lots || 1) * 65);
         }
-        const isSell = l.action === "S" || l.action === "SELL";
-        const mult = 25 * (l.lots || 1);
-        const pnlPerShare = isSell ? (l.entry - l.ltp) : (l.ltp - l.entry);
-        l.netPnl = Math.round(pnlPerShare * mult * 2.4);
         bTotal += l.netPnl;
       });
       t.totalProfit = bTotal;
@@ -2327,7 +2324,20 @@ setInterval(() => {
       renderMultiStrikeTradeHistoryTable();
     }
   }
+}
+
+setInterval(() => {
+  if (window.OCEngine && !window.OCEngine.isLiveActive()) {
+    return; // Outside IST 09:15-15:30 Mon-Fri unless Preview toggled ON
+  }
+  syncLiveMultiStrikeTrades();
 }, 1000);
+
+if (typeof window !== "undefined") {
+  window.addEventListener("oc-dhan-updated", () => {
+    syncLiveMultiStrikeTrades();
+  });
+}
 
 // Backward-compatible Option Chain delegates powered by option-chain-engine.js
 function switchPureSensibullExpiry(exp) {

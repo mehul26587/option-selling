@@ -278,16 +278,39 @@
   // ========================================================
   // 4. STATE STORE & MULTI-INDEX SYNTHESIS / DHAN OVERRIDE
   // ========================================================
+  // Once your Cloudflare Worker is deployed, paste its *.workers.dev URL below
+  // so ALL Frontend (index.html) visitors & Admin users auto-connect cleanly!
+  const DEFAULT_PUBLIC_WORKER_URL = "";
+
   const _hosts = new Set();
+
+  function getStoredWorkerUrl() {
+    try {
+      const explicit = (localStorage.getItem("liveipo_worker_url") || "").trim();
+      if (explicit) return explicit.replace(/\/+$/, "");
+      const raw = localStorage.getItem("liveipo_dhan_config");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.proxyUrl) return String(parsed.proxyUrl).trim().replace(/\/+$/, "");
+      }
+    } catch (e) {}
+    return DEFAULT_PUBLIC_WORKER_URL.trim().replace(/\/+$/, "");
+  }
 
   const _state = {
     activeSymbol: "NIFTY",
     activeViewMode: "OI", // "OI" | "GREEKS"
-    demoLivePreview: false, // Toggle to simulate 1-sec ticks outside IST market hours
+    demoLivePreview: false, // Toggle to simulate ticks outside IST market hours when no Dhan feed active
+    workerUrl: typeof localStorage !== "undefined" ? getStoredWorkerUrl() : DEFAULT_PUBLIC_WORKER_URL,
+    workerOnline: false,
+    workerTokenValid: false,
+    workerTokenExpiresAt: null,
+    workerStorage: "none",
     dhanLiveActive: false,
     dhanLastSync: null,
     dhanError: null,
     dhanRawChain: {}, // Keyed by `${symbol}|${expiryIso}`
+    officialExpiriesLoaded: {},
     indices: {}
   };
 
@@ -372,8 +395,18 @@
   Object.keys(OC_INDEX_CATALOG).forEach(initIndexState);
 
   // ========================================================
-  // 5. CORR-FREE READ-ONLY DHANHQ REAL-TIME CONNECTOR
+  // 5. CORS-FREE READ-ONLY DHANHQ REAL-TIME CONNECTOR
   // ========================================================
+  function normalizeSymbolKey(sym) {
+    const up = String(sym || "").toUpperCase().replace(/\s+/g, "");
+    if (up.includes("BANK")) return "BANKNIFTY";
+    if (up.includes("FIN")) return "FINNIFTY";
+    if (up.includes("MID")) return "MIDCPNIFTY";
+    if (up.includes("SENSEX") || up.includes("BSE")) return "SENSEX";
+    if (OC_INDEX_CATALOG[up]) return up;
+    return "NIFTY";
+  }
+
   function getDhanConfigSafe() {
     try {
       const raw = localStorage.getItem("liveipo_dhan_config");
@@ -385,7 +418,9 @@
   function inspectJwtExpiry(jwt) {
     if (!jwt || jwt.split(".").length < 2) return { valid: false, reason: "Invalid JWT format" };
     try {
-      const payload = JSON.parse(atob(jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      const b64 = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+      const payload = JSON.parse(atob(padded));
       const nowSec = Math.floor(Date.now() / 1000);
       const isExpired = payload.exp && payload.exp <= nowSec;
       return {
@@ -399,58 +434,205 @@
     }
   }
 
-  async function fetchDhanOptionChainReadOnly(symbol, expiryIso) {
-    const cfg = getDhanConfigSafe();
-    if (!cfg || !cfg.clientId || !cfg.accessToken) {
-      return { ok: false, reason: "MISSING_CREDS" };
-    }
+  function applyOfficialExpiries(symbol, expArray) {
+    const idxState = _state.indices[symbol];
+    if (!idxState || !Array.isArray(expArray) || expArray.length === 0) return;
 
-    const jwtStatus = inspectJwtExpiry(cfg.accessToken);
-    if (!jwtStatus.valid) {
-      _state.dhanLiveActive = false;
-      _state.dhanError = jwtStatus.reason;
-      return { ok: false, reason: "TOKEN_EXPIRED", detail: jwtStatus.reason, expDate: jwtStatus.exp };
-    }
+    const istNow = getISTNow();
+    const todayMidnight = new Date(istNow.getFullYear(), istNow.getMonth(), istNow.getDate());
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const cfg = idxState.cfg;
 
-    const idxCfg = OC_INDEX_CATALOG[symbol] || OC_INDEX_CATALOG.NIFTY;
-    const proxyBase = (cfg.proxyUrl || "").trim().replace(/\/+$/, "");
-    const targetUrl = proxyBase
-      ? `${proxyBase}/v2/optionchain`
-      : "https://api.dhan.co/v2/optionchain";
+    const mapped = expArray.slice(0, 6).map((iso, idx, arr) => {
+      const parts = String(iso).split("-");
+      const expDate = parts.length === 3
+        ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
+        : todayMidnight;
+      const daysLeft = Math.max(1, Math.round((expDate - todayMidnight) / 86400000));
+      const nextDate = new Date(expDate);
+      nextDate.setDate(expDate.getDate() + 7);
+      const isMonthly = !cfg.hasWeekly || (nextDate.getMonth() !== expDate.getMonth());
+      const tag = formatExpiryTag(daysLeft, !isMonthly);
+      const short = formatShortDate(expDate);
+      const key = `${String(expDate.getDate()).padStart(2, "0")}-${months[expDate.getMonth()]}-${expDate.getFullYear()}`;
+      return {
+        iso,
+        key,
+        short,
+        label: `${short} (${tag.sub})`,
+        daysLeft,
+        isWeekly: !isMonthly,
+        isMonthly
+      };
+    });
+
+    idxState.expiries = mapped;
+    const stillValid = mapped.some(e => e.iso === idxState.selectedExpiry);
+    if (!stillValid && mapped[0]) {
+      idxState.selectedExpiry = mapped[0].iso;
+      idxState.baseDte = mapped[0].daysLeft;
+    }
+  }
+
+  async function checkWorkerStatus(overrideUrl) {
+    const base = (overrideUrl || _state.workerUrl || getStoredWorkerUrl() || "").trim().replace(/\/+$/, "");
+    _state.workerUrl = base;
+    if (!base) {
+      _state.workerOnline = false;
+      _state.workerTokenValid = false;
+      return { ok: false, reason: "NO_WORKER_URL" };
+    }
 
     try {
-      const res = await fetch(targetUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "client-id": cfg.clientId.trim(),
-          "access-token": cfg.accessToken.trim()
-        },
-        body: JSON.stringify({
-          UnderlyingScrip: idxCfg.dhanId,
-          UnderlyingSeg: idxCfg.dhanSeg,
-          Expiry: expiryIso
-        })
-      });
-
-      const json = await res.json();
-      if (res.ok && json && json.status === "success" && json.data) {
-        ingestDhanResponse(symbol, expiryIso, json.data);
-        _state.dhanLiveActive = true;
-        _state.dhanLastSync = new Date();
-        _state.dhanError = null;
-        return { ok: true, data: json.data };
+      const res = await fetch(`${base}/live/status`, { method: "GET" });
+      if (!res.ok) {
+        _state.workerOnline = false;
+        return { ok: false, reason: `HTTP_${res.status}` };
       }
-      const msg = (json && json.data) ? JSON.stringify(json.data) : `HTTP ${res.status}`;
-      _state.dhanLiveActive = false;
-      _state.dhanError = msg;
-      return { ok: false, reason: "API_ERROR", detail: msg };
+      const json = await res.json();
+      if (json && json.ok) {
+        _state.workerOnline = true;
+        _state.workerTokenValid = Boolean(json.tokenValid);
+        _state.workerTokenExpiresAt = json.tokenExpiresAt || null;
+        _state.workerStorage = json.storage || "none";
+        if (!_state.workerTokenValid) {
+          _state.dhanLiveActive = false;
+          _state.dhanError = json.tokenStatus || "Dhan Token Expired or Not Set in Worker";
+        }
+        return json;
+      }
     } catch (err) {
-      _state.dhanLiveActive = false;
-      _state.dhanError = proxyBase
-        ? `Proxy unreachable (${err.message})`
-        : "Browser CORS blocked direct api.dhan.co call (Configure Proxy URL for live stream)";
-      return { ok: false, reason: proxyBase ? "PROXY_ERROR" : "CORS_BLOCKED", detail: _state.dhanError };
+      _state.workerOnline = false;
+    }
+    return { ok: false, reason: "UNREACHABLE" };
+  }
+
+  async function fetchWorkerExpiries(symbol) {
+    const base = (_state.workerUrl || "").trim().replace(/\/+$/, "");
+    if (!base || !_state.workerOnline) return;
+    try {
+      const res = await fetch(`${base}/live/expiries?symbol=${encodeURIComponent(symbol)}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json && json.status === "success" && Array.isArray(json.expiries) && json.expiries.length > 0) {
+        applyOfficialExpiries(symbol, json.expiries);
+        _state.officialExpiriesLoaded[symbol] = true;
+      }
+    } catch (_) {}
+  }
+
+  let _fetchInFlight = false;
+
+  async function fetchDhanOptionChainReadOnly(symbol, expiryIso) {
+    if (_fetchInFlight) return { ok: false, reason: "BUSY" };
+    _fetchInFlight = true;
+
+    try {
+      const sym = normalizeSymbolKey(symbol || _state.activeSymbol);
+      const idxState = _state.indices[sym];
+      const exp = expiryIso || (idxState && idxState.selectedExpiry) || "";
+      const workerBase = (_state.workerUrl || getStoredWorkerUrl() || "").trim().replace(/\/+$/, "");
+
+      // MODE 1: Public / Shared Cloudflare Worker Feed (Admin + Frontend Visitors)
+      if (workerBase) {
+        if (!_state.officialExpiriesLoaded[sym] && _state.workerOnline) {
+          await fetchWorkerExpiries(sym);
+        }
+        const effectiveExp = (idxState && idxState.selectedExpiry) || exp;
+        try {
+          const workerUrl = `${workerBase}/live/optionchain?symbol=${encodeURIComponent(sym)}&expiry=${encodeURIComponent(effectiveExp)}`;
+          const res = await fetch(workerUrl, { method: "GET" });
+          const json = await res.json();
+
+          if (res.ok && json && json.status === "success" && json.data) {
+            _state.workerOnline = true;
+            _state.workerTokenValid = true;
+            ingestDhanResponse(sym, json.expiry || effectiveExp, json.data);
+            _state.dhanLiveActive = true;
+            _state.dhanLastSync = new Date();
+            _state.dhanError = null;
+            renderAllMountedOptionChains();
+            if (typeof global.dispatchEvent === "function" && typeof CustomEvent === "function") {
+              global.dispatchEvent(new CustomEvent("oc-dhan-updated", { detail: { symbol: sym, expiry: json.expiry || effectiveExp } }));
+            }
+            return { ok: true, data: json.data, source: "cloudflare-worker" };
+          }
+
+          if (json && json.reason === "TOKEN_EXPIRED") {
+            _state.workerOnline = true;
+            _state.workerTokenValid = false;
+            _state.dhanLiveActive = false;
+            _state.dhanError = json.detail || "Token Expired";
+            return { ok: false, reason: "TOKEN_EXPIRED", detail: json.detail, expDate: json.expiresAt ? new Date(json.expiresAt) : null };
+          }
+
+          if (json && json.reason === "MISSING_CREDS") {
+            _state.workerOnline = true;
+            _state.workerTokenValid = false;
+            _state.dhanLiveActive = false;
+            _state.dhanError = json.detail || "Worker credentials not configured";
+            return { ok: false, reason: "MISSING_CREDS", detail: json.detail };
+          }
+        } catch (_) {
+          // Fall through gracefully to local relay if localhost:8787 style proxy is used
+        }
+      }
+
+      // MODE 2: Legacy Local Relay (node dhan-proxy.mjs) requiring local Admin credentials
+      const cfg = getDhanConfigSafe();
+      if (!cfg || !cfg.clientId || !cfg.accessToken) {
+        return { ok: false, reason: "MISSING_CREDS" };
+      }
+
+      const jwtStatus = inspectJwtExpiry(cfg.accessToken);
+      if (!jwtStatus.valid) {
+        _state.dhanLiveActive = false;
+        _state.dhanError = jwtStatus.reason;
+        return { ok: false, reason: "TOKEN_EXPIRED", detail: jwtStatus.reason, expDate: jwtStatus.exp };
+      }
+
+      const idxCfg = OC_INDEX_CATALOG[sym] || OC_INDEX_CATALOG.NIFTY;
+      const proxyBase = (cfg.proxyUrl || workerBase || "").trim().replace(/\/+$/, "");
+      const targetUrl = proxyBase
+        ? `${proxyBase}/v2/optionchain`
+        : "https://api.dhan.co/v2/optionchain";
+
+      try {
+        const res = await fetch(targetUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "client-id": cfg.clientId.trim(),
+            "access-token": cfg.accessToken.trim()
+          },
+          body: JSON.stringify({
+            UnderlyingScrip: idxCfg.dhanId,
+            UnderlyingSeg: idxCfg.dhanSeg,
+            Expiry: exp
+          })
+        });
+
+        const json = await res.json();
+        if (res.ok && json && json.status === "success" && json.data) {
+          ingestDhanResponse(sym, exp, json.data);
+          _state.dhanLiveActive = true;
+          _state.dhanLastSync = new Date();
+          _state.dhanError = null;
+          return { ok: true, data: json.data };
+        }
+        const msg = (json && json.data) ? JSON.stringify(json.data) : `HTTP ${res.status}`;
+        _state.dhanLiveActive = false;
+        _state.dhanError = msg;
+        return { ok: false, reason: "API_ERROR", detail: msg };
+      } catch (err) {
+        _state.dhanLiveActive = false;
+        _state.dhanError = proxyBase
+          ? `Proxy unreachable (${err.message})`
+          : "Browser CORS blocked direct api.dhan.co call (Configure Cloudflare Worker URL)";
+        return { ok: false, reason: proxyBase ? "PROXY_ERROR" : "CORS_BLOCKED", detail: _state.dhanError };
+      }
+    } finally {
+      _fetchInFlight = false;
     }
   }
 
@@ -463,49 +645,77 @@
     }
 
     if (dhanData.oc && typeof dhanData.oc === "object") {
+      const chainKey = `${symbol}|${expiryIso}`;
+      const existingRaw = _state.dhanRawChain[chainKey] || {};
       const parsedMap = {};
+
       Object.keys(dhanData.oc).forEach(k => {
         const strike = Math.round(parseFloat(k));
         const node = dhanData.oc[k];
         const ce = node.ce || {};
         const pe = node.pe || {};
 
-        const prevNode = idxState.strikes[strike] || {};
-        const newCe = typeof ce.last_price === "number" ? +ce.last_price.toFixed(2) : (prevNode.ceBaseLtp || 0);
-        const newPe = typeof pe.last_price === "number" ? +pe.last_price.toFixed(2) : (prevNode.peBaseLtp || 0);
+        const prevLiveNode = existingRaw[strike];
+        const prevBaseNode = idxState.strikes[strike] || {};
+        const prevCeLtp = prevLiveNode ? prevLiveNode.ceBaseLtp : prevBaseNode.ceBaseLtp;
+        const prevPeLtp = prevLiveNode ? prevLiveNode.peBaseLtp : prevBaseNode.peBaseLtp;
 
-        const ceOiL = typeof ce.oi === "number" ? +(ce.oi / 100000).toFixed(2) : (prevNode.ceOi || 0);
-        const peOiL = typeof pe.oi === "number" ? +(pe.oi / 100000).toFixed(2) : (prevNode.peOi || 0);
+        const newCe = typeof ce.last_price === "number" ? +ce.last_price.toFixed(2) : (prevCeLtp || 0);
+        const newPe = typeof pe.last_price === "number" ? +pe.last_price.toFixed(2) : (prevPeLtp || 0);
 
-        const ceBaseOi = Math.max(1, (ce.oi || 0) - (ce.oi_change || 0));
-        const peBaseOi = Math.max(1, (pe.oi || 0) - (pe.oi_change || 0));
-        const ceOiChgPct = (typeof ce.oi_change === "number")
-          ? +((ce.oi_change / ceBaseOi) * 100).toFixed(2)
-          : (prevNode.ceOiChgPct || 0);
-        const peOiChgPct = (typeof pe.oi_change === "number")
-          ? +((pe.oi_change / peBaseOi) * 100).toFixed(2)
-          : (prevNode.peOiChgPct || 0);
+        const ceOiL = typeof ce.oi === "number" ? +(ce.oi / 100000).toFixed(2) : (prevBaseNode.ceOi || 0);
+        const peOiL = typeof pe.oi === "number" ? +(pe.oi / 100000).toFixed(2) : (prevBaseNode.peOi || 0);
+
+        // Compute real Chg% from previous_close_price returned by Dhan v2
+        const ceChgPct = (typeof ce.previous_close_price === "number" && ce.previous_close_price > 0)
+          ? +(((newCe - ce.previous_close_price) / ce.previous_close_price) * 100).toFixed(2)
+          : (prevBaseNode.ceChgPct || 0);
+        const peChgPct = (typeof pe.previous_close_price === "number" && pe.previous_close_price > 0)
+          ? +(((newPe - pe.previous_close_price) / pe.previous_close_price) * 100).toFixed(2)
+          : (prevBaseNode.peChgPct || 0);
+
+        // Compute real OI Chg% from previous_oi returned by Dhan v2
+        const cePrevOi = typeof ce.previous_oi === "number" && ce.previous_oi > 0 ? ce.previous_oi : 0;
+        const pePrevOi = typeof pe.previous_oi === "number" && pe.previous_oi > 0 ? pe.previous_oi : 0;
+        const ceOiChgPct = (cePrevOi > 0 && typeof ce.oi === "number")
+          ? +(((ce.oi - cePrevOi) / cePrevOi) * 100).toFixed(2)
+          : (prevBaseNode.ceOiChgPct || 0);
+        const peOiChgPct = (pePrevOi > 0 && typeof pe.oi === "number")
+          ? +(((pe.oi - pePrevOi) / pePrevOi) * 100).toFixed(2)
+          : (prevBaseNode.peOiChgPct || 0);
+
+        const ivVal = (typeof ce.implied_volatility === "number" && ce.implied_volatility > 0)
+          ? +ce.implied_volatility.toFixed(2)
+          : ((typeof pe.implied_volatility === "number" && pe.implied_volatility > 0)
+            ? +pe.implied_volatility.toFixed(2)
+            : (prevBaseNode.iv || idxState.cfg.baseIv));
+
+        const moveCe = prevLiveNode ? +(newCe - prevLiveNode.ceBaseLtp).toFixed(2) : 0;
+        const movePe = prevLiveNode ? +(newPe - prevLiveNode.peBaseLtp).toFixed(2) : 0;
 
         parsedMap[strike] = {
           strike,
           ceBaseLtp: newCe,
-          ceChgPct: prevNode.ceChgPct || 0,
+          ceChgPct,
           ceOi: ceOiL,
           ceOiChgPct,
           peBaseLtp: newPe,
-          peChgPct: prevNode.peChgPct || 0,
+          peChgPct,
           peOi: peOiL,
           peOiChgPct,
-          iv: typeof ce.implied_volatility === "number" && ce.implied_volatility > 0
-            ? +ce.implied_volatility.toFixed(2)
-            : (prevNode.iv || idxState.cfg.baseIv),
+          iv: ivVal,
           dhanGreeksCe: ce.greeks || null,
           dhanGreeksPe: pe.greeks || null,
-          lastCeMove: +(newCe - (prevNode.ceBaseLtp || newCe)).toFixed(2),
-          lastPeMove: +(newPe - (prevNode.peBaseLtp || newPe)).toFixed(2)
+          lastCeMove: moveCe,
+          lastPeMove: movePe
         };
+
+        // Keep idxState.strikes synced too so legacy consumers & default lookups stay accurate
+        if (expiryIso === idxState.selectedExpiry) {
+          idxState.strikes[strike] = { ...parsedMap[strike] };
+        }
       });
-      _state.dhanRawChain[`${symbol}|${expiryIso}`] = parsedMap;
+      _state.dhanRawChain[chainKey] = parsedMap;
     }
   }
 
@@ -665,11 +875,11 @@
   function tickMarketLoop() {
     const istNow = getISTNow();
     const marketOpen = isIndianMarketOpen(istNow);
-    const shouldFluctuate = marketOpen || _state.demoLivePreview;
+    const hasActiveDhan = _state.dhanLiveActive || (_state.workerOnline && _state.workerTokenValid);
 
-    // 1. Poll real DhanHQ REST API every 3s if user configured an active Proxy + valid Token
+    // 1. Poll real DhanHQ API every 3.2s during market hours (or preview)
     const nowMs = Date.now();
-    if (_state.dhanLiveActive && (marketOpen || _state.demoLivePreview) && (nowMs - _lastDhanPollMs >= 3000)) {
+    if (hasActiveDhan && (marketOpen || _state.demoLivePreview) && (nowMs - _lastDhanPollMs >= 3200)) {
       _lastDhanPollMs = nowMs;
       const idxState = _state.indices[_state.activeSymbol];
       if (idxState) {
@@ -677,8 +887,10 @@
       }
     }
 
-    // 2. Real-time Delta-coherent 1-second fluctuations ONLY during Market Hours (or Demo Preview ON)
-    if (shouldFluctuate) {
+    // 2. Delta-coherent simulated fluctuations ONLY when NO live Dhan feed is active
+    //    (Never inject synthetic Math.random() noise over live Dhan prices!)
+    const shouldSimulate = (marketOpen || _state.demoLivePreview) && !_state.dhanLiveActive;
+    if (shouldSimulate) {
       Object.keys(_state.indices).forEach(sym => {
         const idxState = _state.indices[sym];
         const step = idxState.cfg.step;
@@ -871,10 +1083,25 @@
     const srcPill = document.getElementById(`${hostId}_dhanSourcePill`);
     if (srcPill) {
       if (_state.dhanLiveActive) {
-        srcPill.textContent = "🟢 DhanHQ Live Feed";
+        const syncTime = _state.dhanLastSync
+          ? _state.dhanLastSync.toLocaleTimeString("en-IN", { hour12: false })
+          : "";
+        srcPill.textContent = marketOpen
+          ? `🟢 DhanHQ Live (${syncTime})`
+          : `🟢 DhanHQ Closing (${syncTime})`;
         srcPill.style.background = "#dcfce7";
         srcPill.style.color = "#166534";
         srcPill.style.borderColor = "#86efac";
+      } else if (_state.workerOnline && !_state.workerTokenValid) {
+        srcPill.textContent = "⚠️ Worker Token Expired";
+        srcPill.style.background = "#fef3c7";
+        srcPill.style.color = "#92400e";
+        srcPill.style.borderColor = "#fcd34d";
+      } else if (_state.workerOnline && _state.workerTokenValid) {
+        srcPill.textContent = "🟡 Syncing Dhan Worker...";
+        srcPill.style.background = "#eff6ff";
+        srcPill.style.color = "#1d4ed8";
+        srcPill.style.borderColor = "#93c5fd";
       } else {
         srcPill.textContent = "Closing / Market-Sync";
         srcPill.style.background = "#f1f5f9";
@@ -1075,13 +1302,14 @@
       renderAllMountedOptionChains();
     },
     selectIndex(symbol) {
-      if (!OC_INDEX_CATALOG[symbol]) return;
-      _state.activeSymbol = symbol;
+      const sym = normalizeSymbolKey(symbol);
+      if (!OC_INDEX_CATALOG[sym]) return;
+      _state.activeSymbol = sym;
       const basketIdx = document.getElementById("basketIndex");
-      if (basketIdx) basketIdx.value = symbol;
-      if (_state.dhanLiveActive) {
-        const idxState = _state.indices[symbol];
-        fetchDhanOptionChainReadOnly(symbol, idxState.selectedExpiry);
+      if (basketIdx) basketIdx.value = sym;
+      if (_state.dhanLiveActive || (_state.workerOnline && _state.workerTokenValid)) {
+        const idxState = _state.indices[sym];
+        fetchDhanOptionChainReadOnly(sym, idxState.selectedExpiry);
       }
       renderAllMountedOptionChains();
     },
@@ -1093,7 +1321,7 @@
         idxState.selectedExpiry = match.iso;
         const basketExp = document.getElementById("basketExpiry");
         if (basketExp) basketExp.value = match.key;
-        if (_state.dhanLiveActive) {
+        if (_state.dhanLiveActive || (_state.workerOnline && _state.workerTokenValid)) {
           fetchDhanOptionChainReadOnly(_state.activeSymbol, match.iso);
         }
         renderAllMountedOptionChains();
@@ -1105,7 +1333,37 @@
     },
     toggleDemoTicks() {
       _state.demoLivePreview = !_state.demoLivePreview;
+      if (_state.demoLivePreview && _state.workerOnline && _state.workerTokenValid) {
+        const idxState = _state.indices[_state.activeSymbol];
+        if (idxState) fetchDhanOptionChainReadOnly(_state.activeSymbol, idxState.selectedExpiry);
+      }
       renderAllMountedOptionChains();
+    },
+    setWorkerUrl(url) {
+      const clean = String(url || "").trim().replace(/\/+$/, "");
+      _state.workerUrl = clean;
+      _state.officialExpiriesLoaded = {};
+      try {
+        if (clean) localStorage.setItem("liveipo_worker_url", clean);
+        else localStorage.removeItem("liveipo_worker_url");
+      } catch (e) {}
+    },
+    getWorkerUrl() {
+      return _state.workerUrl || getStoredWorkerUrl();
+    },
+    calcLegPnl(symbol, entry, ltp, lots, action) {
+      const sym = normalizeSymbolKey(symbol);
+      const lotSize = (OC_INDEX_CATALOG[sym] && OC_INDEX_CATALOG[sym].lotSize) || 65;
+      const e = parseFloat(entry) || 0;
+      const l = parseFloat(ltp) || 0;
+      const q = parseFloat(lots) || 1;
+      const act = String(action || "S").toUpperCase();
+      const diff = (act === "S" || act === "SELL") ? (e - l) : (l - e);
+      return Math.round(diff * q * lotSize);
+    },
+    getLotSize(symbol) {
+      const sym = normalizeSymbolKey(symbol);
+      return (OC_INDEX_CATALOG[sym] && OC_INDEX_CATALOG[sym].lotSize) || 65;
     },
     onLegAction(strike, type, action, ltp) {
       const basketIdx = document.getElementById("basketIndex");
@@ -1121,16 +1379,19 @@
       }
     },
     getLiveLtp(symbol, expiry, strike, type) {
-      const sym = OC_INDEX_CATALOG[symbol] ? symbol : _state.activeSymbol;
+      const sym = normalizeSymbolKey(symbol || _state.activeSymbol);
       const data = computeActiveOptionChain(sym, expiry);
       const numStrike = parseFloat(strike);
       const found = data.rows.find(r => r.strike === numStrike);
       if (found) return type === "CE" ? found.callLtp : found.putLtp;
+      const idxState = _state.indices[sym];
+      const baseStrike = idxState && idxState.strikes && idxState.strikes[numStrike];
+      if (baseStrike) return type === "CE" ? baseStrike.ceBaseLtp : baseStrike.peBaseLtp;
       const bs = calcBlackScholes(data.spot, numStrike || data.atm, data.expiry ? data.expiry.daysLeft : 3, data.cfg.baseIv, type);
       return bs.price;
     },
     getSpot(symbol) {
-      const sym = OC_INDEX_CATALOG[symbol] ? symbol : _state.activeSymbol;
+      const sym = normalizeSymbolKey(symbol || _state.activeSymbol);
       return _state.indices[sym] ? _state.indices[sym].spot : 25607.20;
     },
     getActiveSymbol() {
@@ -1141,15 +1402,31 @@
       return idxState ? idxState.selectedExpiry : "2026-12-01";
     },
     inspectJwtExpiry,
+    checkWorkerStatus,
     fetchDhanOptionChainReadOnly,
     renderAll: () => renderAllMountedOptionChains(),
     isMarketOpen: () => isIndianMarketOpen(),
+    isDhanLiveActive: () => _state.dhanLiveActive,
     isLiveActive: () => isIndianMarketOpen() || _state.demoLivePreview
   };
 
   global.OCEngine = OCEngine;
 
-  // Auto-mount standard hosts & start 1-second IST engine on load
+  // Auto-mount hosts, check Cloudflare Worker on startup, & start IST tick loop
+  async function autoSyncWorkerOnLoad() {
+    const wUrl = getStoredWorkerUrl();
+    if (!wUrl) return;
+    const status = await checkWorkerStatus(wUrl);
+    if (status && status.ok && status.tokenValid) {
+      await fetchWorkerExpiries(_state.activeSymbol);
+      const idxState = _state.indices[_state.activeSymbol];
+      await fetchDhanOptionChainReadOnly(_state.activeSymbol, idxState ? idxState.selectedExpiry : "");
+      renderAllMountedOptionChains();
+    } else {
+      renderAllMountedOptionChains();
+    }
+  }
+
   function autoMount() {
     ["ocHost-adminPage", "ocHost-modal", "ocHost-frontPage"].forEach(id => {
       if (document.getElementById(id)) {
@@ -1159,6 +1436,7 @@
     if (global._ocMasterTimer) clearInterval(global._ocMasterTimer);
     global._ocMasterTimer = setInterval(tickMarketLoop, 1000);
     tickMarketLoop();
+    autoSyncWorkerOnLoad();
   }
 
   if (typeof document !== "undefined") {

@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 
   <!-- External Stylesheets -->
-  <link rel="stylesheet" href="admin.css?v=20261128-4">
-  <link rel="stylesheet" href="style.css?v=20261128-4">
+  <link rel="stylesheet" href="admin.css?v=20261128-5">
+  <link rel="stylesheet" href="style.css?v=20261128-5">
 
   <!-- Immediate Admin Authentication Guard -->
   <script>
@@ -224,36 +224,35 @@
           </div>
         </div>
 
-        <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 10px; padding: 12px 18px 8px 18px;">
+        <div class="admin-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 10px; padding: 12px 18px 8px 18px;">
           <div class="admin-form-group">
-            <label style="font-size: 11px; font-weight: 600; color: #065f46;">DHAN API KEY</label>
-            <input type="text" id="dhanApiKeyInput" value="6f503e08" readonly style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
+            <label style="font-size: 11px; font-weight: 600; color: #065f46;">CLOUDFLARE WORKER URL</label>
+            <input type="text" id="dhanProxyUrlInput" placeholder="https://liveipo-oc.yourname.workers.dev" style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
           </div>
           <div class="admin-form-group">
-            <label style="font-size: 11px; font-weight: 600; color: #065f46;">DHAN API SECRET</label>
-            <input type="password" id="dhanApiSecretInput" value="c2d7f9fd-f1dc-49d7-a937-6eb6edcd105e" readonly style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
+            <label style="font-size: 11px; font-weight: 600; color: #065f46;">WORKER ADMIN KEY (KV UPDATE)</label>
+            <input type="password" id="dhanWorkerAdminKeyInput" placeholder="Same as Cloudflare ADMIN_UPDATE_KEY" style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
           </div>
           <div class="admin-form-group">
             <label style="font-size: 11px; font-weight: 600; color: #065f46;">DHAN CLIENT ID</label>
-            <input type="text" id="dhanClientIdInput" value="1102733692" style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
+            <input type="text" id="dhanClientIdInput" placeholder="10-digit Dhan Client ID" style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
           </div>
           <div class="admin-form-group">
-            <label style="font-size: 11px; font-weight: 600; color: #065f46;">ACCESS TOKEN (24H JWT)</label>
-            <input type="password" id="dhanAccessTokenInput" value="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJwX2lwIjoiIiwic19pcCI6IiIsInVzZXJSZWdpb24iOiJSMSIsImlzcyI6ImRoYW4iLCJwYXJ0bmVySWQiOiIiLCJleHAiOjE3OTU2ODY1NTgsImlhdCI6MTc5NTYwMDE1OCwidG9rZW5Db25zdW1lclR5cGUiOiJTRUxGIiwid2ViaG9va1VybCI6Imh0dHBzOi8vbWVodWwyNjU4Ny5naXRodWIuaW8vb3B0aW9uLXNlbGxpbmcvYWRtaW4uaHRtbCIsImRoYW5DbGllbnRJZCI6IjExMDI3MzM2OTIifQ.PVYdhOyf6DaFd0rI-qck50OKPqxTCzqHwKpKtOVnhJ4KvVZVIGgicO0ePuACNmwT7X4o9q7bPdugBp3urkW9UA" style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
-          </div>
-          <div class="admin-form-group">
-            <label style="font-size: 11px; font-weight: 600; color: #065f46;">CORS PROXY URL (READ-ONLY RELAY)</label>
-            <input type="text" id="dhanProxyUrlInput" placeholder="e.g. http://localhost:8787 or Worker URL" style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
+            <label style="font-size: 11px; font-weight: 600; color: #065f46;">DHAN ACCESS TOKEN (24H JWT)</label>
+            <input type="password" id="dhanAccessTokenInput" placeholder="Paste Dhan 24h Access Token" style="padding: 7px 9px; font-size: 12.5px; font-weight: 400; color: #334155; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">
           </div>
         </div>
 
         <div style="padding: 6px 18px 12px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
           <div style="font-size: 12px; color: #047857;">
-            💡 <strong>નોંધ:</strong> ધન પોર્ટલમાંથી દર ૨૪ કલાકે નવો <strong>Access Token</strong> અપડેટ કરવો પડે છે. GitHub Pages પર લાઈવ API માટે <code>node dhan-proxy.mjs</code> અથવા Cloudflare Worker URL દાખલ કરો.
+            💡 <strong>સુરક્ષિત સેટઅપ:</strong> ટોકન ક્યારેય GitHub કોડમાં સેવ ન કરો — <strong>Cloudflare Worker (KV / Secrets)</strong> માં સેવ કરવાથી Admin અને Frontend બંને પર લાઈવ ડેટા સુરક્ષિત ચાલશે.
           </div>
-          <div style="display: flex; gap: 10px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn-export" style="font-size: 12px; padding: 7px 12px;" onclick="renewDhanTokenViaWorker()">
+              🔄 Renew Token (+24h)
+            </button>
             <button type="button" class="admin-btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 600; font-size: 12.5px; padding: 7px 16px; border-radius: 6px;" onclick="saveAndTestDhanConnection()">
-              ⚡ Connect & Fetch Live Dhan Option Chain
+              ⚡ Save & Connect Live Worker
             </button>
           </div>
         </div>
@@ -813,8 +812,8 @@
   </div>
 
   <!-- Admin JavaScript Logic -->
-  <script src="option-chain-engine.js?v=20261128-4"></script>
-  <script src="script.js?v=20261128-4"></script>
-  <script src="admin.js?v=20261128-4"></script>
+  <script src="option-chain-engine.js?v=20261128-5"></script>
+  <script src="script.js?v=20261128-5"></script>
+  <script src="admin.js?v=20261128-5"></script>
 </body>
 </html>
