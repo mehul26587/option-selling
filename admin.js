@@ -1384,6 +1384,9 @@ async function saveAndTestDhanConnection() {
     updateDhanBadge(true, "🟢 DhanHQ Worker Live (Read-Only)");
     window.OCEngine.renderAll();
     alert("✓ Cloudflare Worker + DhanHQ Live Option Chain Connected (Read-Only)!\n\nહવે Admin અને Frontend બંને પર અસલ લાઈવ માર્કેટ ડેટા ચાલશે.");
+  } else if (result.reason === "RATE_LIMIT_COOLDOWN") {
+    updateDhanBadge(true, "🟡 Worker Saved • Cooldown (15s)");
+    alert("✓ તમારો Token Cloudflare Worker માં સુરક્ષિત રીતે સેવ થઈ ગયો છે!\n\nDhan સર્વર પર 3-સેકન્ડની રેટ-લિમિટ (805 Cooldown) ને કારણે 15 સેકન્ડ પછી આપોઆપ લાઈવ ડેટા અપડેટ થઈ જશે. ફરીથી તરત બટન દબાવવાની જરૂર નથી.");
   } else if (result.reason === "TOKEN_EXPIRED") {
     updateDhanBadge(false, "⚠️ Dhan Token Expired (24h)");
     const expStr = result.expDate ? result.expDate.toLocaleString("en-IN") : "24h limit";

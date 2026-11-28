@@ -534,8 +534,8 @@
 
       // MODE 1: Public / Shared Cloudflare Worker Feed (Admin + Frontend Visitors)
       if (workerBase) {
-        if (!_state.officialExpiriesLoaded[sym] && _state.workerOnline) {
-          await fetchWorkerExpiries(sym);
+        if (Date.now() < (_state.dhanCooldownUntil || 0)) {
+          return { ok: false, reason: "RATE_LIMIT_COOLDOWN", detail: "Dhan rate-limit cooldown active" };
         }
         const effectiveExp = (idxState && idxState.selectedExpiry) || exp;
         try {
@@ -546,6 +546,7 @@
           if (res.ok && json && json.status === "success" && json.data) {
             _state.workerOnline = true;
             _state.workerTokenValid = true;
+            _state.dhanCooldownUntil = 0;
             ingestDhanResponse(sym, json.expiry || effectiveExp, json.data);
             _state.dhanLiveActive = true;
             _state.dhanLastSync = new Date();
@@ -555,6 +556,14 @@
               global.dispatchEvent(new CustomEvent("oc-dhan-updated", { detail: { symbol: sym, expiry: json.expiry || effectiveExp } }));
             }
             return { ok: true, data: json.data, source: "cloudflare-worker" };
+          }
+
+          const errText = JSON.stringify(json || {});
+          if (res.status === 429 || (json && json.reason === "RATE_LIMIT_COOLDOWN") || errText.includes("805") || errText.includes("RL001")) {
+            const waitMs = ((json && json.retryAfterSec) ? json.retryAfterSec : 15) * 1000;
+            _state.dhanCooldownUntil = Date.now() + waitMs;
+            _state.dhanError = "Dhan Rate Limit Cooldown (auto-resumes shortly)";
+            return { ok: false, reason: "RATE_LIMIT_COOLDOWN", detail: _state.dhanError };
           }
 
           if (json && json.reason === "TOKEN_EXPIRED") {
@@ -876,9 +885,9 @@
     const marketOpen = isIndianMarketOpen(istNow);
     const hasActiveDhan = _state.dhanLiveActive || (_state.workerOnline && _state.workerTokenValid);
 
-    // 1. Poll real DhanHQ API every 3.2s during market hours (or preview)
+    // 1. Poll real DhanHQ API every 5s strictly during IST market hours (avoiding weekend/805 spam)
     const nowMs = Date.now();
-    if (hasActiveDhan && (marketOpen || _state.demoLivePreview) && (nowMs - _lastDhanPollMs >= 3200)) {
+    if (hasActiveDhan && marketOpen && nowMs >= (_state.dhanCooldownUntil || 0) && (nowMs - _lastDhanPollMs >= 5000)) {
       _lastDhanPollMs = nowMs;
       const idxState = _state.indices[_state.activeSymbol];
       if (idxState) {

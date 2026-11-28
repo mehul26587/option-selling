@@ -41,15 +41,17 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type, client-id, access-token, x-admin-key"
 };
 
-const OC_CACHE_TTL_MS = 3200;       // Matches Dhan 1 req / 3s optionchain rate limit
+const OC_CACHE_TTL_MS = 4500;       // Safe margin above Dhan 1 req / 3s limit
 const EXPIRY_CACHE_TTL_MS = 300000; // 5 minutes
 const CREDS_MEM_TTL_MS = 30000;     // Reduces KV read usage
+const DHAN_COOLDOWN_MS = 12000;     // 12s pause if Dhan returns 805 / RL001
 
 // Warm-isolate caches (works on free *.workers.dev AND custom domains)
 const _ocCache = new Map();       // key -> { ts, payload }
 const _ocInFlight = new Map();    // key -> Promise
 const _expiryCache = new Map();   // symbol -> { ts, expiries }
 let _credsMem = null;             // { ts, value }
+let _dhanCooldownUntil = 0;       // Isolate-level 805/429 backoff timestamp
 
 function jsonResponse(obj, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(obj), {
@@ -227,6 +229,28 @@ async function fetchLiveOptionChainCached(symbol, expiry, creds, ctx) {
     return await _ocInFlight.get(cacheKey);
   }
 
+  // Respect active 805/429 cooldown so Dhan never blocks the account
+  if (now < _dhanCooldownUntil) {
+    if (cached && cached.payload) {
+      return {
+        status: 200,
+        cacheHit: true,
+        body: { ...cached.payload, cached: true, staleFallback: true }
+      };
+    }
+    const waitSec = Math.max(1, Math.ceil((_dhanCooldownUntil - now) / 1000));
+    return {
+      status: 429,
+      cacheHit: false,
+      body: {
+        status: "error",
+        reason: "RATE_LIMIT_COOLDOWN",
+        retryAfterSec: waitSec,
+        detail: `Dhan rate-limit cooldown active (${waitSec}s remaining).`
+      }
+    };
+  }
+
   const upstreamPromise = (async () => {
     try {
       const res = await fetch("https://api.dhan.co/v2/optionchain", {
@@ -259,7 +283,7 @@ async function fetchLiveOptionChainCached(symbol, expiry, creds, ctx) {
           const toCache = new Response(JSON.stringify(payload), {
             headers: {
               "Content-Type": "application/json",
-              "Cache-Control": "public, max-age=3, s-maxage=3"
+              "Cache-Control": "public, max-age=4, s-maxage=4"
             }
           });
           ctx.waitUntil(caches.default.put(edgeCacheUrl, toCache));
@@ -268,7 +292,13 @@ async function fetchLiveOptionChainCached(symbol, expiry, creds, ctx) {
         return { status: 200, cacheHit: false, body: { ...payload, cached: false } };
       }
 
-      // If rate-limited (RL001) or transient error, serve slightly stale cache gracefully if available
+      const rawErrStr = JSON.stringify(dhanJson || {});
+      const isRateLimited = res.status === 429 || rawErrStr.includes("805") || rawErrStr.includes("RL001") || rawErrStr.toLowerCase().includes("too many requests");
+      if (isRateLimited) {
+        _dhanCooldownUntil = Date.now() + DHAN_COOLDOWN_MS;
+      }
+
+      // If rate-limited or transient error, serve slightly stale cache gracefully if available
       if (cached && cached.payload) {
         return {
           status: 200,
@@ -278,11 +308,12 @@ async function fetchLiveOptionChainCached(symbol, expiry, creds, ctx) {
       }
 
       return {
-        status: res.status || 502,
+        status: isRateLimited ? 429 : (res.status || 502),
         cacheHit: false,
         body: {
           status: "error",
-          reason: "DHAN_API_ERROR",
+          reason: isRateLimited ? "RATE_LIMIT_COOLDOWN" : "DHAN_API_ERROR",
+          retryAfterSec: isRateLimited ? Math.ceil(DHAN_COOLDOWN_MS / 1000) : undefined,
           detail: (dhanJson && (dhanJson.errorMessage || dhanJson.data || dhanJson)) || `HTTP ${res.status}`
         }
       };
@@ -477,8 +508,6 @@ export default {
       };
       await env.DHAN_KV.put("dhan_creds", JSON.stringify(record));
       _credsMem = { ts: Date.now(), value: { ...record, storage: "kv" } };
-      _ocCache.clear();
-      _expiryCache.clear();
 
       return jsonResponse({
         status: "success",
