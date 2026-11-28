@@ -712,9 +712,9 @@ function switchAdminTab(tabKey) {
     refreshAdminDashboard();
   } else if (tabKey === "strategy") {
     loadMultiLegStrategyAdmin();
-    renderAllSensibullChains();
+    if (window.OCEngine) window.OCEngine.renderAll();
   } else if (tabKey === "optionchain") {
-    renderAllSensibullChains();
+    if (window.OCEngine) window.OCEngine.renderAll();
   }
 }
 
@@ -927,34 +927,17 @@ function handlePublishBasketTradeSubmit(e) {
 // ========================================================
 
 function getLiveOptionLtp(symbol, expiry, strike, type) {
-  symbol = symbol || "NIFTY";
-  strike = parseFloat(strike) || 25600;
-  expiry = expiry || window.activeSensibullExpiry || "01-Dec-2026";
-
-  const expConfig = typeof EXPIRY_CONFIG !== "undefined" ? (EXPIRY_CONFIG[expiry] || EXPIRY_CONFIG["01-Dec-2026"]) : null;
-  const tMult = expConfig ? expConfig.tMult : 1.0;
-  const spot = window._liveMarketState ? window._liveMarketState.spot : (window._liveDhanSpot || 25607.20);
-
-  if (symbol === "NIFTY") {
-    if (window._liveMarketState && window._liveMarketState.strikes && window._liveMarketState.strikes[strike]) {
-      const s = window._liveMarketState.strikes[strike];
-      const basePrice = type === "CE" ? s.ce : s.pe;
-      const intrinsic = type === "CE" ? Math.max(0, spot - strike) : Math.max(0, strike - spot);
-      const timeVal = Math.max(1.5, basePrice - intrinsic);
-      return +(intrinsic + (timeVal * tMult)).toFixed(2);
-    }
+  if (window.OCEngine && typeof window.OCEngine.getLiveLtp === "function") {
+    return window.OCEngine.getLiveLtp(symbol, expiry, strike, type);
   }
-
-  const diff = Math.abs(strike - spot);
-  const isItm = (type === "CE" && spot > strike) || (type === "PE" && strike > spot);
-  const intrinsic = isItm ? (type === "CE" ? spot - strike : strike - spot) : 0;
-  const timeVal = Math.max(1.8, +(140 * Math.exp(-Math.pow(diff, 2) / 360000)).toFixed(2));
-  return +(intrinsic + (timeVal * tMult)).toFixed(2);
+  return 140.00;
 }
 
 function getStrikeRangeForIndex(symbol) {
-  const spot = symbol === "BANKNIFTY" ? 52100 : symbol === "FINNIFTY" ? 23800 : symbol === "SENSEX" ? 84000 : 25436.55;
-  const step = symbol === "BANKNIFTY" ? 100 : symbol === "SENSEX" ? 100 : 50;
+  const sym = symbol || (window.OCEngine ? window.OCEngine.getActiveSymbol() : "NIFTY");
+  const cfg = (window.OCEngine && window.OCEngine.catalog[sym]) ? window.OCEngine.catalog[sym] : { baseSpot: 25607.20, step: 50 };
+  const spot = window.OCEngine ? window.OCEngine.getSpot(sym) : cfg.baseSpot;
+  const step = cfg.step;
   const atm = Math.round(spot / step) * step;
   const strikes = [];
   for (let s = atm - (step * 10); s <= atm + (step * 10); s += step) {
@@ -964,51 +947,10 @@ function getStrikeRangeForIndex(symbol) {
 }
 
 function populateStrikeDropdowns() {
-  const symbol = document.getElementById("basketIndex") ? document.getElementById("basketIndex").value : "NIFTY";
-  const expiry = document.getElementById("basketExpiry") ? document.getElementById("basketExpiry").value : "23-Nov-2026";
-  const { spot, atm, strikes } = getStrikeRangeForIndex(symbol);
-
+  const symbol = window.OCEngine ? window.OCEngine.getActiveSymbol() : "NIFTY";
+  const { spot } = getStrikeRangeForIndex(symbol);
   const spotDisp = document.getElementById("modalSpotDisplay");
   if (spotDisp) spotDisp.textContent = spot.toLocaleString("en-IN", { minimumFractionDigits: 2 });
-
-  // Render Strike Quick Pills Row
-  const pillsRow = document.getElementById("quickStrikePillsRow");
-  if (pillsRow) {
-    pillsRow.innerHTML = strikes.map(s => {
-      const isAtm = s === atm;
-      const peLtp = getLiveOptionLtp(symbol, expiry, s, "PE");
-      const ceLtp = getLiveOptionLtp(symbol, expiry, s, "CE");
-      return `
-        <div style="background: ${isAtm ? '#fef3c7' : '#f8fafc'}; border: 1px solid ${isAtm ? '#f59e0b' : '#cbd5e1'}; border-radius: 8px; padding: 4px 10px; cursor: pointer; flex-shrink: 0; text-align: center; font-size: 11px;"
-             onclick="quickSelectStrikeIntoFirstAvailableLeg(${s})">
-          <div style="font-weight: 800; color: #0f172a;">${s} ${isAtm ? '<span style="color:#d97706;">(ATM)</span>' : ''}</div>
-          <div style="font-size: 10px; color: #64748b; margin-top: 2px;">
-            <span style="color: #10b981;">CE: ₹${ceLtp}</span> | <span style="color: #ef4444;">PE: ₹${peLtp}</span>
-          </div>
-        </div>
-      `;
-    }).join("");
-  }
-
-  // Populate Leg 1, Leg 2, Leg 3 Strike Selectors
-  [1, 2, 3].forEach(legNum => {
-    const sel = document.getElementById(`leg${legNum}Strike`);
-    if (!sel) return;
-    
-    // Choose sensible defaults: Leg 1 = 25050 (or 25100), Leg 2 = 25350 (or 25450), Leg 3 = 25600 (or 25700)
-    const currentVal = parseInt(sel.value);
-    const defaultVal = legNum === 1 ? 25050 : legNum === 2 ? 25350 : 25600;
-    const targetVal = currentVal || defaultVal;
-
-    sel.innerHTML = strikes.map(s => {
-      const peLtp = getLiveOptionLtp(symbol, expiry, s, "PE");
-      const ceLtp = getLiveOptionLtp(symbol, expiry, s, "CE");
-      const isSelected = s === targetVal;
-      return `<option value="${s}" ${isSelected ? 'selected' : ''}>${s} (PE: ₹${peLtp} | CE: ₹${ceLtp})</option>`;
-    }).join("");
-
-    updateLegAutoPrice(legNum);
-  });
 }
 
 function quickSelectStrikeIntoFirstAvailableLeg(strike) {
@@ -1061,29 +1003,13 @@ function onBasketIndexOrExpiryChange() {
   populateStrikeDropdowns();
 }
 
-// Ensure strikes are populated whenever modal opens
-const originalOpenPublishBasketTradeModal = window.openPublishBasketTradeModal || openPublishBasketTradeModal;
-window.openPublishBasketTradeModal = function() {
-  const overlay = document.getElementById("publishBasketTradeModalOverlay");
-  if (overlay) {
-    overlay.classList.add("active");
-    const today = new Date();
-    const dd = String(today.getDate()).padStart(2, '0');
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const yyyy = today.getFullYear();
-    const dateInput = document.getElementById("basketTradeDate");
-    if (dateInput) dateInput.value = `${dd}-${mm}-${yyyy}`;
-    
-    populateStrikeDropdowns();
-  }
-};
-
 // ========================================================
 // LIVE TICK ENGINE: FIXED ENTRY + LIVE UPDATING LTP & P&L
 // ========================================================
 function startLiveTradeTickEngine() {
   if (window._liveTradeTickTimer) return;
   window._liveTradeTickTimer = setInterval(() => {
+    if (window.OCEngine && !window.OCEngine.isLiveActive()) return;
     let trades = [];
     try {
       const raw = localStorage.getItem("liveipo_multistrike_trades");
@@ -1095,12 +1021,12 @@ function startLiveTradeTickEngine() {
       if (trade.status === "LIVE") {
         hasLiveTrades = true;
         let basketTotal = 0;
+        const sym = trade.index || "NIFTY";
         trade.legs.forEach(leg => {
           // ENTRY PRICE IS NEVER CHANGED! IT STAYS 100% FIXED!
-          // Micro-tick LTP by -0.15 to +0.15 simulating realistic market movements
-          const delta = +((Math.random() - 0.52) * 0.30).toFixed(2);
-          leg.ltp = Math.max(0.10, +(leg.ltp + delta).toFixed(2));
-          
+          if (window.OCEngine) {
+            leg.ltp = window.OCEngine.getLiveLtp(sym, null, leg.strike, leg.type);
+          }
           const isSell = leg.action === "S" || leg.action === "SELL";
           const multiplier = 25 * (leg.lots || 1);
           const pnlPerShare = isSell ? (leg.entry - leg.ltp) : (leg.ltp - leg.entry);
@@ -1117,7 +1043,7 @@ function startLiveTradeTickEngine() {
         renderMultiStrikeTradeHistoryTable();
       }
     }
-  }, 3000);
+  }, 1500);
 }
 
 // Start ticker on load
@@ -1216,11 +1142,11 @@ function selectSensibullStrike(strike, type, action, ltp) {
 
   // Auto-open modal if closed
   const modal = document.getElementById("publishBasketTradeModalOverlay");
-  if (modal && (modal.style.display === "none" || !modal.style.display)) {
+  if (modal && !modal.classList.contains("active")) {
     if (typeof window.openPublishBasketTradeModal === "function") {
       window.openPublishBasketTradeModal();
     } else {
-      modal.style.display = "flex";
+      modal.classList.add("active");
     }
   }
 
@@ -1284,8 +1210,10 @@ function onManualLegChange(legNum) {
   const tEl = document.getElementById(`leg${legNum}Type`);
   const eEl = document.getElementById(`leg${legNum}Entry`);
   const lEl = document.getElementById(`leg${legNum}LtpVal`);
+  const sym = (document.getElementById("basketIndex") && document.getElementById("basketIndex").value) || (window.OCEngine ? window.OCEngine.getActiveSymbol() : "NIFTY");
+  const exp = (document.getElementById("basketExpiry") && document.getElementById("basketExpiry").value) || (window.OCEngine ? window.OCEngine.getActiveExpiry() : "2026-12-01");
   if (sEl && tEl && eEl && lEl && sEl.value) {
-    const ltp = getLiveOptionLtp("NIFTY", "23-Nov-2026", parseFloat(sEl.value), tEl.value);
+    const ltp = getLiveOptionLtp(sym, exp, parseFloat(sEl.value), tEl.value);
     eEl.value = ltp.toFixed(2);
     lEl.value = ltp.toFixed(2);
   }
@@ -1293,18 +1221,29 @@ function onManualLegChange(legNum) {
 }
 
 // Hook into openPublishBasketTradeModal
-const originalOpenPublishBasketTradeModalSensibull = window.openPublishBasketTradeModal;
 window.openPublishBasketTradeModal = function() {
   const overlay = document.getElementById("publishBasketTradeModalOverlay");
   if (overlay) {
     overlay.classList.add("active");
-    renderSensibullOptionChainTable();
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    const dateInput = document.getElementById("basketTradeDate");
+    if (dateInput) dateInput.value = `${dd}-${mm}-${yyyy}`;
+    if (window.OCEngine) {
+      const idxInput = document.getElementById("basketIndex");
+      const expInput = document.getElementById("basketExpiry");
+      if (idxInput) idxInput.value = window.OCEngine.getActiveSymbol();
+      if (expInput) expInput.value = window.OCEngine.getActiveExpiry();
+      window.OCEngine.renderAll();
+    }
   }
 };
 
 
 // ========================================================
-// DHANHQ REAL-TIME OPTION CHAIN INTEGRATION
+// DHANHQ REAL-TIME OPTION CHAIN INTEGRATION (STRICTLY READ-ONLY)
 // ========================================================
 function loadDhanConfig() {
   const stored = localStorage.getItem("liveipo_dhan_config");
@@ -1317,10 +1256,22 @@ function loadDhanConfig() {
       if (document.getElementById("dhanAccessTokenInput")) {
         document.getElementById("dhanAccessTokenInput").value = cfg.accessToken || "";
       }
-      if (cfg.clientId && cfg.accessToken) {
-        updateDhanBadge(true, "Dhan Live API Active");
+      if (document.getElementById("dhanProxyUrlInput")) {
+        document.getElementById("dhanProxyUrlInput").value = cfg.proxyUrl || "";
       }
-    } catch(e) {}
+      if (cfg.clientId && cfg.accessToken) {
+        const jwtCheck = (window.OCEngine && typeof window.OCEngine.inspectJwtExpiry === "function")
+          ? window.OCEngine.inspectJwtExpiry(cfg.accessToken)
+          : { valid: false, reason: "Unable to verify token" };
+        if (!jwtCheck.valid) {
+          updateDhanBadge(false, `⚠️ ${jwtCheck.reason}`);
+        } else if (cfg.proxyUrl) {
+          updateDhanBadge(false, "Token Valid • Click Connect");
+        } else {
+          updateDhanBadge(false, "Token Valid • CORS Proxy Needed");
+        }
+      }
+    } catch (e) {}
   }
 }
 
@@ -1344,6 +1295,8 @@ function updateDhanBadge(isConnected, text) {
 async function saveAndTestDhanConnection() {
   const clientId = document.getElementById("dhanClientIdInput").value.trim();
   const accessToken = document.getElementById("dhanAccessTokenInput").value.trim();
+  const proxyUrlEl = document.getElementById("dhanProxyUrlInput");
+  const proxyUrl = proxyUrlEl ? proxyUrlEl.value.trim() : "";
 
   if (!clientId || !accessToken) {
     alert("⚠️ કૃપા કરીને તમારો Dhan Client ID (10 આંકડાનો) અને Dhan Access Token દાખલ કરો.");
@@ -1355,46 +1308,33 @@ async function saveAndTestDhanConnection() {
     apiSecret: "c2d7f9fd-f1dc-49d7-a937-6eb6edcd105e",
     clientId: clientId,
     accessToken: accessToken,
+    proxyUrl: proxyUrl,
     updatedAt: new Date().toISOString()
   };
 
   localStorage.setItem("liveipo_dhan_config", JSON.stringify(config));
-  updateDhanBadge(false, "Connecting to DhanHQ...");
+  updateDhanBadge(false, "Testing DhanHQ Read-Only Feed...");
 
-  try {
-    const res = await fetch("https://api.dhan.co/v2/optionchain", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "client-id": clientId,
-        "access-token": accessToken
-      },
-      body: JSON.stringify({
-        UnderlyingScrip: 13,
-        UnderlyingSeg: "IDX_I",
-        Expiry: "2026-12-01"
-      })
-    });
+  const activeSym = window.OCEngine ? window.OCEngine.getActiveSymbol() : "NIFTY";
+  const activeExp = window.OCEngine ? window.OCEngine.getActiveExpiry() : "2026-12-01";
+  const result = window.OCEngine
+    ? await window.OCEngine.fetchDhanOptionChainReadOnly(activeSym, activeExp)
+    : { ok: false, reason: "ENGINE_MISSING" };
 
-    const data = await res.json();
-    if (data && data.status === "success" && data.data) {
-      updateDhanBadge(true, "● Dhan Live Connected");
-      alert("✓ DhanHQ Option Chain API Successfully Connected! Live market ticks are active.");
-      if (typeof renderSensibullOptionChainTable === "function") {
-        renderSensibullOptionChainTable();
-      }
-    } else if (data && data.status === "failed") {
-      updateDhanBadge(false, "Dhan Auth Failed");
-      alert("⚠️ Dhan API Response: " + (data.data ? JSON.stringify(data.data) : "Auth Failed. Token અથવા Client ID ચેક કરો."));
-    } else {
-      updateDhanBadge(true, "Dhan Config Saved");
-      alert("✓ Dhan Credentials Saved Successfully!");
-    }
-  } catch (err) {
-    // If CORS prevents direct browser call, fallback smoothly
-    console.warn("Dhan browser fetch notice:", err);
-    updateDhanBadge(true, "Dhan Feed Active");
-    alert("✓ Dhan Credentials Saved! Live NSE Option Chain Engine is active.");
+  if (result.ok) {
+    updateDhanBadge(true, "🟢 DhanHQ Live Read-Only Connected");
+    window.OCEngine.renderAll();
+    alert("✓ DhanHQ Live Option Chain Connected (Read-Only Mode)! કોઈપણ રિયલ ટ્રેડ વગર લાઈવ ડેટા ફેચ થઈ ગયો છે.");
+  } else if (result.reason === "TOKEN_EXPIRED") {
+    updateDhanBadge(false, "⚠️ Dhan Token Expired (24h)");
+    const expStr = result.expDate ? result.expDate.toLocaleString("en-IN") : "24h limit";
+    alert(`⚠️ તમારો Dhan Access Token એક્સપાયર થઈ ગયો છે (${expStr}).\n\nધન પોર્ટલમાંથી આજનો નવો 24-કલાકનો Access Token કોપી કરીને અહીં પેસ્ટ કરો.`);
+  } else if (result.reason === "CORS_BLOCKED") {
+    updateDhanBadge(false, "📡 CORS Proxy Required (Static Web)");
+    alert("⚠️ બ્રાઉઝર CORS સિક્યુરિટીને કારણે GitHub Pages પરથી api.dhan.co ડાયરેક્ટ બ્લોક થાય છે.\n\nલાઈવ API કનેક્ટ કરવા માટે 'node dhan-proxy.mjs' ચાલુ કરો અથવા Cloudflare Worker URL દાખલ કરો. અત્યારે માર્કેટ-ટાઈમ સિંક મોડ ચાલુ છે.");
+  } else {
+    updateDhanBadge(false, `⚠️ Dhan Error: ${result.reason}`);
+    alert(`⚠️ Dhan API Error: ${result.detail || result.reason}`);
   }
 }
 
@@ -1403,254 +1343,17 @@ if (typeof window !== "undefined") {
   setTimeout(loadDhanConfig, 300);
 }
 
-
 // ========================================================
-// PURE WHITE SENSIBULL UNIFIED RENDERER ENGINE
+// UNIFIED OPTION CHAIN DELEGATES (POWERED BY option-chain-engine.js)
 // ========================================================
-var EXPIRY_CONFIG = window.EXPIRY_CONFIG || {
-  "01-Dec-2026": { dte: 4, tMult: 1.00, oiMult: 1.00, label: "1 Dec (4 days)" },
-  "08-Dec-2026": { dte: 11, tMult: 1.66, oiMult: 0.45, label: "8 Dec (11 days)" },
-  "15-Dec-2026": { dte: 18, tMult: 2.12, oiMult: 0.32, label: "15 Dec (3 weeks)" },
-  "22-Dec-2026": { dte: 25, tMult: 2.50, oiMult: 0.72, label: "22 Dec (4 weeks)" }
-};
-
-var activeSensibullExpiry = window.activeSensibullExpiry || "01-Dec-2026";
-
 function switchPureSensibullExpiry(exp) {
-  activeSensibullExpiry = exp;
-  window.activeSensibullExpiry = exp;
-  const expDay = parseInt(exp.split("-")[0], 10);
-  document.querySelectorAll(".sensibull-expiry-pill").forEach(p => {
-    p.classList.toggle("active", p.textContent.trim().startsWith(expDay + " Dec"));
-  });
-  renderAllSensibullChains();
+  if (window.OCEngine) window.OCEngine.selectExpiry(exp);
 }
 
 function renderAllSensibullChains() {
-  renderSensibullTableById("sensibullChainTableBody");
-  renderSensibullTableById("adminPageOcBody");
-  renderSensibullTableById("frontPageOcBody");
+  if (window.OCEngine) window.OCEngine.renderAll();
 }
 
-// ========================================================
-// REAL-TIME 1-SECOND LIVE MARKET TICK ENGINE (DHANHQ SYNCED)
-// ========================================================
-window._liveMarketState = {
-  spot: 25607.20,
-  basePrevClose: 25884.50,
-  strikes: {
-    25200: { ce: 408.00, pe: 24.50, callDelta: 0.91, putDelta: -0.09, callOi: 0.85, putOi: 18.20, iv: 14.8, lastCeMove: 0, lastPeMove: 0 },
-    25250: { ce: 365.00, pe: 32.50, callDelta: 0.88, putDelta: -0.12, callOi: 1.43, putOi: 26.65, iv: 14.6, lastCeMove: 0, lastPeMove: 0 },
-    25300: { ce: 324.25, pe: 41.80, callDelta: 0.84, putDelta: -0.16, callOi: 6.07, putOi: 61.62, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
-    25350: { ce: 287.55, pe: 54.70, callDelta: 0.80, putDelta: -0.20, callOi: 2.30, putOi: 20.28, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
-    25400: { ce: 252.00, pe: 68.90, callDelta: 0.76, putDelta: -0.24, callOi: 13.55, putOi: 61.85, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
-    25450: { ce: 220.15, pe: 87.05, callDelta: 0.70, putDelta: -0.30, callOi: 3.40, putOi: 26.11, iv: 14.1, lastCeMove: 0, lastPeMove: 0 },
-    25500: { ce: 189.80, pe: 107.50, callDelta: 0.65, putDelta: -0.35, callOi: 34.09, putOi: 81.06, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
-    25550: { ce: 163.30, pe: 131.55, callDelta: 0.58, putDelta: -0.42, callOi: 10.76, putOi: 20.72, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
-    25600: { ce: 140.00, pe: 157.70, callDelta: 0.50, putDelta: -0.50, callOi: 55.49, putOi: 57.13, iv: 14.0, lastCeMove: 0, lastPeMove: 0 },
-    25650: { ce: 119.30, pe: 187.75, callDelta: 0.43, putDelta: -0.57, callOi: 33.10, putOi: 21.44, iv: 14.1, lastCeMove: 0, lastPeMove: 0 },
-    25700: { ce: 100.90, pe: 219.85, callDelta: 0.36, putDelta: -0.64, callOi: 85.01, putOi: 47.98, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
-    25750: { ce: 85.90, pe: 254.25, callDelta: 0.30, putDelta: -0.70, callOi: 53.76, putOi: 17.78, iv: 14.2, lastCeMove: 0, lastPeMove: 0 },
-    25800: { ce: 71.70, pe: 290.05, callDelta: 0.25, putDelta: -0.75, callOi: 139.48, putOi: 48.79, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
-    25850: { ce: 60.50, pe: 328.25, callDelta: 0.20, putDelta: -0.80, callOi: 84.98, putOi: 15.09, iv: 14.3, lastCeMove: 0, lastPeMove: 0 },
-    25900: { ce: 50.60, pe: 368.70, callDelta: 0.16, putDelta: -0.84, callOi: 122.13, putOi: 29.39, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
-    25950: { ce: 42.15, pe: 410.30, callDelta: 0.13, putDelta: -0.87, callOi: 54.93, putOi: 6.60, iv: 14.4, lastCeMove: 0, lastPeMove: 0 },
-    26000: { ce: 35.15, pe: 453.50, callDelta: 0.10, putDelta: -0.90, callOi: 189.85, putOi: 26.37, iv: 14.5, lastCeMove: 0, lastPeMove: 0 },
-    26050: { ce: 29.00, pe: 496.60, callDelta: 0.08, putDelta: -0.92, callOi: 38.37, putOi: 1.94, iv: 14.6, lastCeMove: 0, lastPeMove: 0 },
-    26100: { ce: 23.75, pe: 541.90, callDelta: 0.06, putDelta: -0.94, callOi: 91.87, putOi: 3.93, iv: 14.7, lastCeMove: 0, lastPeMove: 0 },
-    26150: { ce: 19.60, pe: 588.50, callDelta: 0.05, putDelta: -0.95, callOi: 39.66, putOi: 0.99, iv: 14.8, lastCeMove: 0, lastPeMove: 0 }
-  }
-};
-
-function stepLiveMarketTick() {
-  const state = window._liveMarketState;
-  if (!state) return;
-
-  // Realistic random micro-walk for spot (+/- 0.30 to 1.60 pts)
-  const spotChange = +((Math.random() - 0.495) * 1.5).toFixed(2);
-  state.spot = +(state.spot + spotChange).toFixed(2);
-  window._liveDhanSpot = state.spot;
-
-  const netChg = +(state.spot - state.basePrevClose).toFixed(2);
-  const netPct = +((netChg / state.basePrevClose) * 100).toFixed(2);
-  const chgStr = `${netChg >= 0 ? '+' : ''}${netChg.toFixed(2)} (${netPct >= 0 ? '+' : ''}${netPct}%)`;
-
-  const now = new Date();
-  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-
-  // Update spot displays & live clock across all Option Chain modules
-  ['adminPageOcBody', 'sensibullChainTableBody', 'frontPageOcBody'].forEach(prefix => {
-    const disp = document.getElementById(prefix + '_spotDisplay');
-    const chg = document.getElementById(prefix + '_spotChgDisplay');
-    const clock = document.getElementById(prefix + '_liveClock');
-    if (disp) disp.textContent = state.spot.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (chg) {
-      chg.textContent = chgStr;
-      chg.style.color = netChg >= 0 ? '#10b981' : '#ef4444';
-    }
-    if (clock) clock.textContent = timeStr;
-  });
-
-  // Update Trade Management Spot input
-  const stratSpot = document.getElementById('adminStrategySpot');
-  if (stratSpot) {
-    stratSpot.value = state.spot.toFixed(2);
-    stratSpot.style.color = spotChange >= 0 ? '#10b981' : '#ef4444';
-  }
-
-  // Micro-tick every strike in option chain according to Delta
-  Object.keys(state.strikes).forEach(k => {
-    const s = state.strikes[k];
-    const ceMove = +(spotChange * s.callDelta + (Math.random() - 0.5) * 0.15).toFixed(2);
-    const peMove = +(-spotChange * Math.abs(s.putDelta) + (Math.random() - 0.5) * 0.15).toFixed(2);
-
-    s.ce = Math.max(0.50, +(s.ce + ceMove).toFixed(2));
-    s.pe = Math.max(0.50, +(s.pe + peMove).toFixed(2));
-    s.lastCeMove = ceMove;
-    s.lastPeMove = peMove;
-  });
-
-  // Update Trade Management 3-Leg Basket LTP inputs
-  const l1Ltp = document.getElementById('adminLeg1Ltp');
-  const l2Ltp = document.getElementById('adminLeg2Ltp');
-  const l3Ltp = document.getElementById('adminLeg3Ltp');
-  
-  if (l1Ltp) {
-    const p1 = (parseFloat(l1Ltp.value) || 18.50) + (-spotChange * 0.20 + (Math.random() - 0.5) * 0.12);
-    l1Ltp.value = Math.max(0.05, p1).toFixed(2);
-    l1Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
-  }
-  if (l2Ltp) {
-    const p2 = (parseFloat(l2Ltp.value) || 42.15) + (-spotChange * 0.35 + (Math.random() - 0.5) * 0.18);
-    l2Ltp.value = Math.max(0.05, p2).toFixed(2);
-    l2Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
-  }
-  if (l3Ltp) {
-    const p3 = (parseFloat(l3Ltp.value) || 157.70) + (-spotChange * 0.48 + (Math.random() - 0.5) * 0.28);
-    l3Ltp.value = Math.max(0.05, p3).toFixed(2);
-    l3Ltp.style.color = spotChange <= 0 ? '#10b981' : '#ef4444';
-  }
-
-  // Update modal 3-leg basket LTP inputs if modal is active
-  const modalL1 = document.getElementById('leg1LtpVal');
-  const modalL2 = document.getElementById('leg2LtpVal');
-  const modalL3 = document.getElementById('leg3LtpVal');
-  if (modalL1 && l1Ltp) modalL1.value = l1Ltp.value;
-  if (modalL2 && l2Ltp) modalL2.value = l2Ltp.value;
-  if (modalL3 && l3Ltp) modalL3.value = l3Ltp.value;
-
-  // Re-render table rows with new prices & flash colors
-  renderAllSensibullChains();
-}
-
-function renderSensibullTableById(tbodyId) {
-  const tbody = document.getElementById(tbodyId);
-  if (!tbody) return;
-
-  const state = window._liveMarketState;
-  const spot = state ? state.spot : 25607.20;
-  const atm = Math.round(spot / 50) * 50; // Dynamic ATM strike calculation (25600)
-
-  // Current active expiry config
-  const expKey = window.activeSensibullExpiry || "01-Dec-2026";
-  const expConfig = EXPIRY_CONFIG[expKey] || EXPIRY_CONFIG["01-Dec-2026"];
-  const tMult = expConfig.tMult;
-  const oiMult = expConfig.oiMult;
-
-  // Generate dynamic strikes around ATM (from ATM - 350 to ATM + 350)
-  const strikes = [];
-  for (let s = atm - 350; s <= atm + 350; s += 50) {
-    strikes.push(s);
-  }
-
-  let html = "";
-  strikes.forEach(s => {
-    const isAtm = s === atm;
-    const isCallItm = s < spot;
-    const isPutItm = s > spot;
-
-    const sData = (state && state.strikes && state.strikes[s]) ? state.strikes[s] : null;
-
-    let baseCe, basePe, callOiLakhs, putOiLakhs, callDelta, putDelta, iv;
-
-    if (sData) {
-      baseCe = sData.ce;
-      basePe = sData.pe;
-      callOiLakhs = sData.callOi;
-      putOiLakhs = sData.putOi;
-      callDelta = sData.callDelta;
-      putDelta = sData.putDelta;
-      iv = sData.iv;
-    } else {
-      const diff = Math.abs(s - spot);
-      const intrinsicCe = Math.max(0, spot - s);
-      const intrinsicPe = Math.max(0, s - spot);
-      const timeVal = Math.max(2.0, +(140 * Math.exp(-Math.pow(diff, 2) / 360000)).toFixed(2));
-      baseCe = +(intrinsicCe + timeVal).toFixed(2);
-      basePe = +(intrinsicPe + timeVal).toFixed(2);
-      callOiLakhs = Math.max(0.5, +(50 * Math.exp(-Math.pow(diff, 2) / 250000))).toFixed(2);
-      putOiLakhs = Math.max(0.5, +(50 * Math.exp(-Math.pow(diff, 2) / 250000))).toFixed(2);
-      callDelta = s < spot ? +(0.5 + 0.45 * Math.min(1, (spot - s) / 400)).toFixed(2) : +(0.5 - 0.45 * Math.min(1, (s - spot) / 400)).toFixed(2);
-      putDelta = +(callDelta - 1.0).toFixed(2);
-      iv = 14.2;
-    }
-
-    // Dynamic Intrinsic & Extrinsic time value scaling based on selected expiry (tMult)
-    const intrinsicCe = Math.max(0, spot - s);
-    const intrinsicPe = Math.max(0, s - spot);
-    const timeValCe = Math.max(1.5, baseCe - intrinsicCe);
-    const timeValPe = Math.max(1.5, basePe - intrinsicPe);
-
-    const callLtp = +(intrinsicCe + (timeValCe * tMult)).toFixed(2);
-    const putLtp = +(intrinsicPe + (timeValPe * tMult)).toFixed(2);
-    const dispCallOi = +(parseFloat(callOiLakhs) * oiMult).toFixed(2);
-    const dispPutOi = +(parseFloat(putOiLakhs) * oiMult).toFixed(2);
-
-    const callLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(dispCallOi) * 0.4)));
-    const putLineWidth = Math.min(70, Math.max(6, Math.round(parseFloat(dispPutOi) * 0.4)));
-
-    // Flash colors on live price ticks
-    const ceClass = (sData && sData.lastCeMove > 0) ? "up" : ((sData && sData.lastCeMove < 0) ? "down" : "");
-    const peClass = (sData && sData.lastPeMove > 0) ? "up" : ((sData && sData.lastPeMove < 0) ? "down" : "");
-
-    html += `<tr class="${isCallItm ? 'itm-call' : ''} ${isPutItm ? 'itm-put' : ''}">
-      <td class="call-cell" style="color: #64748b; font-weight: 600;">${callDelta}</td>
-      <td class="call-cell">
-        <span class="price-tick-val ${ceClass}">${callLtp.toFixed(2)}</span>
-      </td>
-      <td class="call-cell" style="text-align: left; padding-left: 12px; font-weight: 700;">
-        <strong>${dispCallOi}</strong>
-        <span class="oi-red-line" style="width: ${callLineWidth}px;"></span>
-      </td>
-      <td class="call-cell" style="white-space: nowrap;">
-        <button type="button" class="btn-oc-action-b" onclick="selectSensibullStrike(${s}, 'CE', 'B', ${callLtp})" title="Buy Call">B</button>
-        <button type="button" class="btn-oc-action-s" onclick="selectSensibullStrike(${s}, 'CE', 'S', ${callLtp})" title="Sell Call">S</button>
-      </td>
-      <td class="strike-cell">
-        <span class="strike-pill-badge ${isAtm ? 'atm' : ''}">${s}</span>
-      </td>
-      <td style="color: #64748b; font-weight: 600;">${iv}</td>
-      <td class="put-cell" style="white-space: nowrap;">
-        <button type="button" class="btn-oc-action-b" onclick="selectSensibullStrike(${s}, 'PE', 'B', ${putLtp})" title="Buy Put">B</button>
-        <button type="button" class="btn-oc-action-s" onclick="selectSensibullStrike(${s}, 'PE', 'S', ${putLtp})" title="Sell Put">S</button>
-      </td>
-      <td class="put-cell" style="text-align: right; padding-right: 12px; font-weight: 700;">
-        <span class="oi-green-line" style="width: ${putLineWidth}px;"></span>
-        <strong>${dispPutOi}</strong>
-      </td>
-      <td class="put-cell">
-        <span class="price-tick-val ${peClass}">${putLtp.toFixed(2)}</span>
-      </td>
-      <td class="put-cell" style="color: #64748b; font-weight: 600;">${putDelta}</td>
-    </tr>`;
-  });
-
-  tbody.innerHTML = html;
-}
-
-// Start active 1-second interval
-if (typeof window !== "undefined") {
-  if (window._marketTickTimer) clearInterval(window._marketTickTimer);
-  window._marketTickTimer = setInterval(stepLiveMarketTick, 1000);
-  setTimeout(stepLiveMarketTick, 150);
+function renderSensibullTableById() {
+  if (window.OCEngine) window.OCEngine.renderAll();
 }

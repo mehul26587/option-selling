@@ -2610,3 +2610,161 @@ body {
 .price-tick-val.down {
   color: #ef4444 !important;
 }
+
+/* Sensibull Pure-White Clone Additions */
+.oc-index-select {
+  appearance: auto;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+  cursor: pointer;
+  outline: none;
+}
+
+.oc-index-select:focus {
+  border-color: #2563eb;
+}
+
+.sensibull-expiry-select {
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+}
+
+.sensibull-expiry-select.active {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #2563eb;
+  font-weight: 800;
+}
+
+.exp-w-badge {
+  font-size: 9px;
+  font-weight: 800;
+  color: #2563eb;
+  margin-left: 3px;
+}
+
+.oc-market-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.oc-market-badge.live {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.oc-market-badge.preview {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #93c5fd;
+}
+
+.oc-market-badge.closed {
+  background: #f8fafc;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.oc-demo-toggle-btn {
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.oc-demo-toggle-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.sb-clone-table td {
+  padding: 7px 6px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 12.5px;
+}
+
+.sb-clone-table tr.atm-row td {
+  background: #f1f5f9 !important;
+  border-top: 1.5px solid #94a3b8;
+  border-bottom: 1.5px solid #94a3b8;
+}
+
+.oc-pct {
+  font-size: 11px !important;
+  font-weight: 600;
+}
+
+.oc-pct.pos {
+  color: #059669 !important;
+}
+
+.oc-pct.neg {
+  color: #dc2626 !important;
+}
+
+.oc-oi-num {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.oc-greek {
+  font-size: 11.5px !important;
+  color: #475569 !important;
+}
+
+.sb-oi-bar {
+  position: absolute;
+  bottom: 0;
+  height: 2.5px;
+  pointer-events: none;
+  border-radius: 2px;
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.sb-oi-bar-call {
+  right: 0;
+  background: #ef4444;
+  transform-origin: right center;
+}
+
+.sb-oi-bar-put {
+  left: 0;
+  background: #10b981;
+  transform-origin: left center;
+}
+
+.btn-oc-action-b.selected,
+.btn-oc-action-s.selected {
+  outline: 2px solid #0f172a;
+  outline-offset: 1px;
+  transform: scale(1.1);
+}

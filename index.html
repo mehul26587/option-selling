@@ -6,7 +6,7 @@
   <title>LiveIPO - Options Selling Management Portal</title>
 
   <!-- External Stylesheets -->
-  <link rel="stylesheet" href="style.css?v=20261128-1">
+  <link rel="stylesheet" href="style.css?v=20261128-2">
 
   <!-- Google Identity Services (GSI) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -236,91 +236,14 @@
 
       <!-- ==================== TAB: NSE LIVE OPTION CHAIN ==================== -->
       <section class="tab-content" id="tab-optionchain">
-      <div style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div>
-          <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">⚡ Live Option Chain (Equity Derivatives)</h2>
-          <p style="font-size: 13px; color: #64748b; margin: 0;">Sensibull Pure White High-Contrast Interface with Real-Time NSE Quotes</p>
-        </div>
-        <span style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 800;">
-          ● NSE REAL-TIME STREAMING
-        </span>
-      </div>
-      
-    <div class="sensibull-pure-white-card">
-      
-      <!-- Sensibull Header Bar -->
-      <div class="sensibull-header-bar">
-        <div class="sensibull-spot-search">
-          <span>🔍</span>
-          <span>NIFTY</span>
-          <span id="frontPageOcBody_spotDisplay">25,677.10</span>
-          <span class="sensibull-spot-green" id="frontPageOcBody_spotChgDisplay">-207.40 (-0.80%)</span>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-          <div class="sensibull-expiry-pills">
-            <button type="button" class="sensibull-expiry-pill active" onclick="switchPureSensibullExpiry('01-Dec-2026')">1 Dec (6 days)</button>
-            <button type="button" class="sensibull-expiry-pill" onclick="switchPureSensibullExpiry('08-Dec-2026')">8 Dec (13 days)</button>
-            <button type="button" class="sensibull-expiry-pill" onclick="switchPureSensibullExpiry('15-Dec-2026')">15 Dec (3 weeks)</button>
-            <button type="button" class="sensibull-expiry-pill" onclick="switchPureSensibullExpiry('22-Dec-2026')">22 Dec (4 weeks)</button>
+        <div style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">⚡ Live Option Chain (NSE & BSE Indices)</h2>
+            <p style="font-size: 13px; color: #64748b; margin: 0;">Sensibull Pure White Interface • Multi-Index Dropdown • IST Market-Time Engine</p>
           </div>
-
-          <div class="sensibull-view-toggle">
-            <button type="button" class="sensibull-view-btn active">LTP</button>
-            <button type="button" class="sensibull-view-btn">OI</button>
-            <button type="button" class="sensibull-view-btn">Greeks</button>
-          </div>
-
-          <span style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
-            <span class="live-pulse-dot"></span> 1-SEC LIVE
-          </span>
         </div>
-      </div>
-
-      <!-- Sensibull Sub-Tabs -->
-      <div class="sensibull-nav-tabs">
-        <div class="sensibull-nav-tab">Straddles</div>
-        <div class="sensibull-nav-tab">Strangles</div>
-        <div class="sensibull-nav-tab active">Strikes (Option Chain)</div>
-        <div class="sensibull-nav-tab">Futures</div>
-      </div>
-
-      <!-- Table Wrapper -->
-      <div class="sensibull-table-wrapper">
-        <table class="sensibull-pure-table">
-          <thead>
-            <tr>
-              <th style="width: 70px;">Delta</th>
-              <th style="width: 140px;">Call LTP</th>
-              <th style="width: 160px; text-align: left; padding-left: 12px;">Call OI <span class="oi-red-line" style="width: 20px;"></span></th>
-              <th style="width: 75px;">Action</th>
-              <th style="width: 100px; background: #f1f5f9; color: #0f172a; font-size: 12px;">Strike</th>
-              <th style="width: 60px;">IV</th>
-              <th style="width: 75px;">Action</th>
-              <th style="width: 160px; text-align: right; padding-right: 12px;"><span class="oi-green-line" style="width: 20px;"></span> Put OI</th>
-              <th style="width: 140px;">Put LTP</th>
-              <th style="width: 70px;">Delta</th>
-            </tr>
-          </thead>
-          <tbody id="frontPageOcBody">
-            <!-- Populated dynamically via JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Footer Bar -->
-      <div class="sensibull-footer-bar">
-        <div>PCR: <span class="sensibull-metric-badge" id="frontPageOcBody_pcr">1.04 (Bullish)</span></div>
-        <div>Max Pain: <span class="sensibull-metric-badge" id="frontPageOcBody_maxPain">25,800</span></div>
-        <div>ATM IV: <span class="sensibull-metric-badge">17.2%</span></div>
-        <div style="color: #059669; font-weight: 700; font-size: 12px;">
-          ✓ Click [S] or [B] on any strike to auto-fill into 3-Strike Basket Legs
-        </div>
-      </div>
-
-    </div>
-  
-    </section>
+        <div id="ocHost-frontPage" data-allow-actions="false"></div>
+      </section>
 
       <!-- ==================== TAB 3: TRADES ==================== -->
       <section class="tab-content" id="tab-trades">
@@ -569,6 +492,7 @@
   <div class="toast-msg" id="toastNotification"></div>
 
   <!-- JavaScript -->
-  <script src="script.js?v=20261128-1"></script>
+  <script src="option-chain-engine.js?v=20261128-2"></script>
+  <script src="script.js?v=20261128-2"></script>
 </body>
 </html>
